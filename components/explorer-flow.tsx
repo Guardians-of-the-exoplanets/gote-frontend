@@ -71,80 +71,65 @@ export function ExplorerFlow() {
 
       <DataInputSection />
 
-      <TooltipProvider>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 h-auto">
-            <Tooltip>
-              <TooltipTrigger asChild>
+          <TabsList className="grid w-full grid-cols-3 h-auto bg-transparent p-0 gap-2">
+
                 <TabsTrigger
                   value="results"
                   className="flex items-center gap-2 py-3"
                   disabled={!hasResults}
                 >
-                  <BarChart3 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Resultados</span>
+                  <div className={`w-full px-4 py-2 rounded-lg border transition-all ${hasResults ? "hover:bg-card/80" : "opacity-60"} data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/20 data-[state=active]:to-accent/20 data-[state=active]:border-primary/50`}> 
+                    <div className="flex items-center gap-2 justify-center">
+                      <BarChart3 className="h-4 w-4" />
+                      <span className="hidden sm:inline">Resultados</span>
+                    </div>
+                  </div>
                 </TabsTrigger>
-              </TooltipTrigger>
-              {!hasResults && (
-                <TooltipContent>
-                  <p>Inicie a classificação dos dados</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
+
                 <TabsTrigger
                   value="visualization"
                   className="flex items-center gap-2 py-3"
                   disabled={!hasResults}
                 >
-                  <Globe className="h-4 w-4" />
-                  <span className="hidden sm:inline">Visualização</span>
+                  <div className={`w-full px-4 py-2 rounded-lg border transition-all ${hasResults ? "hover:bg-card/80" : "opacity-60"} data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/20 data-[state=active]:to-accent/20 data-[state=active]:border-primary/50`}>
+                    <div className="flex items-center gap-2 justify-center">
+                      <Globe className="h-4 w-4" />
+                      <span className="hidden sm:inline">Visualização</span>
+                    </div>
+                  </div>
                 </TabsTrigger>
-              </TooltipTrigger>
-              {!hasResults && (
-                <TooltipContent>
-                  <p>Inicie a classificação dos dados</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
                 <TabsTrigger
                   value="export"
                   className="flex items-center gap-2 py-3"
                   disabled={!hasResults}
                 >
-                  <Download className="h-4 w-4" />
-                  <span className="hidden sm:inline">Exportação</span>
+                  <div className={`w-full px-4 py-2 rounded-lg border transition-all ${hasResults ? "hover:bg-card/80" : "opacity-60"} data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/20 data-[state=active]:to-accent/20 data-[state=active]:border-primary/50`}>
+                    <div className="flex items-center gap-2 justify-center">
+                      <Download className="h-4 w-4" />
+                      <span className="hidden sm:inline">Exportação</span>
+                    </div>
+                  </div>
                 </TabsTrigger>
-              </TooltipTrigger>
-              {!hasResults && (
-                <TooltipContent>
-                  <p>Inicie a classificação dos dados</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
           </TabsList>
 
+          {!hasResults && (
+            <div className="mt-4 text-center">
+              <div className="inline-flex flex-col items-center gap-2 p-4 border rounded-xl bg-card/60 shadow-sm">
+                <Info className="h-5 w-5 text-primary" />
+                <p className="text-sm text-muted-foreground">Conclua a seleção do dataset e a entrada de dados para desbloquear os resultados.</p>
+              </div>
+            </div>
+          )}
+
           <TabsContent value="results" className="mt-6">
-            {hasResults ? (
-              <ExplorerResultsSection />
-            ) : (
-              <Alert className="border-muted-foreground/30">
-                <Info className="h-4 w-4" />
-                <AlertDescription>
-                  Insira os dados do candidato a exoplaneta acima e clique em "Classificar" para ver os resultados.
-                </AlertDescription>
-              </Alert>
-            )}
+            <ExplorerResultsSection />
           </TabsContent>
 
           <TabsContent value="visualization" className="mt-6">
             <section id="visualization" className="scroll-mt-20">
-              {showVisualization ? (
                 <div className="space-y-6">
                   <Card className="p-6 bg-gradient-to-br from-primary/10 via-accent/10 to-secondary/10 border-primary/30">
                     <div className="text-center mb-4">
@@ -158,33 +143,13 @@ export function ExplorerFlow() {
                     classification={prediction?.classification}
                   /> */}
                 </div>
-              ) : (
-                <Alert className="border-muted-foreground/30">
-                  <Info className="h-4 w-4" />
-                  <AlertDescription>
-                    {hasResults
-                      ? isExoplanet
-                        ? "A visualização 3D estará disponível assim que os dados do planeta forem processados."
-                        : "A visualização 3D só está disponível para candidatos confirmados ou prováveis exoplanetas."
-                      : "Insira os dados e classifique para ver a visualização 3D do exoplaneta."}
-                  </AlertDescription>
-                </Alert>
-              )}
             </section>
           </TabsContent>
 
           <TabsContent value="export" className="mt-6">
-            {hasResults ? (
-              <ExportSection />
-            ) : (
-              <Alert className="border-muted-foreground/30">
-                <Info className="h-4 w-4" />
-                <AlertDescription>Classifique os dados primeiro para poder exportar os resultados.</AlertDescription>
-              </Alert>
-            )}
+            <ExportSection />
           </TabsContent>
         </Tabs>
-      </TooltipProvider>
     </div>
   )
 }
