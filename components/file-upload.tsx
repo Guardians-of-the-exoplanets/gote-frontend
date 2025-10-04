@@ -3,14 +3,17 @@
 import type React from "react"
 
 import { useState, useCallback } from "react"
+import { useMode } from "@/lib/mode-context"
 import { Upload, FileJson, FileSpreadsheet, CheckCircle2, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface FileUploadProps {
   onDataUploaded: (data: any) => void
+  dataset?: "kepler" | "k2" | "tess"
 }
 
-export function FileUpload({ onDataUploaded }: FileUploadProps) {
+export function FileUpload({ onDataUploaded, dataset = "kepler" }: FileUploadProps) {
+  const { mode } = useMode()
   const [isDragging, setIsDragging] = useState(false)
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [uploadStatus, setUploadStatus] = useState<"idle" | "success" | "error">("idle")

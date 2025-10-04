@@ -20,7 +20,7 @@ interface PredictionResult {
   confidence: "Alta" | "Média" | "Baixa"
 }
 
-export function ManualDataForm({ showSubmit = true, formId = "data-input-form" }: { showSubmit?: boolean; formId?: string }) {
+export function ManualDataForm({ showSubmit = true, formId = "data-input-form", dataset = "kepler", onChangeRaw }: { showSubmit?: boolean; formId?: string; dataset?: "kepler" | "k2" | "tess"; onChangeRaw?: (raw: any) => void }) {
   const { mode } = useMode()
   const { planetData, setPlanetData, prediction, setPrediction, setIsProcessing } = usePlanetData()
 
@@ -66,6 +66,9 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form" }
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
     if (prediction) setPrediction(null)
+    if (onChangeRaw) {
+      onChangeRaw({ ...formData, [field]: value })
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -92,6 +95,15 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form" }
           : undefined,
       }
       setPlanetData(numericData)
+
+      // Console payload for integration
+      const consolePayload = {
+        mode, // "explorer" | "researcher"
+        dataset,
+        inputs: numericData,
+      }
+      // eslint-disable-next-line no-console
+      console.log("CLASSIFY_JSON", consolePayload)
 
       const response = await fetch("/api/classify", {
         method: "POST",

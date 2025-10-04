@@ -3,6 +3,7 @@ import { ModeNavigation } from "@/components/mode-navigation"
 import { TutorialOverlay } from "@/components/tutorial-overlay"
 import { ExplorerFlow } from "@/components/explorer-flow"
 import { ResearcherFlow } from "@/components/researcher-flow"
+import { TelescopeFlow } from "@/components/telescope-flow"
 import { Sparkles } from "lucide-react"
 import Image from "next/image"
 
@@ -13,6 +14,7 @@ export default function Home() {
       <ModeNavigation />
       <TutorialOverlay />
       <main className="container mx-auto px-4 py-8 space-y-8 max-w-7xl">
+        <TelescopeFlow />
         <ExplorerFlow />
         <ResearcherFlow />
       </main>
