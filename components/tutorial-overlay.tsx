@@ -380,6 +380,127 @@ const researcherSteps: TutorialStep[] = [
   },
 ]
 
+// New tutorials for Kepler and TESS modes
+const keplerSteps: TutorialStep[] = [
+  {
+    id: "intro",
+    title: "Kepler - Dados de Exemplo Processados",
+    description:
+      "Nesta experiência você explora um conjunto de dados do Kepler já processado pelos nossos modelos de Machine Learning. O objetivo é visualizar resultados prontos, entender o que significa cada classificação e aprender como o modelo chegou a essas conclusões.",
+    details: [
+      "O Kepler observou uma região fixa do céu usando o método de trânsito",
+      "Os exemplos incluem KOIs e campanhas K2, com métricas de confiança",
+      "As telas exibem apenas resultados finais (sem necessidade de envio de dados)",
+    ],
+    tips: [
+      "Use esta visão para aprender a interpretar classificações reais",
+      "Compare casos confirmados, candidatos e falsos positivos",
+    ],
+    imageQuery: "Kepler space telescope, transit method, exoplanet discovery",
+    icon: Globe,
+  },
+  {
+    id: "about",
+    title: "Sobre a Missão Kepler",
+    description:
+      "Resumo didático sobre a missão: como o Kepler revolucionou a estatística de exoplanetas e como a fase K2 expandiu o escopo científico.",
+    details: [
+      "Método de trânsito em larga escala",
+      "Mais de 2.600 planetas confirmados",
+      "K2: campanhas ao longo da eclíptica usando pressão da luz solar",
+    ],
+    tips: ["Veja a aba ‘Sobre’ para o texto completo e destaques da missão"],
+    imageQuery: "Kepler mission overview, star field, transit light curves",
+    icon: Layers,
+  },
+  {
+    id: "classifications",
+    title: "Classificações (Resultados do Modelo)",
+    description:
+      "Lista de candidatos classificados pelo nosso pipeline: cada entrada possui rótulo (Confirmado/Candidato/Falso Positivo) e uma probabilidade alta de acerto.",
+    details: [
+      "Cada linha corresponde a um objeto (KOI/EPIC)",
+      "A badge de classificação indica o rótulo final",
+      "A coluna de probabilidade resume a confiança do modelo",
+    ],
+    tips: ["Ordene por probabilidade para ver os casos mais fortes"],
+    imageQuery: "classification table, confidence scores, badges",
+    icon: BarChart3,
+  },
+  {
+    id: "report",
+    title: "Relatório Técnico",
+    description:
+      "Métricas e artefatos gerados durante o processamento: matriz de confusão, curva ROC e outras informações que explicam o desempenho do modelo nos exemplos.",
+    details: [
+      "Matriz de confusão para visualizar acertos e erros",
+      "Curva ROC para sensibilidade vs. especificidade",
+      "Resumo técnico do pipeline aplicado aos dados",
+    ],
+    tips: ["Use este material para comparar diferentes versões do modelo"],
+    imageQuery: "confusion matrix and roc curve scientific dashboard",
+    icon: BarChart3,
+  },
+]
+
+const tessSteps: TutorialStep[] = [
+  {
+    id: "intro",
+    title: "TESS - Dados de Exemplo Processados",
+    description:
+      "Aqui você explora um conjunto de dados do TESS processado pelos nossos modelos. O foco é aprender com exemplos prontos e entender como interpretamos as classificações.",
+    details: [
+      "A missão TESS cobre ~85% do céu em setores",
+      "Exemplos incluem TICs e setores observacionais",
+      "Não é necessário enviar dados; veja resultados prontos",
+    ],
+    tips: ["Acompanhe os setores para relacionar as descobertas"],
+    imageQuery: "TESS satellite, all-sky survey, exoplanet transit",
+    icon: Globe,
+  },
+  {
+    id: "about",
+    title: "Sobre a Missão TESS",
+    description:
+      "Visão geral da missão TESS e seus objetivos: encontrar mundos próximos e brilhantes que são ideais para caracterização detalhada.",
+    details: [
+      "Levantamento quase total do céu",
+      ">200 mil estrelas-alvo, prioridade em alvos brilhantes",
+      "Gera TOIs e confirma centenas de planetas",
+    ],
+    tips: ["Confira a aba ‘Sobre’ para o histórico e marcos da TESS"],
+    imageQuery: "TESS mission overview, sectors map, bright stars",
+    icon: Layers,
+  },
+  {
+    id: "classifications",
+    title: "Classificações (Resultados do Modelo)",
+    description:
+      "Tabela com candidatos do TESS classificados pelo nosso pipeline, incluindo rótulos finais e probabilidades altas de acerto.",
+    details: [
+      "Cada entrada corresponde a um TIC/Setor",
+      "Rótulo final com badge e probabilidade em %",
+      "Dados prontos para estudo e comparação",
+    ],
+    tips: ["Use a ordenação por setor para comparar regiões do céu"],
+    imageQuery: "classification table TESS, sectors, confidence",
+    icon: BarChart3,
+  },
+  {
+    id: "report",
+    title: "Relatório Técnico",
+    description:
+      "Métricas e artefatos do processamento no conjunto TESS: entenda o desempenho do modelo nesses exemplos.",
+    details: [
+      "Matriz de confusão, curva ROC e métricas auxiliares",
+      "Interpretação dos resultados para apoiar estudos",
+    ],
+    tips: ["Compare relatórios entre setores ou versões do modelo"],
+    imageQuery: "technical report metrics confusion roc",
+    icon: BarChart3,
+  },
+]
+
 export function TutorialOverlay() {
   const { mode } = useMode()
   const [isActive, setIsActive] = useState(false)
@@ -388,7 +509,7 @@ export function TutorialOverlay() {
   const [isAutoPlay, setIsAutoPlay] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
-  const steps = mode === "explorer" ? explorerSteps : researcherSteps
+  const steps = mode === "explorer" ? explorerSteps : mode === "researcher" ? researcherSteps : mode === "kepler" ? keplerSteps : tessSteps
   const storageKey = `exolab-tutorial-seen-${mode}`
 
   useEffect(() => {
