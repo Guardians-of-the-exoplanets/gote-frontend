@@ -245,7 +245,7 @@ const TESS_FIELDS: DatasetFieldDef[] = [
     exampleValue: "1.0"
   },
   {
-    key: "st_disterr",
+    key: "st_disterr2",
     name: "Stellar Distance [pc] Uncertainties Column (negative -)",
     description: "",
     type: "float",
