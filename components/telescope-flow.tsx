@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Info } from "lucide-react"
 import { useState } from "react"
 
-export function TelescopeFlow() {
+export function TelescopeFlow({ focus }: { focus?: 'kepler' | 'tess' }) {
   const { mode } = useMode()
   const [keplerDataset, setKeplerDataset] = useState<"kepler" | "k2">("kepler")
 
@@ -22,6 +22,7 @@ export function TelescopeFlow() {
   return (
     <div className="space-y-16">
       {/* ---------- KEPLER/K2---------- */}
+      {(focus === undefined || focus === 'kepler') && (
       <div className="space-y-8">
         <div className="relative w-full overflow-hidden rounded-xl border border-border bg-black/20">
           <Image
@@ -113,8 +114,10 @@ export function TelescopeFlow() {
           </TabsContent>
         </Tabs>
       </div>
+      )}
 
       {/* ---------- TESS ---------- */}
+      {(focus === undefined || focus === 'tess') && (
       <div className="space-y-8">
         <div className="relative w-full overflow-hidden rounded-xl border border-border bg-black/20">
           <Image
@@ -165,6 +168,7 @@ export function TelescopeFlow() {
           </TabsContent>
         </Tabs>
       </div>
+      )}
     </div>
   )
 }
