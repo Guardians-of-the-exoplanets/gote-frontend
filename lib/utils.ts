@@ -9,8 +9,9 @@ export function cn(...inputs: ClassValue[]) {
 export type RawRow = any
 
 export function normalizeId(row: RawRow): string {
+  // Support both Kepler (id, kepoi_name, koi) and TESS (tid, toi) fields
   return String(
-    row?.id ?? row?.object_id ?? row?.kepoi_name ?? row?.koi ?? row?.ID ?? row?.name ?? ''
+    row?.id ?? row?.tid ?? row?.object_id ?? row?.kepoi_name ?? row?.toi ?? row?.koi ?? row?.ID ?? row?.name ?? ''
   ).trim()
 }
 
