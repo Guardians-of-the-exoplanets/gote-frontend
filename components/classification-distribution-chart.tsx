@@ -3,14 +3,26 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
 import { Pie, PieChart, Cell, ResponsiveContainer, Legend } from "recharts"
-
-const distributionData = [
-  { name: "Confirmado", value: 450, color: "hsl(142, 76%, 36%)" },
-  { name: "Candidato", value: 320, color: "hsl(217, 91%, 60%)" },
-  { name: "Falso Positivo", value: 230, color: "hsl(0, 84%, 60%)" },
-]
+import { usePlanetData } from "@/lib/planet-data-context"
 
 export function ClassificationDistributionChart() {
+  const { streamPredictions } = usePlanetData()
+  const norm = (v: any) => String(v ?? "").toLowerCase().normalize("NFD").replace(/[^a-z ]/g, "").trim()
+  const label = (row: any) => {
+    const raw = norm(row?.classificacao ?? row?.classification)
+    if (raw.includes("confirm")) return "confirmed"
+    if (raw.includes("candidate") || raw.includes("candidat")) return "candidate"
+    if (raw.includes("false") || raw.includes("falso") || raw.includes("fp")) return "false_positive"
+    return "unknown"
+  }
+  const confirmed = (streamPredictions || []).filter((r: any) => label(r) === "confirmed").length
+  const candidate = (streamPredictions || []).filter((r: any) => label(r) === "candidate").length
+  const falsePositive = (streamPredictions || []).filter((r: any) => label(r) === "false_positive").length
+  const distributionData = [
+    { name: "Confirmado", value: confirmed, color: "hsl(142, 76%, 36%)" },
+    { name: "Candidato", value: candidate, color: "hsl(38, 92%, 50%)" },
+    { name: "Falso Positivo", value: falsePositive, color: "hsl(0, 84%, 60%)" },
+  ]
   const total = distributionData.reduce((sum, item) => sum + item.value, 0)
 
   return (
