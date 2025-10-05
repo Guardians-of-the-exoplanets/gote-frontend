@@ -97,6 +97,10 @@
   }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 /* Futuristic grid background with subtle glow */
 .cosmic-grid {
   background-color: oklch(0.05 0 0);
