@@ -21,12 +21,12 @@ export function ModelConfigSection() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Settings2 className="h-5 w-5 text-primary" />
-            <CardTitle className="text-2xl">Configuração do Modelo</CardTitle>
+            <CardTitle className="text-2xl">Model Configuration</CardTitle>
           </div>
           <CardDescription>
             {mode === "explorer"
-              ? "Ajuste os hiperparâmetros do modelo de machine learning para otimizar a classificação"
-              : "Arquitetura multi-branch (Transformer 1D + CNN 2D + MLP) com physics-informed constraints"}
+              ? "Tune model hyperparameters to optimize classification"
+              : "Multi‑branch architecture (1D Transformer + 2D CNN + MLP) with physics‑informed constraints"}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -35,11 +35,11 @@ export function ModelConfigSection() {
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="architecture" className="flex items-center gap-2">
                   <Layers className="h-4 w-4" />
-                  Arquitetura
+                  Architecture
                 </TabsTrigger>
                 <TabsTrigger value="hyperparams" className="flex items-center gap-2">
                   <Settings2 className="h-4 w-4" />
-                  Hiperparâmetros
+                  Hyperparameters
                 </TabsTrigger>
                 {/* <TabsTrigger value="training" className="flex items-center gap-2">
                   <Zap className="h-4 w-4" />
@@ -54,25 +54,21 @@ export function ModelConfigSection() {
                       <div className="h-2 w-2 rounded-full bg-primary"></div>
                       Transformer 1D
                     </h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      Análise temporal de light curves com attention mechanism
-                    </p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">Temporal analysis of light curves with attention mechanism</p>
                   </div>
                   <div className="p-3 border border-accent/30 rounded-lg bg-accent/5">
                     <h4 className="font-semibold mb-2 flex items-center gap-2">
                       <div className="h-2 w-2 rounded-full bg-accent"></div>
                       CNN 2D
                     </h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      Extração de features espaciais de phase-folded views
-                    </p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">Spatial feature extraction from phase‑folded views</p>
                   </div>
                   <div className="p-3 border border-secondary/30 rounded-lg bg-secondary/5">
                     <h4 className="font-semibold mb-2 flex items-center gap-2">
                       <div className="h-2 w-2 rounded-full bg-secondary"></div>
                       MLP Fusion
                     </h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed">Combinação de features + metadados estelares</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">Fusion of features + stellar metadata</p>
                   </div>
                 </div>
               </TabsContent>
@@ -83,19 +79,14 @@ export function ModelConfigSection() {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Label htmlFor="numTrees" className="text-sm font-medium">
-                          Número de Árvores
-                        </Label>
+                        <Label htmlFor="numTrees" className="text-sm font-medium">Number of Trees</Label>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger>
                               <Info className="h-3.5 w-3.5 text-muted-foreground" />
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p className="max-w-xs text-xs">
-                                Quantidade de árvores de decisão no ensemble. Mais árvores geralmente melhoram a
-                                precisão, mas aumentam o tempo de treinamento.
-                              </p>
+                              <p className="max-w-xs text-xs">Number of decision trees in the ensemble. More trees generally improve accuracy but increase training time.</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -121,19 +112,14 @@ export function ModelConfigSection() {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Label htmlFor="learningRate" className="text-sm font-medium">
-                          Taxa de Aprendizado
-                        </Label>
+                        <Label htmlFor="learningRate" className="text-sm font-medium">Learning Rate</Label>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger>
                               <Info className="h-3.5 w-3.5 text-muted-foreground" />
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p className="max-w-xs text-xs">
-                                Controla o tamanho dos passos durante o treinamento. Valores menores são mais estáveis,
-                                mas requerem mais épocas.
-                              </p>
+                              <p className="max-w-xs text-xs">Controls the step size during training. Lower values are more stable but require more epochs.</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -159,19 +145,14 @@ export function ModelConfigSection() {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Label htmlFor="epochs" className="text-sm font-medium">
-                          Épocas de Treinamento
-                        </Label>
+                        <Label htmlFor="epochs" className="text-sm font-medium">Training Epochs</Label>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger>
                               <Info className="h-3.5 w-3.5 text-muted-foreground" />
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p className="max-w-xs text-xs">
-                                Número de vezes que o modelo verá todo o dataset durante o treinamento. Mais épocas
-                                podem melhorar o aprendizado.
-                              </p>
+                              <p className="max-w-xs text-xs">Number of times the model sees the entire dataset during training. More epochs can improve learning.</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -223,19 +204,14 @@ export function ModelConfigSection() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Label htmlFor="numTrees" className="text-sm font-medium">
-                      Número de Árvores
-                    </Label>
+                    <Label htmlFor="numTrees" className="text-sm font-medium">Number of Trees</Label>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>
                           <Info className="h-3.5 w-3.5 text-muted-foreground" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p className="max-w-xs text-xs">
-                            Quantidade de árvores de decisão no ensemble. Mais árvores geralmente melhoram a precisão,
-                            mas aumentam o tempo de treinamento.
-                          </p>
+                          <p className="max-w-xs text-xs">Number of decision trees in the ensemble. More trees generally improve accuracy but increase training time.</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -261,19 +237,14 @@ export function ModelConfigSection() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Label htmlFor="learningRate" className="text-sm font-medium">
-                      Taxa de Aprendizado
-                    </Label>
+                    <Label htmlFor="learningRate" className="text-sm font-medium">Learning Rate</Label>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>
                           <Info className="h-3.5 w-3.5 text-muted-foreground" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p className="max-w-xs text-xs">
-                            Controla o tamanho dos passos durante o treinamento. Valores menores são mais estáveis, mas
-                            requerem mais épocas.
-                          </p>
+                          <p className="max-w-xs text-xs">Controls the step size during training. Lower values are more stable but require more epochs.</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -299,19 +270,14 @@ export function ModelConfigSection() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Label htmlFor="epochs" className="text-sm font-medium">
-                      Épocas de Treinamento
-                    </Label>
+                    <Label htmlFor="epochs" className="text-sm font-medium">Training Epochs</Label>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>
                           <Info className="h-3.5 w-3.5 text-muted-foreground" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p className="max-w-xs text-xs">
-                            Número de vezes que o modelo verá todo o dataset durante o treinamento. Mais épocas podem
-                            melhorar o aprendizado.
-                          </p>
+                          <p className="max-w-xs text-xs">Number of times the model sees the entire dataset during training. More epochs can improve learning.</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -337,18 +303,18 @@ export function ModelConfigSection() {
 
           {/* Configuration Summary */}
           <div className="mt-8 p-4 bg-muted/50 rounded-lg border border-border">
-            <h4 className="text-sm font-medium mb-3">Resumo da Configuração</h4>
+            <h4 className="text-sm font-medium mb-3">Configuration Summary</h4>
             <div className="grid grid-cols-3 gap-4 text-sm">
               <div>
-                <span className="text-muted-foreground">Árvores:</span>{" "}
+                <span className="text-muted-foreground">Trees:</span>{" "}
                 <span className="font-mono font-medium">{numTrees[0]}</span>
               </div>
               <div>
-                <span className="text-muted-foreground">Taxa:</span>{" "}
+                <span className="text-muted-foreground">Learning rate:</span>{" "}
                 <span className="font-mono font-medium">{learningRate[0].toFixed(3)}</span>
               </div>
               <div>
-                <span className="text-muted-foreground">Épocas:</span>{" "}
+                <span className="text-muted-foreground">Epochs:</span>{" "}
                 <span className="font-mono font-medium">{epochs[0]}</span>
               </div>
             </div>
