@@ -31,7 +31,7 @@ export function ClassificationDistributionChart() {
         <CardTitle className="text-lg">Distribuição de Classificações</CardTitle>
         <CardDescription className="text-xs">Total de {total} objetos classificados</CardDescription>
       </CardHeader>
-      <CardContent className="overflow-hidden">
+      <CardContent className="overflow-hidden w-full">
         <ChartContainer
           config={{
             confirmed: {
@@ -47,7 +47,7 @@ export function ClassificationDistributionChart() {
               color: "hsl(0, 84%, 60%)",
             },
           }}
-          className="h-[350px]"
+          className="h-[350px] w-full"
         >
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -103,10 +103,10 @@ export function ClassificationDistributionChart() {
           </ResponsiveContainer>
         </ChartContainer>
 
-        <div className="mt-6 grid grid-cols-3 gap-4">
+        <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-4">
           {distributionData.map((item) => (
-            <div key={item.name} className="p-3 bg-card border border-border rounded-lg text-center overflow-hidden">
-              <div className="text-2xl font-bold font-mono" style={{ color: item.color }}>
+            <div key={item.name} className="p-2 sm:p-3 bg-card border border-border rounded-lg text-center overflow-hidden">
+              <div className="text-xl sm:text-2xl font-bold font-mono" style={{ color: item.color }}>
                 {item.value}
               </div>
               <div className="text-xs text-muted-foreground mt-1 truncate">{item.name}</div>

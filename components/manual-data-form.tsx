@@ -24,7 +24,8 @@ interface PredictionResult {
 
 export function ManualDataForm({ showSubmit = true, formId = "data-input-form", dataset = "kepler", onChangeRaw, hyperparameters }: { showSubmit?: boolean; formId?: string; dataset?: "kepler" | "k2" | "tess"; onChangeRaw?: (raw: any) => void; hyperparameters?: any }) {
   const { mode } = useMode()
-  const { planetData, setPlanetData, prediction, setPrediction, setIsProcessing, setStreamSteps, setStreamPredictions, setRunMeta, useHyperparams } = usePlanetData()
+  const { planetData, setPlanetData, prediction, setPrediction, setIsProcessing, setStreamSteps, setStreamPredictions, setRunMeta, useHyperparams, setResearchMetrics } = usePlanetData()
+  const { pushDebugEvent } = usePlanetData() as any
 
   const [formData, setFormData] = useState<Record<string, string>>({})
 
@@ -161,6 +162,7 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
       // Seed Step 1 immediately for better feedback
       stepStart[1] = Date.now()
       setStreamSteps([{ step: 1, status: 'Validating input', startedAt: stepStart[1] }])
+      lastStep = 1
 
       const response = await fetch("https://gote-backend.onrender.com/stream/exoplanet", {
         method: "POST",
@@ -197,38 +199,69 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
         for (const raw of parts) {
           const line = raw.trim()
           if (!line.startsWith("data:")) continue
-          const data = line.replace("data:", "").trim()
+          const payload = line.replace("data:", "").trim()
           // eslint-disable-next-line no-console
-          console.log("STREAM_MANUAL:", data)
+          console.log("STREAM_MANUAL:", payload)
           try {
-            const json = JSON.parse(data)
-            if (typeof json.step === "number" && typeof json.status === "string") {
-              const now = Date.now()
-              if (lastStep > 0 && json.step > lastStep) {
-                maybeFinishStep(lastStep, now)
+            const parsed = JSON.parse(payload)
+            pushDebugEvent?.({ ts: Date.now(), from: 'manual', raw: payload, json: parsed, step: parsed.step, status: parsed.status })
+          } catch {
+            pushDebugEvent?.({ ts: Date.now(), from: 'manual', raw: payload })
+          }
+          const candidates = payload.split(/\n+/).map((s)=>s.trim()).filter(Boolean)
+          for (const piece of candidates) {
+            try {
+              const json = JSON.parse(piece)
+              if (typeof json.step === "number" && typeof json.status === "string") {
+                const now = Date.now()
+                if (lastStep > 0 && json.step > lastStep) {
+                  maybeFinishStep(lastStep, now)
+                }
+                if (!stepStart[json.step]) stepStart[json.step] = now
+                lastStep = Math.max(lastStep, json.step)
+                const doneHints = ["done", "completed", "finished"]
+                const lower = String(json.status).toLowerCase()
+                const isExplicitDone = Boolean(json.finished) || doneHints.some((h) => lower.includes(h))
+                setStreamSteps((prev) => [
+                  ...prev.filter((s) => s.step !== json.step),
+                  { step: json.step, status: json.status, startedAt: stepStart[json.step] },
+                ])
+                if (isExplicitDone) {
+                  maybeFinishStep(json.step, now)
+                }
               }
-              if (!stepStart[json.step]) stepStart[json.step] = now
-              lastStep = Math.max(lastStep, json.step)
-              const doneHints = ["done", "completed", "finished"]
-              const lower = String(json.status).toLowerCase()
-              const isExplicitDone = Boolean(json.finished) || doneHints.some((h) => lower.includes(h))
-              setStreamSteps((prev) => [
-                ...prev.filter((s) => s.step !== json.step),
-                { step: json.step, status: json.status, startedAt: stepStart[json.step] },
-              ])
-              if (isExplicitDone) {
-                maybeFinishStep(json.step, now)
+              if (json.details) {
+                try {
+                  const d = Array.isArray(json.details) ? json.details[0] : json.details
+                  const toNum = (v:any) => {
+                    const n = typeof v === 'number' ? v : Number(v)
+                    return Number.isFinite(n) ? n : undefined
+                  }
+                  const kfold = Array.isArray(d?.fold_metrics) ? d.fold_metrics.map((m:any)=>({
+                    fold: Number(m.fold) || 0,
+                    accuracy: toNum(m.accuracy),
+                    precision: toNum(m.precision),
+                    recall: toNum(m.recall),
+                    f1: toNum(m.f1_score ?? m.f1)
+                  })) : []
+                  setResearchMetrics((prev)=>({
+                    ...prev,
+                    numFeatures: toNum(d?.n_features) ?? prev.numFeatures,
+                    totalTrainingTimeMs: toNum(d?.total_time_ms) ?? prev.totalTrainingTimeMs,
+                    kFoldMetrics: kfold.length ? kfold : prev.kFoldMetrics
+                  }))
+                } catch {}
               }
-            }
-            if (Array.isArray(json.predictions)) {
-              setStreamPredictions(json.predictions as any)
-            }
-            if (json.prediction) {
-              setPrediction(json.prediction as any)
-            }
-            // allow UI to flush between very fast consecutive steps
-            await new Promise((r) => setTimeout(r, 0))
-          } catch {}
+              if (Array.isArray(json.predictions)) {
+                const preds:any[] = Array.isArray(json.predictions[0]) ? (json.predictions as any[]).flat() : (json.predictions as any[])
+                setStreamPredictions(preds)
+              }
+              if (json.prediction) {
+                setPrediction(json.prediction as any)
+              }
+            } catch {}
+          }
+          await new Promise((r) => setTimeout(r, 0))
         }
       }
       if (lastStep > 0) {

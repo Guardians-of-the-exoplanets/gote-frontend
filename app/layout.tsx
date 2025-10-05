@@ -9,9 +9,9 @@ import { ModeProvider } from "@/lib/mode-context"
 import { PlanetDataProvider } from "@/lib/planet-data-context"
 
 export const metadata: Metadata = {
-  title: "Guardians of The Exoplanets - Classificador Avançado de Exoplanetas",
+  title: "Guardians of The Exoplanets - Advanced Exoplanet Classifier",
   description:
-    "Plataforma híbrida para análise e classificação de dados de exoplanetas usando modelos de IA/ML de última geração com modos Explorador e Pesquisador",
+    "Hybrid platform for analyzing and classifying exoplanet data using state-of-the-art AI/ML models with Explorer and Researcher modes",
 }
 
 export default function RootLayout({
