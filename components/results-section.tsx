@@ -43,10 +43,11 @@ export function ResultsSection() {
 
   const comparisonGroups = useMemo(() => {
     if (!flatPreds || flatPreds.length === 0) return []
-    // Group by kepoi_name since each candidate has a unique KOI
+    // Group by kepoi_name (Kepler) or toi (TESS) since each candidate has a unique identifier
     const map = new Map<string, any[]>()
     for (const r of flatPreds) {
-      const key = String(r?.kepoi_name ?? r?.id ?? '')
+      // Support both Kepler (kepoi_name, id) and TESS (toi, tid) fields
+      const key = String(r?.kepoi_name ?? r?.toi ?? r?.id ?? r?.tid ?? '')
       if (!key) continue
       const arr = map.get(key) || []
       arr.push(r)
@@ -63,7 +64,8 @@ export function ResultsSection() {
     }> = []
     
     for (const [koi, rows] of map.entries()) {
-      const id = String(rows[0]?.id ?? '')
+      // Support both Kepler (id) and TESS (tid) fields
+      const id = String(rows[0]?.id ?? rows[0]?.tid ?? '')
       const oldRow = rows.find((r:any)=> 'old_classificacao' in (r||{}) || 'old_classification' in (r||{}))
       const newRow = rows.find((r:any)=> 'new_classificacao' in (r||{}) || 'new_classification' in (r||{}))
       
@@ -82,10 +84,11 @@ export function ResultsSection() {
 
   const groupedSummary = useMemo(() => {
     if (!flatPreds || flatPreds.length === 0) return []
-    // Group by kepoi_name
+    // Group by kepoi_name (Kepler) or toi (TESS)
     const map = new Map<string, any[]>()
     for (const r of flatPreds) {
-      const key = String(r?.kepoi_name ?? r?.id ?? '')
+      // Support both Kepler (kepoi_name, id) and TESS (toi, tid) fields
+      const key = String(r?.kepoi_name ?? r?.toi ?? r?.id ?? r?.tid ?? '')
       if (!key) continue
       const arr = map.get(key) || []
       arr.push(r)
@@ -93,7 +96,8 @@ export function ResultsSection() {
     }
     
     const arr = Array.from(map.entries()).map(([koi, rows]) => {
-      const id = String(rows[0]?.id ?? koi)
+      // Support both Kepler (id) and TESS (tid) fields
+      const id = String(rows[0]?.id ?? rows[0]?.tid ?? koi)
       const entries = rows.map((r:any)=>{
         const isOld = ('old_classificacao' in (r||{})) || ('old_classification' in (r||{}))
         const isNew = ('new_classificacao' in (r||{})) || ('new_classification' in (r||{}))
@@ -135,6 +139,7 @@ export function ResultsSection() {
   }
 
   // Debug: log data structure
+  // eslint-disable-next-line no-console
   console.log('[ResultsSection] 📊 Data counts:', {
     streamPredictions: streamPredictions?.length ?? 0,
     flatPreds: flatPreds.length,
@@ -142,38 +147,45 @@ export function ResultsSection() {
     groupedSummary: groupedSummary.length
   })
   if (streamPredictions && streamPredictions.length > 0) {
+    // eslint-disable-next-line no-console
     console.log('[ResultsSection] 📦 First streamPredictions item:', streamPredictions[0])
+    // eslint-disable-next-line no-console
     console.log('[ResultsSection] 📦 First flatPreds item:', flatPreds[0])
+    // eslint-disable-next-line no-console
+    console.log('[ResultsSection] 📦 Detected fields:', {
+      hasKeplerFields: 'kepoi_name' in (flatPreds[0] || {}),
+      hasTessFields: 'toi' in (flatPreds[0] || {}) || 'tid' in (flatPreds[0] || {}),
+      keys: Object.keys(flatPreds[0] || {})
+    })
+    // eslint-disable-next-line no-console
     console.log('[ResultsSection] 📦 comparisonGroups sample:', comparisonGroups[0])
+    // eslint-disable-next-line no-console
     console.log('[ResultsSection] 📦 groupedSummary sample:', groupedSummary[0])
   }
 
+  // Detect dataset type from first item
+  const isTessData = flatPreds.length > 0 && ('toi' in flatPreds[0] || 'tid' in flatPreds[0])
+  const candidateLabel = isTessData ? 'TOI' : 'KOI'
+
   return (
     <section id="results" className="scroll-mt-20 space-y-4">
-      {runMeta && (
-        <Card className="p-4 border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10">
-          <div className="flex flex-wrap gap-2 text-xs">
-            <span className={`inline-flex items-center px-2 py-0.5 rounded border ${runMeta.inputKind==='upload' ? 'border-primary/30 text-primary' : 'border-secondary/30 text-secondary'}`}>
-              {runMeta.inputKind === 'upload' ? 'Uploaded CSV' : 'Manual Input'}
-            </span>
-            <span className={`inline-flex items-center px-2 py-0.5 rounded border ${runMeta.hasHyperparams ? 'border-emerald-400/40 text-emerald-400' : 'border-amber-400/40 text-amber-400'}`}>
-              {runMeta.hasHyperparams ? 'With Hyperparameters' : 'Baseline'}
-            </span>
-            <span className="inline-flex items-center px-2 py-0.5 rounded border border-muted-foreground/30 text-muted-foreground">
-              {flatPreds.length} predictions • {comparisonGroups.length} compared • {groupedSummary.length} unique
-            </span>
-          </div>
-        </Card>
-      )}
       <Card className="rounded-xl border overflow-hidden">
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <CardTitle className="text-xl">Classification (Baseline vs Hyperparameters)</CardTitle>
-          </div>
-          <CardDescription>Latest model output per object: baseline vs tuned hyperparameters</CardDescription>
-          <div className="mt-2">
-            <Button variant="outline" size="sm" onClick={()=>setShowDebug((v)=>!v)} className="text-xs">{showDebug ? 'Hide' : 'Show'} Debug Stream</Button>
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <CardTitle className="text-xl">Classificações (Baseline vs Hiperparâmetros)</CardTitle>
+              </div>
+              <CardDescription className="mt-1">
+                Comparação detalhada: modelo baseline vs modelo com hiperparâmetros otimizados
+                {isTessData && <span className="ml-2 text-xs text-accent">(TESS)</span>}
+                {!isTessData && <span className="ml-2 text-xs text-accent">(Kepler)</span>}
+              </CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={()=>setShowDebug((v)=>!v)} className="text-xs">{showDebug ? 'Ocultar' : 'Mostrar'} Debug</Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -181,19 +193,19 @@ export function ResultsSection() {
             <table className="w-full text-sm">
               <thead className="bg-muted/50">
                 <tr>
-                  <th className="text-left p-3">Object ID</th>
-                  <th className="text-left p-3">KOI</th>
+                  <th className="text-left p-3">ID do Objeto</th>
+                  <th className="text-left p-3">{candidateLabel}</th>
                   <th className="text-left p-3">Baseline</th>
-                  <th className="text-right p-3">Baseline Prob</th>
-                  <th className="text-left p-3">With Hyperparams</th>
-                  <th className="text-right p-3">New Prob</th>
+                  <th className="text-right p-3">Prob. Baseline</th>
+                  <th className="text-left p-3">Com Hiperparâmetros</th>
+                  <th className="text-right p-3">Nova Prob.</th>
                 </tr>
               </thead>
                <tbody>
                  {comparisonGroups.length === 0 ? (
                    <tr>
                      <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                       No comparison data available. Upload a CSV with hyperparameters to see baseline vs tuned results.
+                       Nenhum dado de comparação disponível. Faça upload de um CSV com hiperparâmetros para ver resultados baseline vs otimizados.
                      </td>
                    </tr>
                  ) : (
@@ -240,27 +252,27 @@ export function ResultsSection() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            <CardTitle className="text-xl">Summary by Candidate</CardTitle>
+            <CardTitle className="text-xl">Resumo por Candidato</CardTitle>
           </div>
-          <CardDescription>Latest classification per object (records reflect baseline vs hyperparameters)</CardDescription>
+          <CardDescription>Última classificação por objeto (registros refletem baseline vs hiperparâmetros)</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-muted/50">
                 <tr>
-                  <th className="text-left p-3">Object ID</th>
-                  <th className="text-left p-3">Classification</th>
-                  <th className="text-right p-3">Records</th>
-                  <th className="text-right p-3">Avg Probability</th>
-                  <th className="text-right p-3">History</th>
+                  <th className="text-left p-3">ID do Objeto</th>
+                  <th className="text-left p-3">Classificação</th>
+                  <th className="text-right p-3">Registros</th>
+                  <th className="text-right p-3">Prob. Média</th>
+                  <th className="text-right p-3">Histórico</th>
                 </tr>
               </thead>
                <tbody>
                  {groupedSummary.length === 0 ? (
                    <tr>
                      <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                       No summary data available. Results will appear here after classification completes.
+                       Nenhum dado de resumo disponível. Os resultados aparecerão aqui após a classificação ser concluída.
                      </td>
                    </tr>
                  ) : (
@@ -282,7 +294,7 @@ export function ResultsSection() {
                        <tr
                          key={key}
                          className="border-t hover:bg-muted/30 cursor-pointer"
-                         title="Click to view candidate history"
+                         title="Clique para ver o histórico do candidato"
                          onClick={() => { setHistorySelection({ id: idVal, entries: g.entries }); setHistoryOpen(true) }}
                        >
                          <td className="p-3 font-mono">{idVal}</td>
@@ -300,7 +312,7 @@ export function ResultsSection() {
                          <td className="p-3 text-right">
                            <Button variant="ghost" size="sm" className="gap-1" onClick={(e)=>{ e.stopPropagation(); setHistorySelection({ id: idVal, entries: g.entries }); setHistoryOpen(true) }}>
                              <History className="h-3.5 w-3.5" />
-                             <span className="hidden sm:inline">History</span>
+                             <span className="hidden sm:inline">Histórico</span>
                              <ChevronRight className="h-3.5 w-3.5" />
                            </Button>
                          </td>
