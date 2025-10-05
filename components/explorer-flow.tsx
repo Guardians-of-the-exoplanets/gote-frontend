@@ -486,6 +486,7 @@ export function ExplorerFlow() {
             <ExportSection />
           </TabsContent>
         </Tabs>
+        <div id="pipeline-explorer" className="scroll-mt-20 space-y-6"></div>
     </div>
   )
 }

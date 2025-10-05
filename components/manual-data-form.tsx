@@ -65,10 +65,6 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
     setRunMeta({ inputKind: 'manual', hasHyperparams: mode === 'researcher' })
     setIsProcessing(true)
     // scroll to pipeline section smoothly if present
-    try {
-      document.querySelector('#pipeline')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    } catch {}
-    setError(null)
 
     try {
       const defs = getDatasetFields(dataset as DatasetKey)
@@ -190,6 +186,9 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
           })
         }
       }
+
+      console.log(`#pipeline-${mode}`, document.querySelector(`#pipeline-${mode}`));
+      document.querySelector(`#pipeline-${mode}`)?.scrollIntoView({ behavior: 'smooth'})
 
       while (true) {
         const { done, value } = await reader.read()

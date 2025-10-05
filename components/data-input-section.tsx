@@ -79,10 +79,7 @@ export function DataInputSection() {
 
           setRunMeta({ inputKind: 'upload', hasHyperparams: mode === 'researcher' })
           setIsProcessing(true)
-          // scroll to pipeline section smoothly if present
-          try {
-            document.querySelector('#pipeline')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-          } catch {}
+     
           const reader = response.body.getReader()
           const decoder = new TextDecoder()
           const stepStart: Record<number, number> = {}
@@ -105,6 +102,9 @@ export function DataInputSection() {
               })
             }
           }
+
+          console.log(`#pipeline-${mode}`, document.querySelector(`#pipeline-${mode}`));
+          document.querySelector(`#pipeline-${mode}`)?.scrollIntoView({ behavior: 'smooth'})
 
           while (true) {
             const { done, value } = await reader.read()

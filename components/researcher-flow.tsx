@@ -124,7 +124,7 @@ export function ResearcherFlow() {
               <div className={`w-full px-4 py-2 rounded-lg border transition-all ${canAccessPipeline ? "hover:bg-card/80" : "opacity-60"} data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/20 data-[state=active]:to-accent/20 data-[state=active]:border-primary/50`}>
                 <div className="flex items-center gap-2 justify-center">
                   <BarChart3 className="h-4 w-4" />
-                  <span className="text-xs md:text-sm">Resultados</span>
+                  <span className="text-xs md:text-sm">Results</span>
                 </div>
               </div>
             </TabsTrigger>
@@ -207,7 +207,7 @@ export function ResearcherFlow() {
                           )
                         })}
                     </div>
-                    <div className="mt-4 p-3 bg-muted/50 rounded-lg border border-border">
+                    <div className="p-3 bg-muted/50 rounded-lg border border-border">
                       <div className="grid grid-cols-3 gap-2 text-center">
                         <div>
                           <div className="text-lg font-bold text-primary">{streamSteps.filter(s=>s.durationMs!=null).length}/{streamSteps.length}</div>
@@ -393,6 +393,7 @@ export function ResearcherFlow() {
           )}
         </Tabs>
         )}
+        <div id="pipeline-researcher" className="scroll-mt-20 space-y-6"></div>
     </div>
   )
 }
