@@ -13,6 +13,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useMode } from "@/lib/mode-context"
 import { usePlanetData } from "@/lib/planet-data-context"
 import { motion } from "framer-motion"
+import { getDatasetFields, type DatasetKey } from "@/lib/dataset-fields"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface PredictionResult {
   classification: "Confirmado" | "Candidato" | "Falso Positivo"
@@ -20,47 +22,32 @@ interface PredictionResult {
   confidence: "Alta" | "Média" | "Baixa"
 }
 
-export function ManualDataForm({ showSubmit = true, formId = "data-input-form", dataset = "kepler", onChangeRaw }: { showSubmit?: boolean; formId?: string; dataset?: "kepler" | "k2" | "tess"; onChangeRaw?: (raw: any) => void }) {
+export function ManualDataForm({ showSubmit = true, formId = "data-input-form", dataset = "kepler", onChangeRaw, hyperparameters }: { showSubmit?: boolean; formId?: string; dataset?: "kepler" | "k2" | "tess"; onChangeRaw?: (raw: any) => void; hyperparameters?: any }) {
   const { mode } = useMode()
-  const { planetData, setPlanetData, prediction, setPrediction, setIsProcessing } = usePlanetData()
+  const { planetData, setPlanetData, prediction, setPrediction, setIsProcessing, setStreamSteps, setStreamPredictions } = usePlanetData()
 
-  const [formData, setFormData] = useState({
-    orbitalPeriod: "",
-    planetRadius: "",
-    equilibriumTemp: "",
-    stellarMagnitude: "",
-    transitDepth: "",
-    transitDuration: "",
-    signalToNoise: "",
-  })
+  const [formData, setFormData] = useState<Record<string, string>>({})
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (planetData.orbitalPeriod) {
-      setFormData({
-        orbitalPeriod: planetData.orbitalPeriod?.toString() || "",
-        planetRadius: planetData.planetRadius?.toString() || "",
-        equilibriumTemp: planetData.equilibriumTemp?.toString() || "",
-        stellarMagnitude: planetData.stellarMagnitude?.toString() || "",
-        transitDepth: planetData.transitDepth?.toString() || "",
-        transitDuration: planetData.transitDuration?.toString() || "",
-        signalToNoise: planetData.signalToNoise?.toString() || "",
-      })
-    }
-  }, [])
+    // Prefill required defaults (e.g., K2 soltype)
+    const defs = getDatasetFields(dataset as DatasetKey)
+    const initial: Record<string, string> = {}
+    defs.forEach((d) => {
+      if (d.defaultValue !== undefined) initial[d.key] = String(d.defaultValue)
+    })
+    setFormData(initial)
+  }, [dataset])
 
   const loadExampleData = () => {
-    setFormData({
-      orbitalPeriod: "10.5",
-      planetRadius: "1.2",
-      equilibriumTemp: "500",
-      stellarMagnitude: "12.0",
-      transitDepth: "0.01",
-      transitDuration: "3.5",
-      signalToNoise: "15.0",
+    const defs = getDatasetFields(dataset as DatasetKey)
+    const sample: Record<string, string> = {}
+    defs.forEach((d) => {
+      if (d.placeholder) sample[d.key] = d.placeholder
     })
+    setFormData(sample)
   }
 
   const handleChange = (field: string, value: string) => {
@@ -82,46 +69,115 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
     setError(null)
 
     try {
-      const numericData = {
-        orbitalPeriod: Number.parseFloat(formData.orbitalPeriod) || undefined,
-        planetRadius: Number.parseFloat(formData.planetRadius) || undefined,
-        equilibriumTemp: Number.parseFloat(formData.equilibriumTemp) || undefined,
-        stellarMagnitude: Number.parseFloat(formData.stellarMagnitude) || undefined,
-        transitDepth: Number.parseFloat(formData.transitDepth) || undefined,
-        transitDuration: Number.parseFloat(formData.transitDuration) || undefined,
-        signalToNoise: Number.parseFloat(formData.signalToNoise) || undefined,
-        mass: Number.parseFloat(formData.planetRadius)
-          ? Math.pow(Number.parseFloat(formData.planetRadius), 2.06)
-          : undefined,
-        density: Number.parseFloat(formData.planetRadius) ? 5.5 / Number.parseFloat(formData.planetRadius) : undefined,
-        stellarFlux: Number.parseFloat(formData.equilibriumTemp)
-          ? Math.pow(Number.parseFloat(formData.equilibriumTemp) / 255, 4)
-          : undefined,
-      }
-      setPlanetData(numericData)
+      const defs = getDatasetFields(dataset as DatasetKey)
+      const payloadData: Record<string, number | string> = {}
+      defs.forEach((d) => {
+        const raw = formData[d.key]
+        const valueToUse = (raw === undefined || raw === "") && d.defaultValue !== undefined ? String(d.defaultValue) : raw
+        if (valueToUse === undefined || valueToUse === "") return
+        if (d.type === "int") payloadData[d.key] = Number.parseInt(valueToUse)
+        else if (d.type === "float") payloadData[d.key] = Number.parseFloat(valueToUse)
+        else payloadData[d.key] = valueToUse
+      })
+      setPlanetData({})
 
-      // Console payload for integration
       const consolePayload = {
-        mode, // "explorer" | "researcher"
+        mode,
         dataset,
-        inputs: numericData,
+        data: payloadData,
       }
       // eslint-disable-next-line no-console
       console.log("CLASSIFY_JSON", consolePayload)
 
-      const response = await fetch("/api/classify", {
+      const defaultHyper = {
+        eval_metric: "mlogloss",
+        objective: "multi:softprob",
+        colsample_bytree: 0.8,
+        learning_rate: 0.1,
+        max_depth: 4,
+        n_estimators: 300,
+        subsample: 0.8,
+      }
+      const finalHyper = { ...defaultHyper, ...(hyperparameters || {}) }
+      const requestBody = { ...consolePayload, hyperparameters: finalHyper }
+      // eslint-disable-next-line no-console
+      console.log("STREAM_REQUEST_BODY", requestBody)
+
+      // Prepare streaming state like upload flow
+      const stepStart: Record<number, number> = {}
+      let lastStep = 0
+      setStreamSteps([])
+      setStreamPredictions([])
+
+      const response = await fetch("https://gote-backend.onrender.com/stream/exoplanet", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
+        body: JSON.stringify(requestBody),
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Classification failed")
+      if (!response.ok || !response.body) {
+        throw new Error("Streaming request failed")
+      }
+      // Handle SSE-like streamed progress (reuse pattern from upload path)
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ""
+      const maybeFinishStep = (stepNum: number, nowTs: number) => {
+        if (stepStart[stepNum]) {
+          const startedAt = stepStart[stepNum]
+          const durationMs = nowTs - startedAt
+          setStreamSteps((prev) => {
+            const others = prev.filter((s) => s.step !== stepNum)
+            const prevStatus = prev.find((s) => s.step === stepNum)?.status || `Step ${stepNum}`
+            return [...others, { step: stepNum, status: prevStatus, startedAt, finishedAt: nowTs, durationMs }]
+          })
+        }
       }
 
-      setPrediction(data.prediction)
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const parts = buffer.split("\n\n")
+        buffer = parts.pop() || ""
+        for (const raw of parts) {
+          const line = raw.trim()
+          if (!line.startsWith("data:")) continue
+          const data = line.replace("data:", "").trim()
+          // eslint-disable-next-line no-console
+          console.log("STREAM_MANUAL:", data)
+          try {
+            const json = JSON.parse(data)
+            if (typeof json.step === "number" && typeof json.status === "string") {
+              const now = Date.now()
+              if (lastStep > 0 && json.step > lastStep) {
+                maybeFinishStep(lastStep, now)
+              }
+              if (!stepStart[json.step]) stepStart[json.step] = now
+              lastStep = Math.max(lastStep, json.step)
+              const doneHints = ["done", "completed", "finished"]
+              const lower = String(json.status).toLowerCase()
+              const isExplicitDone = Boolean(json.finished) || doneHints.some((h) => lower.includes(h))
+              setStreamSteps((prev) => [
+                ...prev.filter((s) => s.step !== json.step),
+                { step: json.step, status: json.status, startedAt: stepStart[json.step] },
+              ])
+              if (isExplicitDone) {
+                maybeFinishStep(json.step, now)
+              }
+            }
+            if (Array.isArray(json.predictions)) {
+              setStreamPredictions(json.predictions as any)
+            }
+            if (json.prediction) {
+              setPrediction(json.prediction as any)
+            }
+          } catch {}
+        }
+      }
+      if (lastStep > 0) {
+        maybeFinishStep(lastStep, Date.now())
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred")
     } finally {
@@ -183,95 +239,17 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {[
-          {
-            id: "orbitalPeriod",
-            label: "Orbital Period",
-            required: true,
-            unit: "days",
-            placeholder: "10.5",
-            tooltip:
-              mode === "explorer"
-                ? "Time the planet takes to complete one orbit around its star (Earth year is 365 days)"
-                : "Time the planet takes to complete an orbit",
-          },
-          {
-            id: "planetRadius",
-            label: "Planet Radius",
-            required: true,
-            unit: "R⊕",
-            placeholder: "1.2",
-            tooltip:
-              mode === "explorer"
-                ? "Planet size compared to Earth. 1.0 = same as Earth, 2.0 = twice as large"
-                : "Planet radius relative to Earth",
-          },
-          {
-            id: "transitDuration",
-            label: "Transit Duration",
-            required: true,
-            unit: "hours",
-            placeholder: "3.5",
-            tooltip:
-              mode === "explorer"
-                ? "How long the planet takes to pass in front of the star, blocking part of its light"
-                : "Time the planet takes to cross the stellar disk",
-          },
-          {
-            id: "equilibriumTemp",
-            label: "Equilibrium Temperature",
-            required: false,
-            unit: "K",
-            placeholder: "500",
-            tooltip:
-              mode === "explorer"
-                ? "Estimated temperature at the planet surface (Earth ~288K or 15°C)"
-                : "Estimated surface temperature of the planet",
-          },
-          {
-            id: "stellarMagnitude",
-            label: "Stellar Magnitude",
-            required: false,
-            unit: "",
-            placeholder: "12.0",
-            tooltip:
-              mode === "explorer"
-                ? "How bright the star appears from Earth. Lower numbers = brighter"
-                : "Apparent brightness of the host star",
-          },
-          {
-            id: "transitDepth",
-            label: "Transit Depth",
-            required: false,
-            unit: "%",
-            placeholder: "0.01",
-            tooltip:
-              mode === "explorer"
-                ? "How much the star light drops when the planet transits"
-                : "Percent reduction in brightness during transit",
-          },
-          {
-            id: "signalToNoise",
-            label: "Signal-to-Noise Ratio",
-            required: false,
-            unit: "",
-            placeholder: "10.0",
-            tooltip:
-              mode === "explorer"
-                ? "Detection quality. Higher values = clearer and more reliable signal"
-                : "Detection quality of the transit signal",
-          },
-        ].map((field, index) => (
+        {getDatasetFields(dataset as DatasetKey).map((def, index) => (
           <motion.div
-            key={field.id}
+            key={def.key}
             initial={mode === "explorer" ? { opacity: 0, y: 20 } : false}
             animate={mode === "explorer" ? { opacity: 1, y: 0 } : false}
             transition={mode === "explorer" ? { delay: 0.1 + index * 0.05 } : undefined}
             className="space-y-2"
           >
             <div className="flex items-center gap-2">
-              <Label htmlFor={field.id} className="text-sm font-medium">
-                {field.label} {field.required && "*"}
+              <Label htmlFor={def.key} className="text-sm font-medium">
+                {def.name} {def.required && "*"}
               </Label>
               <TooltipProvider>
                 <Tooltip>
@@ -279,26 +257,44 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
                     <Info className="h-3.5 w-3.5 text-muted-foreground" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p className="max-w-xs text-xs">{field.tooltip}</p>
+                    <p className="max-w-xs text-xs">{def.description}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
             <div className="relative">
-              <Input
-                id={field.id}
-                type="number"
-                step={field.id === "transitDepth" ? "0.001" : field.id === "stellarMagnitude" ? "0.1" : "0.01"}
-                placeholder={field.placeholder}
-                value={formData[field.id as keyof typeof formData]}
-                onChange={(e) => handleChange(field.id, e.target.value)}
-                required={field.required}
-                className={field.unit ? "pr-16" : ""}
-              />
-              {field.unit && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                  {field.unit}
-                </span>
+              {def.type === "string" ? (
+                dataset === "k2" && def.key === "soltype" ? (
+                  <Select value={formData[def.key] || undefined} onValueChange={(v) => handleChange(def.key, v)}>
+                    <SelectTrigger id={def.key}>
+                      <SelectValue placeholder={def.placeholder || "Select"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Published Confirmed">Published Confirmed</SelectItem>
+                      <SelectItem value="Published Candidate">Published Candidate</SelectItem>
+                      <SelectItem value="TESS Project Candidate">TESS Project Candidate</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    id={def.key}
+                    type="text"
+                    placeholder={def.placeholder}
+                    value={formData[def.key] || ""}
+                    onChange={(e) => handleChange(def.key, e.target.value)}
+                    required={def.required}
+                  />
+                )
+              ) : (
+                <Input
+                  id={def.key}
+                  type="number"
+                  step={def.type === "int" ? "1" : "0.01"}
+                  placeholder={def.placeholder}
+                  value={formData[def.key] || ""}
+                  onChange={(e) => handleChange(def.key, e.target.value)}
+                  required={def.required}
+                />
               )}
             </div>
           </motion.div>
