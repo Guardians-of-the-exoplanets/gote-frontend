@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import { useMode } from "@/lib/mode-context"
 import { usePlanetData } from "@/lib/planet-data-context"
 import { DataInputSection } from "@/components/data-input-section"
@@ -13,7 +13,7 @@ import { VettingSection } from "@/components/vetting-section"
 import { Card } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { Microscope, BarChart3, FileOutput, History, ChevronRight } from "lucide-react"
+import { Microscope, BarChart3, FileOutput, History, ChevronRight, TrendingUp } from "lucide-react"
 import { AnalyticsDashboard } from "./analytics-dashboard"
 import { CandidateHistoryDialog } from "@/components/candidate-history-dialog"
 import { groupRowsById, normalizeId, normalizeClassification, normalizeProbability, normalizePubdate } from "@/lib/utils"
@@ -24,9 +24,38 @@ export function ResearcherFlow() {
   const [activeTab, setActiveTab] = useState("pipeline")
   const [historyOpen, setHistoryOpen] = useState(false)
   const [historySelection, setHistorySelection] = useState<{ id: string; entries: any[] } | null>(null)
+  const hasAutoSwitchedRef = useRef(false)
 
   const showTabs = true
 
+  // Auto-switch to results tab when pipeline completes (only once per run)
+  useEffect(() => {
+    // Only auto-switch if:
+    // 1. We haven't auto-switched yet for this run
+    // 2. We have predictions available
+    // 3. Processing is done
+    // 4. We're currently on the pipeline tab
+    if (
+      !hasAutoSwitchedRef.current &&
+      streamPredictions &&
+      Array.isArray(streamPredictions) &&
+      streamPredictions.length > 0 &&
+      !isProcessing &&
+      activeTab === "pipeline"
+    ) {
+      // eslint-disable-next-line no-console
+      console.log('[ResearcherFlow] 🎯 Auto-switching to Results tab')
+      setActiveTab("results")
+      hasAutoSwitchedRef.current = true
+    }
+  }, [streamPredictions, isProcessing, activeTab])
+
+  // Reset auto-switch flag when processing starts (new run)
+  useEffect(() => {
+    if (isProcessing) {
+      hasAutoSwitchedRef.current = false
+    }
+  }, [isProcessing])
 
   // Do not early-return before hooks; render null at the bottom if needed
 
@@ -120,7 +149,7 @@ export function ResearcherFlow() {
               <div className={`w-full px-4 py-2 rounded-lg border transition-all ${canAccessPipeline ? "hover:bg-card/80" : "opacity-60"} data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/20 data-[state=active]:to-accent/20 data-[state=active]:border-primary/50`}>
                 <div className="flex items-center gap-2 justify-center">
                   <BarChart3 className="h-4 w-4" />
-                  <span className="text-xs md:text-sm">Results</span>
+                  <span className="text-xs md:text-sm">Resultados</span>
                 </div>
               </div>
             </TabsTrigger>
@@ -129,10 +158,10 @@ export function ResearcherFlow() {
               value="analytics"
               className="flex items-center gap-2 py-3"
             >
-              <div className={`w-full px-4 py-2 rounded-lg border transition-all ${canAccessPipeline ? "hover:bg-card/80" : "opacity-60"} data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/20 data-[state=active]:to-accent/20 data-[state=active]:border-primary/50`}>
+              <div className={`w-full px-3 py-2 rounded-lg border-2 transition-all ${canAccessPipeline ? "hover:bg-accent/10 hover:border-accent/40" : "opacity-60"} data-[state=active]:bg-gradient-to-r data-[state=active]:from-accent/20 data-[state=active]:to-primary/20 data-[state=active]:border-accent/60 data-[state=active]:shadow-lg`}>
                 <div className="flex items-center gap-2 justify-center">
-                  <BarChart3 className="h-4 w-4" />
-                  <span className="text-xs md:text-sm">Analytics Dashboard</span>
+                  <TrendingUp className="h-4 w-4" />
+                  <span className="text-xs md:text-sm font-semibold">Analytics</span>
                 </div>
               </div>
             </TabsTrigger>
@@ -238,14 +267,19 @@ export function ResearcherFlow() {
 
           <TabsContent value="results" className="mt-6 space-y-8">
             {runMeta && (
-              <Card className="p-4 border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10">
+              <Card className="p-4 border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10 mb-6">
                 <div className="flex flex-wrap gap-2 text-xs">
                   <span className={`inline-flex items-center px-2 py-0.5 rounded border ${runMeta.inputKind==='upload' ? 'border-primary/30 text-primary' : 'border-secondary/30 text-secondary'}`}>
                     {runMeta.inputKind === 'upload' ? 'Uploaded CSV' : 'Manual Input'}
                   </span>
                   <span className={`inline-flex items-center px-2 py-0.5 rounded border ${runMeta.hasHyperparams ? 'border-emerald-400/40 text-emerald-400' : 'border-amber-400/40 text-amber-400'}`}>
-                    {runMeta.hasHyperparams ? 'With Hyperparameters' : 'Baseline'}
+                    {runMeta.hasHyperparams ? 'Com Hiperparâmetros' : 'Baseline'}
                   </span>
+                  {normalizedPredictions.length > 0 && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded border border-muted-foreground/30 text-muted-foreground">
+                      {normalizedPredictions.length} predições
+                    </span>
+                  )}
                 </div>
               </Card>
             )}
@@ -253,6 +287,34 @@ export function ResearcherFlow() {
           </TabsContent>
 
           <TabsContent value="analytics" className="mt-6 space-y-8">
+            <div className="mb-6 p-6 border-2 border-accent/30 rounded-xl bg-gradient-to-r from-accent/5 via-primary/5 to-accent/5 backdrop-blur-sm">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-accent/20 rounded-lg">
+                  <TrendingUp className="h-6 w-6 text-accent" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold">Analytics Dashboard</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Análise completa de métricas, performance e comparações do modelo
+                  </p>
+                </div>
+              </div>
+              {runMeta && (
+                <div className="flex flex-wrap gap-2 mt-4">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs border ${runMeta.inputKind==='upload' ? 'border-primary/40 bg-primary/10 text-primary' : 'border-secondary/40 bg-secondary/10 text-secondary'}`}>
+                    {runMeta.inputKind === 'upload' ? '📊 Upload CSV' : '✍️ Manual Input'}
+                  </span>
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs border ${runMeta.hasHyperparams ? 'border-emerald-400/40 bg-emerald-400/10 text-emerald-400' : 'border-amber-400/40 bg-amber-400/10 text-amber-400'}`}>
+                    {runMeta.hasHyperparams ? '⚡ Com Hiperparâmetros' : '📈 Baseline'}
+                  </span>
+                  {normalizedPredictions.length > 0 && (
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs border border-accent/40 bg-accent/10 text-accent">
+                      🎯 {normalizedPredictions.length} predições
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
             <AnalyticsDashboard />
           </TabsContent>
 
