@@ -187,10 +187,8 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
         }
       }
 
-      console.log(`#pipeline-${mode}`, document.querySelector(`#pipeline-${mode}`));
-      document.querySelector(`#pipeline-${mode}`)?.scrollIntoView({ behavior: 'smooth'})
-
       while (true) {
+        document.querySelector(`#pipeline-${mode}`)?.scrollIntoView({ behavior: 'smooth'})
         const { done, value } = await reader.read()
         if (done) break
         buffer += decoder.decode(value, { stream: true })
