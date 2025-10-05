@@ -208,7 +208,7 @@ export function ResearcherFlow() {
                       </tr>
                     </thead>
                     <tbody>
-                      {streamPredictions.map((row:any) => {
+                      {streamPredictions.map((row:any, idx:number) => {
                         const prob = Number(row.probabilidade)
                         const raw = String(row.classificacao ?? row.classification ?? '')
                         const norm = raw.toLowerCase().normalize('NFD').replace(/[^a-z ]/g,'')
@@ -218,8 +218,9 @@ export function ResearcherFlow() {
                           : cls === 'Candidate'
                           ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                           : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                        const key = String(row.id ?? row.object_id ?? row.koi ?? `${norm}-${prob}-${idx}`)
                         return (
-                          <tr key={row.id} className="border-t">
+                          <tr key={key} className="border-t">
                             <td className="p-3 font-mono">{row.id}</td>
                             <td className="p-3">
                               <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs ${badgeClass}`}>{cls}</span>
