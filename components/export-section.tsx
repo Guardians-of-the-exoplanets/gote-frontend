@@ -10,28 +10,28 @@ export function ExportSection() {
 
   const handleExportCSV = () => {
     toast({
-      title: "Exportando CSV",
-      description: "Seus resultados estão sendo preparados para download...",
+      title: "Exporting CSV",
+      description: "Preparing your results for download...",
     })
     // Simulate export
     setTimeout(() => {
       toast({
-        title: "CSV Exportado",
-        description: "O arquivo foi baixado com sucesso!",
+        title: "CSV Exported",
+        description: "The file has been downloaded successfully!",
       })
     }, 1500)
   }
 
   const handleExportPDF = () => {
     toast({
-      title: "Gerando PDF",
-      description: "Criando relatório completo com visualizações...",
+      title: "Generating PDF",
+      description: "Creating a complete report with visualizations...",
     })
     // Simulate export
     setTimeout(() => {
       toast({
-        title: "PDF Gerado",
-        description: "Relatório completo disponível para download!",
+        title: "PDF Ready",
+        description: "Full report available for download!",
       })
     }, 2000)
   }
@@ -40,8 +40,8 @@ export function ExportSection() {
     const shareableLink = `${typeof window !== "undefined" ? window.location.origin : ""}/share/${Math.random().toString(36).substring(7)}`
     navigator.clipboard.writeText(shareableLink)
     toast({
-      title: "Link Copiado",
-      description: "Link compartilhável copiado para a área de transferência!",
+      title: "Link Copied",
+      description: "Shareable link copied to clipboard!",
     })
   }
 
@@ -49,8 +49,8 @@ export function ExportSection() {
     <section id="export" className="scroll-mt-20">
       <Card className="gradient-border bg-card/50 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="text-3xl">Exportar Resultados</CardTitle>
-          <CardDescription className="text-base">Baixe suas análises ou compartilhe com sua equipe</CardDescription>
+          <CardTitle className="text-3xl">Export Results</CardTitle>
+          <CardDescription className="text-base">Download your analyses or share with your team</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -64,8 +64,8 @@ export function ExportSection() {
                 <Download className="h-6 w-6 text-white" />
               </div>
               <div className="text-center">
-                <div className="font-semibold text-base">Exportar CSV</div>
-                <div className="text-xs text-muted-foreground mt-1">Dados brutos para análise</div>
+                <div className="font-semibold text-base">Export CSV</div>
+                <div className="text-xs text-muted-foreground mt-1">Raw data for analysis</div>
               </div>
             </Button>
 
@@ -79,8 +79,8 @@ export function ExportSection() {
                 <FileText className="h-6 w-6 text-white" />
               </div>
               <div className="text-center">
-                <div className="font-semibold text-base">Exportar PDF</div>
-                <div className="text-xs text-muted-foreground mt-1">Relatório completo formatado</div>
+                <div className="font-semibold text-base">Export PDF</div>
+                <div className="text-xs text-muted-foreground mt-1">Formatted full report</div>
               </div>
             </Button>
 
@@ -94,8 +94,8 @@ export function ExportSection() {
                 <Share2 className="h-6 w-6 text-white" />
               </div>
               <div className="text-center">
-                <div className="font-semibold text-base">Compartilhar Link</div>
-                <div className="text-xs text-muted-foreground mt-1">Acesso colaborativo</div>
+                <div className="font-semibold text-base">Share Link</div>
+                <div className="text-xs text-muted-foreground mt-1">Collaborative access</div>
               </div>
             </Button>
           </div>
@@ -103,11 +103,8 @@ export function ExportSection() {
           <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-xl flex items-start gap-3">
             <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
             <div className="text-sm">
-              <p className="font-medium text-foreground mb-1">Dados Prontos para Exportação</p>
-              <p className="text-muted-foreground">
-                Todos os resultados da análise, visualizações e métricas estão disponíveis para download ou
-                compartilhamento.
-              </p>
+              <p className="font-medium text-foreground mb-1">Data Ready for Export</p>
+              <p className="text-muted-foreground">All analysis results, visualizations and metrics are available for download or sharing.</p>
             </div>
           </div>
         </CardContent>
