@@ -181,6 +181,18 @@ export function ResearcherFlow() {
                       .sort((a,b)=>a.step-b.step)
                       .map((s) => {
                         const done = typeof s.durationMs === 'number'
+                        if (s.step === 400) {
+                          return (
+                            <div key={s.step} className={`p-3 rounded-lg border transition-all border-destructive/30 bg-destructive/5 `}>
+                              <div className="flex items-center justify-between gap-3 min-w-0">
+                                <div className="min-w-0 flex-1">
+                                  <div className="text-xs text-muted-foreground">Error</div>
+                                  <div className="font-medium truncate">{s.status}</div>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        } else {
                         return (
                           <div key={s.step} className={`p-3 rounded-lg border transition-all ${done ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-sky-500/30 bg-sky-500/5'} `}>
                             <div className="flex items-center justify-between gap-3 min-w-0">
@@ -199,7 +211,7 @@ export function ResearcherFlow() {
                             </div>
                           </div>
                         )
-                      })}
+                      }})}
                   </div>
                   <div className="p-3 bg-muted/50 rounded-lg border border-border">
                     <div className="grid grid-cols-3 gap-2 text-center">
