@@ -30,6 +30,31 @@ export function ConfusionMatrix({
     return "bg-primary/10 text-muted-foreground"
   }
 
+  // Safety checks for invalid data
+  if (!matrix || !labels || matrix.length === 0 || labels.length === 0) {
+    return (
+      <Card className="bg-card/50">
+        <CardHeader>
+          <CardTitle className="text-lg">{title}</CardTitle>
+          <CardDescription className="text-xs">{description}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="p-8 text-center text-muted-foreground text-sm">
+            Sem dados de matriz de confusão disponíveis
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Helper function to safely get label
+  const getLabel = (index: number): string => {
+    if (labels && labels[index]) {
+      return labels[index].split(" ")[0]
+    }
+    return `Class ${index + 1}`
+  }
+
   return (
     <Card className="bg-card/50">
       <CardHeader>
@@ -40,9 +65,9 @@ export function ConfusionMatrix({
         <div className="space-y-2">
           <div className="grid grid-cols-4 gap-2">
             <div className="text-xs font-medium text-muted-foreground" />
-            {labels.map((label) => (
-              <div key={label} className="text-xs font-medium text-center text-muted-foreground">
-                {label.split(" ")[0]}
+            {labels.map((label, idx) => (
+              <div key={label || idx} className="text-xs font-medium text-center text-muted-foreground">
+                {label ? label.split(" ")[0] : `Class ${idx + 1}`}
               </div>
             ))}
           </div>
@@ -50,7 +75,7 @@ export function ConfusionMatrix({
           {matrix.map((row, i) => (
             <div key={i} className="grid grid-cols-4 gap-2">
               <div className="text-xs font-medium text-muted-foreground flex items-center">
-                {labels[i].split(" ")[0]}
+                {getLabel(i)}
               </div>
               {row.map((value, j) => (
                 <div

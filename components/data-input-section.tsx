@@ -9,7 +9,7 @@ import { ManualDataForm } from "@/components/manual-data-form"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { Info, Telescope } from "lucide-react"
-import { Upload, Edit3, Database, FileText, Rocket, ArrowLeft, ArrowRight } from "lucide-react"
+import { Upload, Edit3, Database, FileText, Rocket, ArrowLeft, ArrowRight, RotateCcw, Sparkles } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { useMode } from "@/lib/mode-context"
 import { usePlanetData } from "@/lib/planet-data-context"
@@ -35,7 +35,19 @@ export function DataInputSection() {
     subsample: 0.8,
   })
   const { mode } = useMode()
-          const { setIsProcessing, setStreamSteps, setStreamPredictions, setRunMeta, useHyperparams, setUseHyperparams, setResearchMetrics } = usePlanetData()
+          const { 
+            setIsProcessing, 
+            setStreamSteps, 
+            setStreamPredictions, 
+            setRunMeta, 
+            useHyperparams, 
+            setUseHyperparams, 
+            setResearchMetrics,
+            isProcessing,
+            prediction,
+            streamPredictions,
+            setPrediction
+          } = usePlanetData()
           const { pushDebugEvent } = usePlanetData() as any
 
   const handleStartBatchClassification = () => {
@@ -378,9 +390,86 @@ export function DataInputSection() {
     if (prev) setActiveStep(prev.id)
   }
 
+  // Detect if there are results (either prediction or streamPredictions)
+  const hasResults = prediction !== null || (streamPredictions && streamPredictions.length > 0)
+  
+  // Handle new classification - reset all states
+  const handleNewClassification = () => {
+    // Reset local states
+    setUploadedData(null)
+    setManualRaw(null)
+    setActiveStep("dataset")
+    setInputTab("manual")
+    
+    // Reset global states
+    setIsProcessing(false)
+    setPrediction(null)
+    setStreamSteps([])
+    setStreamPredictions([])
+    setRunMeta(null)
+    setResearchMetrics({
+      testAccuracy: 0,
+      testF1: 0,
+      testPrecision: 0,
+      testRecall: 0,
+      blindTestAccuracy: 0,
+      blindTestF1: 0,
+      blindPrecision: 0,
+      blindRecall: 0,
+      totalTrainingTimeMs: 0,
+      numFeatures: 0,
+      kFoldMetrics: [],
+      testConfusionMatrix: undefined,
+      blindTestConfusionMatrix: undefined,
+      labels: []
+    })
+    
+    // Reset form if it exists
+    const targetFormId = mode === "explorer" ? "explorer-data-form" : "researcher-data-form"
+    const form = document.getElementById(targetFormId) as HTMLFormElement | null
+    form?.reset()
+  }
+
   return (
     <section id="data" className="scroll-mt-20">
-      <Card className="gradient-border bg-card/50 backdrop-blur-sm">
+      <Card className="gradient-border bg-card/50 backdrop-blur-sm relative">
+        {/* Overlay with blur when results exist */}
+        {hasResults && !isProcessing && (
+          <div className="absolute inset-0 z-10 bg-background/80 backdrop-blur-md rounded-xl flex items-center justify-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center space-y-6 p-8 max-w-md mx-auto"
+            >
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 border-2 border-primary/30 shadow-lg">
+                <Sparkles className="h-10 w-10 text-primary animate-pulse" />
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                  Classification Complete!
+                </h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  Your results are ready below. Start a new classification to analyze more data.
+                </p>
+              </div>
+
+              <Button
+                size="lg"
+                onClick={handleNewClassification}
+                className="gap-2 bg-gradient-to-r from-primary via-accent to-secondary hover:opacity-90 shadow-lg glow-effect"
+              >
+                <RotateCcw className="h-5 w-5" />
+                New Classification
+              </Button>
+
+              <p className="text-xs text-muted-foreground">
+                This will reset all inputs and clear current results
+              </p>
+            </motion.div>
+          </div>
+        )}
+
         <CardHeader>
           <CardTitle className="text-2xl md:text-3xl">{title}</CardTitle>
           <CardDescription className="text-sm md:text-base">{description}</CardDescription>
