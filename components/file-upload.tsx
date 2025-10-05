@@ -58,7 +58,7 @@ export function FileUpload({ onDataUploaded, dataset = "kepler" }: FileUploadPro
       try {
         const content = e.target?.result as string
         const data = file.name.endsWith(".json") ? JSON.parse(content) : content
-        onDataUploaded(data)
+        onDataUploaded({ file, text: file.name.endsWith(".csv") ? content : undefined, json: file.name.endsWith(".json") ? data : undefined })
       } catch (error) {
         setUploadStatus("error")
       }
