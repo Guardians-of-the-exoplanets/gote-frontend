@@ -11,8 +11,8 @@ export interface DatasetFieldDef {
   placeholder?: string
   defaultValue?: string | number
   exampleValue?: string
-  min?: number
-  max?: number
+  min?: string
+  max?: string
 }
 
 const KEPLER_FIELDS: DatasetFieldDef[] = [
@@ -25,8 +25,8 @@ const KEPLER_FIELDS: DatasetFieldDef[] = [
     required: false,
     placeholder: "0 | 1",
     exampleValue: "1",
-    min: 0,
-    max: 1
+    min: "0",
+    max: "1"
   },
   {
     key: "koi_fpflag_nt",
@@ -37,8 +37,8 @@ const KEPLER_FIELDS: DatasetFieldDef[] = [
     required: false,
     placeholder: "0 | 1",
     exampleValue: "1",
-    min: 0,
-    max: 1
+    min: "0",
+    max: "1"
   },
   {
     key: "koi_fpflag_co",
@@ -49,8 +49,8 @@ const KEPLER_FIELDS: DatasetFieldDef[] = [
     required: false,
     placeholder: "0 | 1",
     exampleValue: "1",
-    min: 0,
-    max: 1
+    min: "0",
+    max: "1"
   },
   {
     key: "koi_fpflag_ec",
@@ -61,8 +61,8 @@ const KEPLER_FIELDS: DatasetFieldDef[] = [
     required: false,
     placeholder: "0 | 1",
     exampleValue: "1",
-    min: 0,
-    max: 1
+    min: "0",
+    max: "1"
   },
   {
     key: "koi_model_snr",
