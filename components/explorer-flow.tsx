@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { useMode } from "@/lib/mode-context"
 import { usePlanetData } from "@/lib/planet-data-context"
 import { DataInputSection } from "@/components/data-input-section"
@@ -8,14 +8,14 @@ import { ExplorerResultsSection } from "@/components/explorer-results-section"
 import { ExportSection } from "@/components/export-section"
 import dynamic from "next/dynamic"
 import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { CheckCircle2, Circle, BarChart3, Globe, Download, Database, SlidersHorizontal, Brain, ShieldCheck, Timer } from "lucide-react"
+import { CheckCircle2, Circle, BarChart3, Globe, Download, Database, SlidersHorizontal, Brain, ShieldCheck, Timer, History, ChevronRight } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Info } from "lucide-react"
 import { CandidateHistoryDialog } from "@/components/candidate-history-dialog"
 import { groupRowsById, normalizeId, normalizeClassification, normalizeProbability, normalizePubdate } from "@/lib/utils"
-import { useEffect } from "react"
 import {
   Pagination,
   PaginationContent,
@@ -33,7 +33,7 @@ const PlanetVisualization = dynamic(
 
 export function ExplorerFlow() {
   const { mode } = useMode()
-  const { prediction, planetData, streamSteps, streamPredictions, runMeta } = usePlanetData()
+  const { isProcessing, prediction, planetData, streamSteps, streamPredictions, runMeta } = usePlanetData()
   const [activeTab, setActiveTab] = useState("pipeline")
   const [historyOpen, setHistoryOpen] = useState(false)
   const [historySelection, setHistorySelection] = useState<{ id: string; entries: any[] } | null>(null)
@@ -53,6 +53,14 @@ export function ExplorerFlow() {
   }, [streamPredictions])
 
   const hasResults = prediction !== null || (normalizedPredictions && normalizedPredictions.length > 0)
+  const canAccessPipeline = isProcessing || hasResults
+
+  // Auto-activate pipeline tab when processing starts (mirror researcher behavior)
+  useEffect(() => {
+    if (isProcessing && activeTab !== "pipeline") {
+      setActiveTab("pipeline")
+    }
+  }, [isProcessing])
   const isSingleManualResult = Array.isArray(normalizedPredictions) && (
     (
       normalizedPredictions.length === 1 && !('id' in (normalizedPredictions[0] || {}))
@@ -168,6 +176,7 @@ export function ExplorerFlow() {
                 <TabsTrigger
                   value="pipeline"
                   className="flex items-center gap-2 py-3"
+                  disabled={!canAccessPipeline}
                 >
                   <div className={`w-full px-4 py-2 rounded-lg border transition-all hover:bg-card/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/20 data-[state=active]:to-accent/20 data-[state=active]:border-primary/50`}>
                     <div className="flex items-center gap-2 justify-center">
@@ -204,15 +213,16 @@ export function ExplorerFlow() {
                 </TabsTrigger>
           </TabsList>
 
-          {!hasResults && (
+          {!canAccessPipeline && (
             <div className="mt-4 text-center">
               <div className="inline-flex flex-col items-center gap-2 p-4 border rounded-xl bg-card/60 shadow-sm">
                 <Info className="h-5 w-5 text-primary" />
-                <p className="text-sm text-muted-foreground">Complete dataset selection and data entry to unlock results.</p>
+                <p className="text-sm text-muted-foreground">Conclua as etapas de seleção de dataset, entrada e configuração do modelo para iniciar o pipeline.</p>
               </div>
             </div>
           )}
 
+          {canAccessPipeline && (
           <TabsContent value="pipeline" className="mt-6">
             {/* Anchor to ensure smooth scroll lands in Explorer too */}
             <div id="pipeline" className="h-0" />
@@ -287,6 +297,7 @@ export function ExplorerFlow() {
 
             </div>
           </TabsContent>
+          )}
 
           <TabsContent value="results" className="mt-6">
             <Card className="p-6 border-accent/30 bg-accent/5 mb-4">
@@ -304,6 +315,11 @@ export function ExplorerFlow() {
                       {runMeta.hasHyperparams ? 'With Hyperparameters' : 'Baseline'}
                     </span>
                   </div>
+                )}
+                {runMeta?.inputKind === 'upload' && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    We grouped duplicate rows by <span className="font-medium text-foreground">Object ID</span>. The <span className="font-medium text-foreground">Records</span> column shows how many entries each candidate has. Click any row to open the candidate history and see all records; the table shows the latest classification per candidate.
+                  </p>
                 )}
               </div>
             </Card>
@@ -347,7 +363,9 @@ export function ExplorerFlow() {
                     <tr>
                       <th className="text-left p-3">Object ID</th>
                       <th className="text-left p-3">Classification</th>
-                      <th className="text-right p-3">Probability</th>
+                      <th className="text-right p-3">Records</th>
+                      <th className="text-right p-3">Avg Probability</th>
+                      <th className="text-right p-3">History</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -355,6 +373,11 @@ export function ExplorerFlow() {
                       const idVal = g.id
                       const cls = g.latest.classification as 'Confirmed' | 'Candidate' | 'False Positive'
                       const prob = g.latest.probability as number
+                      const avgProb = (() => {
+                        const vals = (g.entries || []).map((e:any)=> Number(e.probability) || 0)
+                        const n = Math.max(1, vals.length)
+                        return vals.reduce((a:number,b:number)=>a+b,0) / n
+                      })()
                       const badgeClass = cls === 'Confirmed'
                         ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                         : cls === 'Candidate'
@@ -365,22 +388,27 @@ export function ExplorerFlow() {
                         <tr
                           key={key}
                           className="border-t hover:bg-muted/30 cursor-pointer"
+                          title="Click to view candidate history"
                           onClick={() => { setHistorySelection({ id: idVal, entries: g.entries }); setHistoryOpen(true) }}
                         >
                           <td className="p-3 font-mono">{idVal}</td>
                           <td className="p-3">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs ${badgeClass}`}>{cls}</span>
-                            {g.entries.length > 1 && (
-                              <span className="ml-2 text-xs text-muted-foreground">{g.entries.length}×</span>
-                            )}
                           </td>
-                          <td className="p-3">
-                            <div className="flex items-center gap-2">
-                              <div className="relative w-full h-2 bg-muted rounded">
-                                <div className="absolute left-0 top-0 h-2 rounded bg-primary/80" style={{ width: `${prob}%` }} />
-                              </div>
-                              <span className="text-right w-16 font-mono">{Number.isFinite(prob) ? prob.toFixed(2) : '—'}%</span>
-                            </div>
+                          <td className="p-3 text-right">
+                            <span className="inline-flex items-center justify-center min-w-8 px-2 py-0.5 rounded-md border bg-card/70 text-xs">
+                              {g.entries.length}
+                            </span>
+                          </td>
+                          <td className="p-3 text-right">
+                            <span className="font-mono">{Number.isFinite(avgProb) ? avgProb.toFixed(2) : '—'}%</span>
+                          </td>
+                          <td className="p-3 text-right">
+                            <Button variant="ghost" size="sm" className="gap-1" onClick={(e)=>{ e.stopPropagation(); setHistorySelection({ id: idVal, entries: g.entries }); setHistoryOpen(true) }}>
+                              <History className="h-3.5 w-3.5" />
+                              <span className="hidden sm:inline">History</span>
+                              <ChevronRight className="h-3.5 w-3.5" />
+                            </Button>
                           </td>
                         </tr>
                       )

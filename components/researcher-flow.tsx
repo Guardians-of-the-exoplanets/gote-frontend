@@ -14,8 +14,8 @@ import { ExportSection } from "@/components/export-section"
 import { VettingSection } from "@/components/vetting-section"
 import { Card } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Microscope, BarChart3, FileOutput, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Microscope, BarChart3, FileOutput, Sparkles, History, ChevronRight } from "lucide-react"
 import { AnalyticsDashboard } from "./analytics-dashboard"
 import { CandidateHistoryDialog } from "@/components/candidate-history-dialog"
 import { groupRowsById, normalizeId, normalizeClassification, normalizeProbability, normalizePubdate } from "@/lib/utils"
@@ -257,6 +257,13 @@ export function ResearcherFlow() {
                   </div>
                 </Card>
               )}
+              {runMeta?.inputKind === 'upload' && (
+                <Card className="p-4 border-border/50 bg-card/60">
+                  <div className="text-xs text-muted-foreground">
+                    We grouped duplicate rows by <span className="font-medium text-foreground">Object ID</span>. The <span className="font-medium text-foreground">Records</span> column shows how many entries each candidate has. Click a row to open the candidate history and review all records; the table displays the latest classification per candidate.
+                  </div>
+                </Card>
+              )}
               {isComparison ? (
                 (() => {
                   const oldItem:any = normalizedPredictions.find((x:any) => 'old_classificacao' in x || 'old_probabilidade' in x)
@@ -300,7 +307,9 @@ export function ResearcherFlow() {
                       <tr>
                         <th className="text-left p-3">Object ID</th>
                         <th className="text-left p-3">Classification</th>
-                        <th className="text-right p-3">Probability</th>
+                        <th className="text-right p-3">Records</th>
+                        <th className="text-right p-3">Avg Probability</th>
+                        <th className="text-right p-3">History</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -308,6 +317,11 @@ export function ResearcherFlow() {
                         const idVal = g.id
                         const cls = g.latest.classification as 'Confirmed' | 'Candidate' | 'False Positive'
                         const prob = g.latest.probability as number
+                        const avgProb = (() => {
+                          const vals = (g.entries || []).map((e:any)=> Number(e.probability) || 0)
+                          const n = Math.max(1, vals.length)
+                          return vals.reduce((a:number,b:number)=>a+b,0) / n
+                        })()
                         const badgeClass = cls === 'Confirmed'
                           ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                           : cls === 'Candidate'
@@ -318,22 +332,27 @@ export function ResearcherFlow() {
                           <tr
                             key={key}
                             className="border-t hover:bg-muted/30 cursor-pointer"
+                            title="Click to view candidate history"
                             onClick={() => { setHistorySelection({ id: idVal, entries: g.entries }); setHistoryOpen(true) }}
                           >
                             <td className="p-3 font-mono">{idVal}</td>
                             <td className="p-3">
                               <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs ${badgeClass}`}>{cls}</span>
-                              {g.entries.length > 1 && (
-                                <span className="ml-2 text-xs text-muted-foreground">{g.entries.length}×</span>
-                              )}
                             </td>
-                            <td className="p-3">
-                              <div className="flex items-center gap-2">
-                                <div className="relative w-full h-2 bg-muted rounded">
-                                  <div className="absolute left-0 top-0 h-2 rounded bg-primary/80" style={{ width: `${prob}%` }} />
-                                </div>
-                                <span className="text-right w-16 font-mono">{Number.isFinite(prob) ? prob.toFixed(2) : '—'}%</span>
-                              </div>
+                            <td className="p-3 text-right">
+                              <span className="inline-flex items-center justify-center min-w-8 px-2 py-0.5 rounded-md border bg-card/70 text-xs">
+                                {g.entries.length}
+                              </span>
+                            </td>
+                            <td className="p-3 text-right">
+                              <span className="font-mono">{Number.isFinite(avgProb) ? avgProb.toFixed(2) : '—'}%</span>
+                            </td>
+                            <td className="p-3 text-right">
+                              <Button variant="ghost" size="sm" className="gap-1" onClick={(e)=>{ e.stopPropagation(); setHistorySelection({ id: idVal, entries: g.entries }); setHistoryOpen(true) }}>
+                                <History className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline">History</span>
+                                <ChevronRight className="h-3.5 w-3.5" />
+                              </Button>
                             </td>
                           </tr>
                         )
