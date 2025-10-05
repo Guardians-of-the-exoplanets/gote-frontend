@@ -2,7 +2,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart3, TrendingUp, Target, Zap, Activity } from "lucide-react"
-import { FeatureImportanceChart } from "@/components/feature-importance-chart"
 import { PerformanceMetricsChart } from "@/components/performance-metrics-chart"
 import { useMode } from "@/lib/mode-context"
 import { usePlanetData } from "@/lib/planet-data-context"
@@ -439,11 +438,6 @@ export function AnalyticsDashboard() {
           labels={researchMetrics.labels || ["Confirmado", "Candidato", "Falso Positivo"]}
           accuracy={researchMetrics.blindTestAccuracy}
         />
-      </div>
-
-      {/* 3) Importância das Features - Full Width */}
-      <div className="w-full">
-        <FeatureImportanceChart />
       </div>
     </section>
   )

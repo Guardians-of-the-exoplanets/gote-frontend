@@ -312,11 +312,11 @@ export function ResearcherFlow() {
 
                 {/* Technical Step Breakdown */}
                 <div className="grid gap-3">
-                  {streamSteps
-                    .slice()
-                    .sort((a,b)=>a.step-b.step)
+                    {streamSteps
+                      .slice()
+                      .sort((a,b)=>a.step-b.step)
                     .map((s, idx) => {
-                      const done = typeof s.durationMs === 'number'
+                        const done = typeof s.durationMs === 'number'
                       const isActive = idx === streamSteps.filter(st=>st.durationMs!=null).length && !done
                       const isError = s.step === 400
                       
@@ -343,13 +343,13 @@ export function ResearcherFlow() {
                       
                       const meta = getStepMeta()
                       
-                      return (
+                        return (
                         <Card 
                           key={s.step}
                           className={`
                             transition-all duration-300 border-l-4
                             ${isError 
-                              ? 'border-l-red-500 bg-red-500/5' 
+                              ? 'border-l-red-500 bg-red-500/10 shadow-lg' 
                               : done 
                               ? 'border-l-emerald-500 bg-emerald-500/5' 
                               : isActive 
@@ -364,27 +364,35 @@ export function ResearcherFlow() {
                               <div className="flex-shrink-0">
                                 <div className={`
                                   p-3 rounded-lg transition-all
-                                  ${done 
+                                  ${isError
+                                    ? 'bg-red-500/20 text-red-500'
+                                    : done 
                                     ? 'bg-emerald-500/20 text-emerald-500' 
                                     : isActive 
                                     ? 'bg-primary/20 text-primary' 
                                     : 'bg-muted text-muted-foreground'
                                   }
                                 `}>
-                                  {done ? <CheckCircle2 className="h-4 w-4" /> : isError ? <AlertCircle className="h-4 w-4" /> : meta.icon}
+                                  {isError ? <AlertCircle className="h-4 w-4" /> : done ? <CheckCircle2 className="h-4 w-4" /> : meta.icon}
                                 </div>
                               </div>
 
                               {/* Step Info */}
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-wider">
+                                  <span className={`text-[10px] font-mono font-bold uppercase tracking-wider ${isError ? 'text-red-500' : 'text-muted-foreground'}`}>
                                     STEP {s.step}
                                   </span>
-                                  <Badge variant="outline" className={`text-[9px] font-mono ${meta.color} border-current`}>
-                                    {meta.category}
-                                  </Badge>
-                                  {isActive && (
+                                  {isError ? (
+                                    <Badge variant="outline" className="text-[9px] font-mono text-red-500 border-red-500">
+                                      ERROR
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="outline" className={`text-[9px] font-mono ${meta.color} border-current`}>
+                                      {meta.category}
+                                    </Badge>
+                                  )}
+                                  {isActive && !isError && (
                                     <div className="flex items-center gap-1">
                                       <span className="relative flex h-2 w-2">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
@@ -394,9 +402,15 @@ export function ResearcherFlow() {
                                     </div>
                                   )}
                                 </div>
-                                <div className="font-medium text-sm text-foreground mb-1">{s.status}</div>
+                                <div className={`font-medium text-sm mb-1 ${isError ? 'text-red-500' : 'text-foreground'}`}>{s.status}</div>
                                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                  {done && (
+                                  {isError && (
+                                    <span className="flex items-center gap-1 text-red-500">
+                                      <AlertCircle className="h-3 w-3" />
+                                      <span>Invalid file format for selected dataset</span>
+                                    </span>
+                                  )}
+                                  {done && !isError && (
                                     <>
                                       <span className="flex items-center gap-1">
                                         <Clock className="h-3 w-3" />
@@ -408,7 +422,7 @@ export function ResearcherFlow() {
                                       </span>
                                     </>
                                   )}
-                                  {isActive && (
+                                  {isActive && !isError && (
                                     <span className="flex items-center gap-1 text-primary">
                                       <Activity className="h-3 w-3 animate-pulse" />
                                       <span>Processing...</span>
@@ -422,7 +436,7 @@ export function ResearcherFlow() {
                                 <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                                   <div 
                                     className={`h-full transition-all duration-500 ${
-                                      done ? 'bg-emerald-500 w-full' : isActive ? 'bg-primary w-3/4 animate-pulse' : 'w-0'
+                                      isError ? 'bg-red-500 w-full' : done ? 'bg-emerald-500 w-full' : isActive ? 'bg-primary w-3/4 animate-pulse' : 'w-0'
                                     }`} 
                                   />
                                 </div>
@@ -430,9 +444,9 @@ export function ResearcherFlow() {
                             </div>
                           </div>
                         </Card>
-                      )
-                    })}
-                </div>
+                        )
+                      })}
+                  </div>
 
                 {/* Technical Summary Footer */}
                 <Card className="border-accent/30 bg-gradient-to-r from-accent/5 to-primary/5">
@@ -518,7 +532,7 @@ export function ResearcherFlow() {
                         <p className="text-xs text-muted-foreground">Model predictions • Confidence scores • Comparative analysis</p>
                       </div>
                     </div>
-                  </div>
+                        </div>
                   
                   {runMeta && (
                     <div className="flex flex-wrap items-center gap-2">
@@ -550,7 +564,7 @@ export function ResearcherFlow() {
               </div>
             </Card>
 
-            <ResultsSection />
+                <ResultsSection />
           </TabsContent>
 
           <TabsContent value="analytics" className="mt-6 space-y-8">

@@ -25,6 +25,9 @@ export function DataInputSection() {
   const [dataset, setDataset] = useState<"kepler" | "k2" | "tess">("kepler")
   const [activeStep, setActiveStep] = useState<"dataset" | "input" | "config">("dataset")
   const [inputTab, setInputTab] = useState<"manual" | "upload">("manual")
+  
+  // Expose upload state for retraining feature
+  const hasUploadedFile = uploadedData !== null
   const [hyperparams, setHyperparams] = useState({
     eval_metric: "mlogloss",
     objective: "multi:softprob",
@@ -270,11 +273,12 @@ export function DataInputSection() {
           // eslint-disable-next-line no-console
           console.log("Streaming finished")
           if(lastStep === 2) {
-            console.log("Finish in 2")
+            console.log("Finish in 2 - Invalid file format")
             setStreamSteps((prev) => [
                     ...prev,
-                    { step: 400, status: "CSV file may not be valid for this model", startedAt: Date.now()}
+                    { step: 400, status: "CSV file may not be valid for this model", startedAt: Date.now(), durationMs: 0}
                   ])
+            setIsProcessing(false)
             return
            }
           setIsProcessing(false)
@@ -594,13 +598,17 @@ export function DataInputSection() {
             </TabsContent>
 
             <TabsContent value="upload" className="mt-6">
-                    <FileUpload onDataUploaded={setUploadedData} dataset={dataset} />
+                    <FileUpload 
+                      onDataUploaded={setUploadedData} 
+                      dataset={dataset} 
+                      hyperparameters={hyperparams}
+                    />
                     <div className="flex justify-center pt-4">
                       <Button type="button" size="lg" className="gap-2 glow-effect" onClick={handleStartBatchClassification} disabled={!uploadedData}>
                         Classificar Candidatos
                       </Button>
                     </div>
-                  </TabsContent>
+            </TabsContent>
                 </Tabs>
 
                 <div className="mt-4" />

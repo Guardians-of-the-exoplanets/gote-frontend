@@ -4,19 +4,25 @@ import type React from "react"
 
 import { useState, useCallback } from "react"
 import { useMode } from "@/lib/mode-context"
-import { Upload, FileJson, FileSpreadsheet, CheckCircle2, AlertCircle } from "lucide-react"
+import { Upload, FileJson, FileSpreadsheet, CheckCircle2, AlertCircle, RefreshCw } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
+import { RetrainModal } from "@/components/retrain-modal"
+import { usePlanetData } from "@/lib/planet-data-context"
 
 interface FileUploadProps {
   onDataUploaded: (data: any) => void
   dataset?: "kepler" | "k2" | "tess"
+  hyperparameters?: any
 }
 
-export function FileUpload({ onDataUploaded, dataset = "kepler" }: FileUploadProps) {
+export function FileUpload({ onDataUploaded, dataset = "kepler", hyperparameters }: FileUploadProps) {
   const { mode } = useMode()
+  const { useHyperparams } = usePlanetData()
   const [isDragging, setIsDragging] = useState(false)
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [uploadStatus, setUploadStatus] = useState<"idle" | "success" | "error">("idle")
+  const [retrainModalOpen, setRetrainModalOpen] = useState(false)
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -108,12 +114,40 @@ export function FileUpload({ onDataUploaded, dataset = "kepler" }: FileUploadPro
       </div>
 
       {uploadStatus === "success" && uploadedFile && (
-        <Alert className="border-green-500/50 bg-green-500/10">
-          <CheckCircle2 className="h-4 w-4 text-green-500" />
-          <AlertDescription className="text-green-500">
-            Arquivo <strong>{uploadedFile.name}</strong> carregado com sucesso!
-          </AlertDescription>
-        </Alert>
+        <>
+          <Alert className="border-green-500/50 bg-green-500/10">
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <AlertDescription>
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-green-500">
+                  Arquivo <strong>{uploadedFile.name}</strong> carregado com sucesso!
+                </span>
+                {mode === "researcher" && (
+                  <Button
+                    onClick={() => setRetrainModalOpen(true)}
+                    variant="outline"
+                    size="sm"
+                    className="border-accent/50 hover:bg-accent/10 text-accent hover:text-accent flex-shrink-0"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                    Retreinar Modelo
+                  </Button>
+                )}
+              </div>
+            </AlertDescription>
+          </Alert>
+
+          {/* Retrain Modal */}
+          {mode === "researcher" && (
+            <RetrainModal
+              open={retrainModalOpen}
+              onOpenChange={setRetrainModalOpen}
+              dataset={dataset}
+              file={uploadedFile}
+              hyperparameters={useHyperparams ? hyperparameters : undefined}
+            />
+          )}
+        </>
       )}
 
       {uploadStatus === "error" && (
