@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, type ReactNode } from "react"
 
-type Mode = "researcher" | "explorer" | "kepler" | "tess"
+type Mode = "researcher" | "explorer" | "example"
 
 interface ModeContextType {
   mode: Mode
