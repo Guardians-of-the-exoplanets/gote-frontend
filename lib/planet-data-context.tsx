@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, type ReactNode } from "react"
+import { createContext, useContext, useState, type ReactNode, type Dispatch, type SetStateAction } from "react"
 
 export interface PlanetData {
   orbitalPeriod?: number
@@ -21,13 +21,32 @@ export interface PredictionResult {
   confidence: "Alta" | "Média" | "Baixa"
 }
 
+export interface StreamStep {
+  step: number
+  status: string
+  startedAt: number
+  finishedAt?: number
+  durationMs?: number
+}
+
+export interface StreamPredictionRow {
+  id: string
+  classificacao: string
+  probabilidade: number
+}
+
 interface PlanetDataContextType {
   planetData: PlanetData
-  setPlanetData: (data: PlanetData) => void
+  setPlanetData: Dispatch<SetStateAction<PlanetData>>
   prediction: PredictionResult | null
-  setPrediction: (prediction: PredictionResult | null) => void
+  setPrediction: Dispatch<SetStateAction<PredictionResult | null>>
   isProcessing: boolean
-  setIsProcessing: (isProcessing: boolean) => void
+  setIsProcessing: Dispatch<SetStateAction<boolean>>
+  // streaming
+  streamSteps: StreamStep[]
+  setStreamSteps: Dispatch<SetStateAction<StreamStep[]>>
+  streamPredictions: StreamPredictionRow[]
+  setStreamPredictions: Dispatch<SetStateAction<StreamPredictionRow[]>>
 }
 
 const PlanetDataContext = createContext<PlanetDataContextType | undefined>(undefined)
@@ -36,10 +55,12 @@ export function PlanetDataProvider({ children }: { children: ReactNode }) {
   const [planetData, setPlanetData] = useState<PlanetData>({})
   const [prediction, setPrediction] = useState<PredictionResult | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [streamSteps, setStreamSteps] = useState<StreamStep[]>([])
+  const [streamPredictions, setStreamPredictions] = useState<StreamPredictionRow[]>([])
 
   return (
     <PlanetDataContext.Provider
-      value={{ planetData, setPlanetData, prediction, setPrediction, isProcessing, setIsProcessing }}
+      value={{ planetData, setPlanetData, prediction, setPrediction, isProcessing, setIsProcessing, streamSteps, setStreamSteps, streamPredictions, setStreamPredictions }}
     >
       {children}
     </PlanetDataContext.Provider>
