@@ -33,6 +33,10 @@ export interface StreamPredictionRow {
   id: string
   classificacao: string
   probabilidade: number
+  // Optional metadata when coming from uploads
+  pubdate?: string
+  publication_date?: string
+  published_at?: string
 }
 
 export interface ResearchMetrics {
@@ -54,6 +58,11 @@ export interface ResearchMetrics {
   }>
 }
 
+export type RunMeta = {
+  inputKind: 'manual' | 'upload'
+  hasHyperparams: boolean
+}
+
 export interface ComparisonResult {
   oldClassification: string
   oldProbability: number
@@ -72,9 +81,14 @@ interface PlanetDataContextType {
   setStreamSteps: Dispatch<SetStateAction<StreamStep[]>>
   streamPredictions: StreamPredictionRow[]
   setStreamPredictions: Dispatch<SetStateAction<StreamPredictionRow[]>>
+  runMeta: RunMeta | null
+  setRunMeta: Dispatch<SetStateAction<RunMeta | null>>
   // research metrics (to be filled by backend/colleague)
   researchMetrics: ResearchMetrics
   setResearchMetrics: Dispatch<SetStateAction<ResearchMetrics>>
+  // researcher-only: user toggle to include hyperparameters in requests
+  useHyperparams: boolean
+  setUseHyperparams: Dispatch<SetStateAction<boolean>>
 }
 
 const PlanetDataContext = createContext<PlanetDataContextType | undefined>(undefined)
@@ -86,10 +100,12 @@ export function PlanetDataProvider({ children }: { children: ReactNode }) {
   const [streamSteps, setStreamSteps] = useState<StreamStep[]>([])
   const [streamPredictions, setStreamPredictions] = useState<StreamPredictionRow[]>([])
   const [researchMetrics, setResearchMetrics] = useState<ResearchMetrics>({})
+  const [runMeta, setRunMeta] = useState<RunMeta | null>(null)
+  const [useHyperparams, setUseHyperparams] = useState<boolean>(true)
 
   return (
     <PlanetDataContext.Provider
-      value={{ planetData, setPlanetData, prediction, setPrediction, isProcessing, setIsProcessing, streamSteps, setStreamSteps, streamPredictions, setStreamPredictions, researchMetrics, setResearchMetrics }}
+      value={{ planetData, setPlanetData, prediction, setPrediction, isProcessing, setIsProcessing, streamSteps, setStreamSteps, streamPredictions, setStreamPredictions, researchMetrics, setResearchMetrics, runMeta, setRunMeta, useHyperparams, setUseHyperparams }}
     >
       {children}
     </PlanetDataContext.Provider>

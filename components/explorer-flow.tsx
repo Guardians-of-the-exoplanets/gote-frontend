@@ -13,6 +13,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { CheckCircle2, Circle, BarChart3, Globe, Download, Database, SlidersHorizontal, Brain, ShieldCheck, Timer } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Info } from "lucide-react"
+import { CandidateHistoryDialog } from "@/components/candidate-history-dialog"
+import { groupRowsById, normalizeId, normalizeClassification, normalizeProbability, normalizePubdate } from "@/lib/utils"
+import { useEffect } from "react"
 import {
   Pagination,
   PaginationContent,
@@ -30,35 +33,76 @@ const PlanetVisualization = dynamic(
 
 export function ExplorerFlow() {
   const { mode } = useMode()
-  const { prediction, planetData, streamSteps, streamPredictions } = usePlanetData()
+  const { prediction, planetData, streamSteps, streamPredictions, runMeta } = usePlanetData()
   const [activeTab, setActiveTab] = useState("pipeline")
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [historySelection, setHistorySelection] = useState<{ id: string; entries: any[] } | null>(null)
   const steps = [
     { id: 1, name: "Enter Data", href: "#data", completed: false },
     { id: 2, name: "View Results", href: "#results", completed: false },
     { id: 3, name: "Export", href: "#export", completed: false },
   ]
 
-  const hasResults = prediction !== null || (streamPredictions && streamPredictions.length > 0)
+  const normalizedPredictions = useMemo(() => {
+    let preds: any = streamPredictions || []
+    if (Array.isArray(preds) && preds.length > 0 && Array.isArray(preds[0])) {
+      // Backend sometimes wraps each row (or the whole set) in an extra array
+      preds = (preds as any[]).flat()
+    }
+    return preds as any[]
+  }, [streamPredictions])
+
+  const hasResults = prediction !== null || (normalizedPredictions && normalizedPredictions.length > 0)
+  const isSingleManualResult = Array.isArray(normalizedPredictions) && (
+    (
+      normalizedPredictions.length === 1 && !('id' in (normalizedPredictions[0] || {}))
+    ) || (
+      normalizedPredictions.length >= 1 && (
+        ('old_classificacao' in (normalizedPredictions[0] || {})) ||
+        ('old_probabilidade' in (normalizedPredictions[0] || {}))
+      )
+    )
+  )
   const pipelineCompleted = (streamSteps && streamSteps.length > 0) && streamSteps.every((s:any) => s && s.durationMs != null)
   const isExoplanet = prediction?.classification === "Confirmado" || prediction?.classification === "Candidato"
   const showVisualization = isExoplanet && Object.keys(planetData).length > 0
 
-  // Pagination for candidates table in Results tab
+  // Pagination for grouped candidates table in Results tab
   const [currentPage, setCurrentPage] = useState(1)
   const rowsPerPage = 8
 
-  const sortedPredictions = useMemo(() => {
-    return (streamPredictions || [])
-      .slice()
-      .sort((a: any, b: any) => Number(b.probabilidade) - Number(a.probabilidade))
-  }, [streamPredictions])
+  const groupedPredictions = useMemo(() => {
+    const map = groupRowsById(normalizedPredictions || [])
+    const toRank = (d: string | null) => {
+      if (!d) return -Infinity
+      const [y, m] = String(d).split("-")
+      const yy = Number(y) || 0
+      const mm = Number(m) || 0
+      return yy * 12 + mm
+    }
+    const arr = Array.from(map.entries()).map(([id, rows]) => {
+      const entries = rows.map((r:any) => ({
+        id: normalizeId(r),
+        classification: normalizeClassification(r),
+        probability: normalizeProbability(r),
+        pubdate: normalizePubdate(r),
+      }))
+      entries.sort((a,b)=> toRank(a.pubdate) - toRank(b.pubdate))
+      const latest = entries.slice(-1)[0] || { classification: 'Candidate', probability: 0 }
+      const sortProb = latest?.probability ?? Math.max(0, ...entries.map(e=>e.probability))
+      return { id, entries, latest, sortProb }
+    })
+    // sort by latest summary probability desc
+    arr.sort((a,b)=> b.sortProb - a.sortProb)
+    return arr
+  }, [normalizedPredictions])
 
-  const totalPages = Math.max(1, Math.ceil(sortedPredictions.length / rowsPerPage))
-  const visibleRows = useMemo(() => {
+  const totalPages = Math.max(1, Math.ceil(groupedPredictions.length / rowsPerPage))
+  const visibleGroups = useMemo(() => {
     const startIndex = (currentPage - 1) * rowsPerPage
     const endIndex = startIndex + rowsPerPage
-    return sortedPredictions.slice(startIndex, endIndex)
-  }, [sortedPredictions, currentPage])
+    return groupedPredictions.slice(startIndex, endIndex)
+  }, [groupedPredictions, currentPage])
 
   const goToPage = (nextPage: number) => {
     if (nextPage < 1 || nextPage > totalPages) return
@@ -249,9 +293,53 @@ export function ExplorerFlow() {
               <div className="space-y-2 text-sm">
                 <h4 className="font-semibold">How to read this table</h4>
                 <p className="text-muted-foreground">The colored tag shows the model’s decision. The bar shows confidence. Sort by probability to find the strongest cases first.</p>
+                {runMeta && (
+                  <div className="mt-2 text-xs flex flex-wrap gap-2">
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border ${runMeta.inputKind==='upload' ? 'border-primary/40 text-primary bg-primary/10' : 'border-secondary/40 text-secondary bg-secondary/10'}`}>
+                      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                      {runMeta.inputKind === 'upload' ? 'Uploaded CSV' : 'Manual Input'}
+                    </span>
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border ${runMeta.hasHyperparams ? 'border-emerald-400/50 text-emerald-400 bg-emerald-500/10' : 'border-amber-400/50 text-amber-400 bg-amber-500/10'}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${runMeta.hasHyperparams ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                      {runMeta.hasHyperparams ? 'With Hyperparameters' : 'Baseline'}
+                    </span>
+                  </div>
+                )}
               </div>
             </Card>
-            {streamPredictions && streamPredictions.length > 0 ? (
+            {isSingleManualResult ? (
+              (() => {
+                const oldItem:any = (normalizedPredictions as any[]).find((x:any)=> 'old_classificacao' in x || 'old_probabilidade' in x)
+                const row:any = oldItem ?? normalizedPredictions[0]
+                const prob = Number(row.old_probabilidade ?? row.probabilidade ?? row.probability ?? 0)
+                const raw = String(row.old_classificacao ?? row.classificacao ?? row.classification ?? '')
+                const norm = raw.toLowerCase().normalize('NFD').replace(/[^a-z ]/g,'')
+                const cls = norm.includes('confirm') ? 'Confirmed' : norm.includes('candidate') || norm.includes('candidat') ? 'Candidate' : 'False Positive'
+                const badgeClass = cls === 'Confirmed'
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                  : cls === 'Candidate'
+                  ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                  : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                return (
+                  <Card className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="p-4 bg-card border border-border rounded-lg">
+                        <div className="text-sm text-muted-foreground mb-2">Classification</div>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded border text-sm ${badgeClass}`}>{cls}</span>
+                      </div>
+                      <div className="p-4 bg-card border border-border rounded-lg">
+                        <div className="text-sm text-muted-foreground mb-2">Probability</div>
+                        <div className="text-2xl font-bold font-mono text-primary">{Number.isFinite(prob) ? `${prob.toFixed(2)}%` : '—'}</div>
+                      </div>
+                      <div className="p-4 bg-card border border-border rounded-lg">
+                        <div className="text-sm text-muted-foreground mb-2">Decision</div>
+                        <div className="text-sm">{cls === 'False Positive' ? 'Unlikely an exoplanet' : 'Likely an exoplanet or candidate'}</div>
+                      </div>
+                    </div>
+                  </Card>
+                )
+              })()
+            ) : streamPredictions && streamPredictions.length > 0 ? (
               <>
               <div className="rounded-xl border overflow-hidden">
                 <table className="w-full text-sm">
@@ -263,28 +351,35 @@ export function ExplorerFlow() {
                     </tr>
                   </thead>
                   <tbody>
-                    {visibleRows.map((row:any) => {
-                      const prob = Number(row.probabilidade)
-                      const raw = String(row.classificacao ?? row.classification ?? '')
-                      const norm = raw.toLowerCase().normalize('NFD').replace(/[^a-z ]/g,'')
-                      const cls = norm.includes('confirm') ? 'Confirmed' : norm.includes('candidate') || norm.includes('candidat') ? 'Candidate' : 'False Positive'
+                    {visibleGroups.map((g:any, idx:number) => {
+                      const idVal = g.id
+                      const cls = g.latest.classification as 'Confirmed' | 'Candidate' | 'False Positive'
+                      const prob = g.latest.probability as number
                       const badgeClass = cls === 'Confirmed'
                         ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                         : cls === 'Candidate'
                         ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                         : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                      const key = `${idVal}-${idx}`
                       return (
-                        <tr key={row.id} className="border-t">
-                          <td className="p-3 font-mono">{row.id}</td>
+                        <tr
+                          key={key}
+                          className="border-t hover:bg-muted/30 cursor-pointer"
+                          onClick={() => { setHistorySelection({ id: idVal, entries: g.entries }); setHistoryOpen(true) }}
+                        >
+                          <td className="p-3 font-mono">{idVal}</td>
                           <td className="p-3">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs ${badgeClass}`}>{cls}</span>
+                            {g.entries.length > 1 && (
+                              <span className="ml-2 text-xs text-muted-foreground">{g.entries.length}×</span>
+                            )}
                           </td>
                           <td className="p-3">
                             <div className="flex items-center gap-2">
                               <div className="relative w-full h-2 bg-muted rounded">
                                 <div className="absolute left-0 top-0 h-2 rounded bg-primary/80" style={{ width: `${prob}%` }} />
                               </div>
-                              <span className="text-right w-16 font-mono">{prob.toFixed(2)}%</span>
+                              <span className="text-right w-16 font-mono">{Number.isFinite(prob) ? prob.toFixed(2) : '—'}%</span>
                             </div>
                           </td>
                         </tr>
@@ -293,7 +388,7 @@ export function ExplorerFlow() {
                   </tbody>
                 </table>
               </div>
-              {sortedPredictions.length > rowsPerPage && (
+              {groupedPredictions.length > rowsPerPage && (
                 <div className="mt-4">
                   <Pagination>
                     <PaginationContent>
@@ -342,6 +437,17 @@ export function ExplorerFlow() {
               <div className="mt-3 text-xs text-muted-foreground text-center">
                 Colors: <span className="px-1 rounded border bg-emerald-500/10 text-emerald-500 border-emerald-500/20">Confirmed</span> · <span className="px-1 rounded border bg-amber-500/10 text-amber-500 border-amber-500/20">Candidate</span> · <span className="px-1 rounded border bg-rose-500/10 text-rose-500 border-rose-500/20">False Positive</span>. Higher bar = higher confidence.
               </div>
+              <CandidateHistoryDialog
+                open={historyOpen}
+                onOpenChange={setHistoryOpen}
+                candidateId={historySelection?.id || ''}
+                entries={(historySelection?.entries || []).map((r:any)=>({
+                  id: normalizeId(r),
+                  classification: normalizeClassification(r),
+                  probability: normalizeProbability(r),
+                  pubdate: normalizePubdate(r),
+                }))}
+              />
               </>
             ) : (
               <ExplorerResultsSection />

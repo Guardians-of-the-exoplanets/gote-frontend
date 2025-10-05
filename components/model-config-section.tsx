@@ -8,12 +8,15 @@ import { Settings2, Info, Layers, Zap } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useMode } from "@/lib/mode-context"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Switch } from "@/components/ui/switch"
+import { usePlanetData } from "@/lib/planet-data-context"
 
 export function ModelConfigSection() {
   const [numTrees, setNumTrees] = useState([100])
   const [learningRate, setLearningRate] = useState([0.01])
   const [epochs, setEpochs] = useState([50])
   const { mode } = useMode()
+  const { useHyperparams, setUseHyperparams } = usePlanetData()
 
   return (
     <section id="model" className="scroll-mt-20">
@@ -31,13 +34,22 @@ export function ModelConfigSection() {
         </CardHeader>
         <CardContent className="space-y-6">
           {mode === "researcher" ? (
+            <>
+            <div className="flex items-center justify-between p-3 border rounded-xl bg-card/60">
+              <div className="text-sm">
+                <div className="font-medium">Incluir hiperparâmetros nas requisições</div>
+                <div className="text-muted-foreground text-xs">Quando desativado, a aba de hiperparâmetros fica indisponível.</div>
+              </div>
+              <Switch checked={useHyperparams} onCheckedChange={setUseHyperparams as any} />
+            </div>
+
             <Tabs defaultValue="architecture" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="architecture" className="flex items-center gap-2">
                   <Layers className="h-4 w-4" />
                   Architecture
                 </TabsTrigger>
-                <TabsTrigger value="hyperparams" className="flex items-center gap-2">
+                <TabsTrigger value="hyperparams" className="flex items-center gap-2" disabled={!useHyperparams}>
                   <Settings2 className="h-4 w-4" />
                   Hyperparameters
                 </TabsTrigger>
@@ -198,6 +210,7 @@ export function ModelConfigSection() {
                 </div>
               </TabsContent> */}
             </Tabs>
+            </>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Number of Trees */}
