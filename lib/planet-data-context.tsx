@@ -54,6 +54,12 @@ export interface ResearchMetrics {
   }>
 }
 
+export interface ComparisonResult {
+  oldClassification: string
+  oldProbability: number
+  newClassification: string
+  newProbability: number
+}
 interface PlanetDataContextType {
   planetData: PlanetData
   setPlanetData: Dispatch<SetStateAction<PlanetData>>
