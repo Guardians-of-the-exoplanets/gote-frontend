@@ -208,7 +208,7 @@ export function ExplorerFlow() {
                 </div>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Discover if your astronomical signal is an exoplanet using advanced machine learning. 
+                Select the dataset, input your data via upload or manually, and view the results in a clear and educational way.
                 <span className="hidden md:inline"> Our trained neural network analyzes your data in seconds, providing confidence scores and detailed classifications.</span>
               </p>
             </div>
@@ -220,15 +220,15 @@ export function ExplorerFlow() {
             <div className="group relative p-3.5 rounded-lg border border-border bg-card/50 hover:bg-card transition-all hover:shadow-md">
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 p-2 bg-blue-500/10 rounded-lg group-hover:scale-110 transition-transform">
-                  <Database className="h-4 w-4 text-blue-500" />
+                  <Telescope className="h-4 w-4 text-blue-500" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold">1</span>
-                    <h4 className="text-sm font-semibold">Enter Data</h4>
+                    <h4 className="text-sm font-semibold">Select Dataset</h4>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Upload CSV or input manually
+                    Choose Kepler, K2, or TESS
                   </p>
                 </div>
               </div>
@@ -238,15 +238,15 @@ export function ExplorerFlow() {
             <div className="group relative p-3.5 rounded-lg border border-border bg-card/50 hover:bg-card transition-all hover:shadow-md">
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 p-2 bg-emerald-500/10 rounded-lg group-hover:scale-110 transition-transform">
-                  <Brain className="h-4 w-4 text-emerald-500" />
+                  <Database className="h-4 w-4 text-emerald-500" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold">2</span>
-                    <h4 className="text-sm font-semibold">AI Analysis</h4>
+                    <h4 className="text-sm font-semibold">Input Data</h4>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Neural network processes signal
+                    Upload CSV or enter manually
                   </p>
                 </div>
               </div>
@@ -264,7 +264,7 @@ export function ExplorerFlow() {
                     <h4 className="text-sm font-semibold">View Results</h4>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Get classification & confidence
+                    Educational and detailed analysis
                   </p>
                 </div>
               </div>
