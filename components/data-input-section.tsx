@@ -10,6 +10,7 @@ import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { Info, Telescope } from "lucide-react"
 import { Upload, Edit3, Database, FileText, Rocket, ArrowLeft, ArrowRight } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
 import { useMode } from "@/lib/mode-context"
 import { usePlanetData } from "@/lib/planet-data-context"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -34,7 +35,7 @@ export function DataInputSection() {
     subsample: 0.8,
   })
   const { mode } = useMode()
-  const { setIsProcessing, setStreamSteps, setStreamPredictions } = usePlanetData()
+  const { setIsProcessing, setStreamSteps, setStreamPredictions, setRunMeta, useHyperparams, setUseHyperparams } = usePlanetData()
 
   const handleStartBatchClassification = () => {
     const inputs = inputTab === "upload" ? uploadedData : manualRaw
@@ -51,6 +52,19 @@ export function DataInputSection() {
           formData.append("file", fileObj, fileObj.name)
           formData.append("mode", modelName)
           formData.append("dataset", dataset)
+          if (mode === "researcher" && useHyperparams) {
+            // Attach hyperparameters as JSON string
+            formData.append("hyperparameters", JSON.stringify(hyperparams))
+          }
+
+          // Log a readable preview of the request
+          // eslint-disable-next-line no-console
+          console.log("UPLOAD_REQUEST", {
+            mode: modelName,
+            dataset,
+            file: { name: fileObj.name, size: fileObj.size, type: fileObj.type },
+            ...(mode === "researcher" && useHyperparams ? { hyperparameters: hyperparams } : {}),
+          })
 
           const response = await fetch("https://gote-backend.onrender.com/upload/exoplanet", {
             method: "POST",
@@ -63,6 +77,7 @@ export function DataInputSection() {
             return
           }
 
+          setRunMeta({ inputKind: 'upload', hasHyperparams: mode === 'researcher' })
           setIsProcessing(true)
           // scroll to pipeline section smoothly if present
           try {
@@ -75,6 +90,9 @@ export function DataInputSection() {
           let buffer = ""
           setStreamSteps([])
           setStreamPredictions([])
+          // seed step 1: Upload received / validating
+          stepStart[1] = Date.now()
+          setStreamSteps([{ step: 1, status: 'Uploading file & validating', startedAt: stepStart[1] }])
 
           const maybeFinishStep = (stepNum: number, nowTs: number) => {
             if (stepStart[stepNum]) {
@@ -128,6 +146,8 @@ export function DataInputSection() {
                 if (Array.isArray(json.predictions)) {
                   setStreamPredictions(json.predictions as any)
                 }
+                // allow UI to render between close steps
+                await new Promise((r) => setTimeout(r, 0))
               } catch {
                 // ignore malformed chunks; buffer logic will reassemble
               }
@@ -397,12 +417,21 @@ export function DataInputSection() {
                 <div className="mb-4" />
                 {/* Inline Model Config content for the final step (reuse same UI) */}
                 <div className="space-y-6">
+                  {/* Toggle banner controlling hyperparams usage */}
+                  <div className="flex items-center justify-between p-3 border rounded-xl bg-card/60">
+                    <div className="text-sm">
+                      <div className="font-medium">Incluir hiperparâmetros nas requisições</div>
+                      <div className="text-muted-foreground text-xs">Quando desativado, a aba de hiperparâmetros fica indisponível e não é enviada ao backend.</div>
+                    </div>
+                    <Switch checked={useHyperparams} onCheckedChange={setUseHyperparams as any} />
+                  </div>
+
                   <Tabs defaultValue="architecture" className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="architecture" className="flex items-center gap-2">
                         Arquitetura
                       </TabsTrigger>
-                      <TabsTrigger value="hyperparams" className="flex items-center gap-2">
+                      <TabsTrigger value="hyperparams" className="flex items-center gap-2" disabled={!useHyperparams}>
                         Hiperparâmetros
                       </TabsTrigger>
                     </TabsList>

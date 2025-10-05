@@ -24,12 +24,13 @@ interface PredictionResult {
 
 export function ManualDataForm({ showSubmit = true, formId = "data-input-form", dataset = "kepler", onChangeRaw, hyperparameters }: { showSubmit?: boolean; formId?: string; dataset?: "kepler" | "k2" | "tess"; onChangeRaw?: (raw: any) => void; hyperparameters?: any }) {
   const { mode } = useMode()
-  const { planetData, setPlanetData, prediction, setPrediction, setIsProcessing, setStreamSteps, setStreamPredictions } = usePlanetData()
+  const { planetData, setPlanetData, prediction, setPrediction, setIsProcessing, setStreamSteps, setStreamPredictions, setRunMeta, useHyperparams } = usePlanetData()
 
   const [formData, setFormData] = useState<Record<string, string>>({})
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     // Prefill required defaults (e.g., K2 soltype)
@@ -61,6 +62,7 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setRunMeta({ inputKind: 'manual', hasHyperparams: mode === 'researcher' })
     setIsProcessing(true)
     // scroll to pipeline section smoothly if present
     try {
@@ -71,14 +73,63 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
     try {
       const defs = getDatasetFields(dataset as DatasetKey)
       const payloadData: Record<string, number | string> = {}
+      const errors: string[] = []
+      const perField: Record<string, string> = {}
+
+      const coerceFloat = (v: string) => Number.parseFloat(v.replace(",", "."))
+      const coerceInt = (v: string) => Number.parseInt(v, 10)
+
       defs.forEach((d) => {
         const raw = formData[d.key]
         const valueToUse = (raw === undefined || raw === "") && d.defaultValue !== undefined ? String(d.defaultValue) : raw
+
+        // Required validation ("" invalid, but 0 is valid)
+        if (d.required && (valueToUse === undefined || valueToUse === "")) {
+          errors.push(`${d.name} (${d.key}) é obrigatório`)
+          perField[d.key] = "Obrigatório"
+          return
+        }
+
         if (valueToUse === undefined || valueToUse === "") return
-        if (d.type === "int") payloadData[d.key] = Number.parseInt(valueToUse)
-        else if (d.type === "float") payloadData[d.key] = Number.parseFloat(valueToUse)
-        else payloadData[d.key] = valueToUse
+
+        if (d.type === "int") {
+          const n = coerceInt(valueToUse)
+          if (!Number.isFinite(n) || !Number.isInteger(n)) {
+            errors.push(`${d.name} deve ser inteiro`)
+            perField[d.key] = "Inteiro inválido"
+            return
+          }
+          payloadData[d.key] = n
+        } else if (d.type === "float") {
+          const n = coerceFloat(valueToUse)
+          if (!Number.isFinite(n)) {
+            errors.push(`${d.name} deve ser número (float) válido`)
+            perField[d.key] = "Número inválido"
+            return
+          }
+          payloadData[d.key] = n
+        } else {
+          // string
+          if (dataset === "k2" && d.key === "soltype") {
+            const allowed = ["Published Confirmed", "Published Candidate", "TESS Project Candidate"]
+            if (!allowed.includes(String(valueToUse))) {
+              errors.push(`${d.name} possui valor inválido`)
+              perField[d.key] = "Valor inválido"
+              return
+            }
+          }
+          payloadData[d.key] = String(valueToUse)
+        }
       })
+
+      if (errors.length > 0) {
+        setError(errors.join("; "))
+        setFieldErrors(perField)
+        setIsLoading(false)
+        setIsProcessing(false)
+        return
+      }
+      setFieldErrors({})
       setPlanetData({})
 
       const consolePayload = {
@@ -89,6 +140,7 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
       // eslint-disable-next-line no-console
       console.log("CLASSIFY_JSON", consolePayload)
 
+      // Include hyperparameters ONLY in researcher mode
       const defaultHyper = {
         eval_metric: "mlogloss",
         objective: "multi:softprob",
@@ -99,7 +151,9 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
         subsample: 0.8,
       }
       const finalHyper = { ...defaultHyper, ...(hyperparameters || {}) }
-      const requestBody = { ...consolePayload, hyperparameters: finalHyper }
+      const requestBody = (mode === "researcher" && useHyperparams)
+        ? { ...consolePayload, hyperparameters: finalHyper }
+        : consolePayload
       // eslint-disable-next-line no-console
       console.log("STREAM_REQUEST_BODY", requestBody)
 
@@ -108,6 +162,9 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
       let lastStep = 0
       setStreamSteps([])
       setStreamPredictions([])
+      // Seed Step 1 immediately for better feedback
+      stepStart[1] = Date.now()
+      setStreamSteps([{ step: 1, status: 'Validating input', startedAt: stepStart[1] }])
 
       const response = await fetch("https://gote-backend.onrender.com/stream/exoplanet", {
         method: "POST",
@@ -172,6 +229,8 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
             if (json.prediction) {
               setPrediction(json.prediction as any)
             }
+            // allow UI to flush between very fast consecutive steps
+            await new Promise((r) => setTimeout(r, 0))
           } catch {}
         }
       }
@@ -295,6 +354,9 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
                   onChange={(e) => handleChange(def.key, e.target.value)}
                   required={def.required}
                 />
+              )}
+              {fieldErrors[def.key] && (
+                <div className="absolute -bottom-4 left-0 text-[10px] text-destructive">{fieldErrors[def.key]}</div>
               )}
             </div>
           </motion.div>
