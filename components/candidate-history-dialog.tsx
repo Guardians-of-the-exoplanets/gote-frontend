@@ -127,14 +127,9 @@ export function CandidateHistoryDialog({
                     <Badge variant="outline" className={badgeClass(e.classification)}>
                       {e.classification}
                     </Badge>
-                    <div className="flex items-center gap-2 flex-1 min-w-[160px]">
-                      <div className="relative w-full h-2 bg-muted rounded">
-                        <div className="absolute left-0 top-0 h-2 rounded bg-primary/80" style={{ width: `${e.probability}%` }} />
-                      </div>
-                      <span className="font-mono text-xs w-14 text-right">
-                        {e.probability.toFixed(2)}%
-                      </span>
-                    </div>
+                    <span className="font-mono text-xs ml-auto">
+                      {e.probability.toFixed(2)}%
+                    </span>
                   </div>
                 </li>
               ))}

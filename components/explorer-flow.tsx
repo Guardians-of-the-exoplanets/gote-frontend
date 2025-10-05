@@ -227,19 +227,6 @@ export function ExplorerFlow() {
             {/* Anchor to ensure smooth scroll lands in Explorer too */}
             <div id="pipeline" className="h-0" />
             <div className="space-y-6">
-              <Card className="p-6 border-primary/30 bg-primary/5">
-                <div className="space-y-3">
-                  <h4 className="text-lg font-semibold">Story: From raw signal to a planet candidate</h4>
-                  <ol className="list-decimal pl-5 space-y-2 text-sm text-muted-foreground">
-                    <li><span className="text-foreground font-medium">Ingest</span> — You upload a file or type values. We validate and prepare the inputs.</li>
-                    <li><span className="text-foreground font-medium">Preprocess</span> — We remove trends and noise so the transit becomes clear.</li>
-                    <li><span className="text-foreground font-medium">AI Inference</span> — The model compares your signal with thousands of examples.</li>
-                    <li><span className="text-foreground font-medium">Post‑process</span> — Simple checks highlight if it’s worth a closer look.</li>
-                  </ol>
-                  <p className="text-xs text-muted-foreground">Tip: Re-run with a slightly different transit depth to see confidence change.</p>
-                </div>
-              </Card>
-
               {streamSteps.length > 0 && (
                 <Card className="border-primary/20">
                   <div className="p-6">

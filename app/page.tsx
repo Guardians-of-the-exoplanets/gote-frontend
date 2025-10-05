@@ -4,6 +4,7 @@ import { TutorialOverlay } from "@/components/tutorial-overlay"
 import { ExplorerFlow } from "@/components/explorer-flow"
 import { ResearcherFlow } from "@/components/researcher-flow"
 import { TelescopeFlow } from "@/components/telescope-flow"
+import { ExampleTabs } from "@/components/example-tabs"
 import { Sparkles } from "lucide-react"
 import Image from "next/image"
 
@@ -14,7 +15,7 @@ export default function Home() {
       <ModeNavigation />
       <TutorialOverlay />
       <main className="container mx-auto px-4 py-8 space-y-8 max-w-7xl">
-        <TelescopeFlow />
+        <ExampleTabs />
         <ExplorerFlow />
         <ResearcherFlow />
       </main>
@@ -31,7 +32,7 @@ export default function Home() {
               priority
             />
             <p className="text-sm text-muted-foreground text-center md:text-left">
-              Desenvolvido com tecnologia de ponta para pesquisa espacial
+              Developed with cutting-edge technology for space research
             </p>
           </div>
         </div>
