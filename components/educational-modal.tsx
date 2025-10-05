@@ -3,7 +3,7 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
-import { Sparkles, Globe, Telescope, Atom, Layers, Lightbulb, X, ChevronRight } from "lucide-react"
+import { Sparkles, Globe, Telescope, Atom, Layers, Lightbulb, X, ChevronRight, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export type EducationalTopic = "what-is" | "discovery" | "types" | "characteristics" | "importance"
@@ -16,160 +16,156 @@ interface EducationalModalProps {
 
 const educationalContent = {
   "what-is": {
-    title: "O que é um Exoplaneta?",
-    subtitle: "Entenda os mundos além do nosso Sistema Solar",
+    title: "What is an Exoplanet?",
+    subtitle: "Understanding worlds beyond our Solar System",
     icon: Globe,
     gradient: "from-blue-600 via-cyan-500 to-teal-400",
     accentColor: "blue",
     sections: [
       {
-        subtitle: "Definição",
+        subtitle: "Definition",
         content:
-          "Também chamado de planeta extrassolar, um exoplaneta é qualquer planeta que orbita uma estrela fora do Sistema Solar. Apesar de compartilharem características com os planetas do nosso sistema, como ter massa suficiente para ser esférico, os exoplanetas não precisam orbitar o Sol.",
+          "Also called an extrasolar planet, an exoplanet is any planet that orbits a star other than the Sun. While many share properties with Solar‑System planets (e.g., having enough mass to be roughly spherical), they do not orbit our Sun.",
       },
       {
-        subtitle: "Números Impressionantes",
+        subtitle: "Big picture",
         content:
-          "Até agosto de 2024, os astrônomos confirmaram a detecção de 5.743 exoplanetas em diferentes regiões da Via Láctea. Além disso, já existem milhares de outros candidatos que ainda serão analisados para confirmação posterior.",
+          "Astronomers have confirmed more than 5,600 exoplanets across the Milky Way, with thousands of additional candidates under review. These numbers grow continuously as surveys add new detections.",
         stats: [
-          { label: "Exoplanetas Confirmados", value: "5.743" },
-          { label: "Primeira Descoberta", value: "1992" },
+          { label: "Confirmed exoplanets (approx.)", value: "5,600+" },
+          { label: "First confirmed discovery", value: "1992" },
         ],
-        highlight: "Os primeiros exoplanetas só foram confirmados em 1992!",
+        highlight: "The first confirmed exoplanets were found in 1992.",
       },
       {
-        subtitle: "Diversidade Extraordinária",
+        subtitle: "Extraordinary diversity",
         content:
-          "Embora muitos exoplanetas sejam semelhantes aos planetas do Sistema Solar, alguns apresentam características que ainda são misteriosas e inexplicáveis para o atual entendimento da ciência. Identificamos mundos de lava cobertos por mares derretidos, planetas inchados com a densidade de isopor e núcleos densos de planetas ainda orbitando suas estrelas.",
+          "Some exoplanets resemble those in our Solar System, while others are unlike anything we’ve seen: lava worlds with oceans of molten rock, ultra‑puffed planets with very low density, and dense planetary cores continuing to orbit their stars.",
       },
     ],
   },
   discovery: {
-    title: "Como Descobrimos Exoplanetas?",
-    subtitle: "Métodos e tecnologias de detecção",
+    title: "How Do We Discover Exoplanets?",
+    subtitle: "Detection methods and technologies",
     icon: Telescope,
     gradient: "from-purple-600 via-pink-500 to-rose-400",
     accentColor: "purple",
     sections: [
       {
-        subtitle: "O Desafio",
+        subtitle: "The challenge",
         content:
-          "A detecção de novos exoplanetas não é uma tarefa simples. O universo é tão grande e extenso que é como buscar uma agulha em um palheiro. Por isso, os astrônomos desenvolveram estratégias inteligentes para encontrá-los.",
+          "Exoplanet detection is hard — stars outshine their planets by orders of magnitude. Astronomers use clever, indirect techniques to find planets in that glare.",
       },
       {
-        subtitle: "Método de Velocidade Radial",
+        subtitle: "Radial velocity",
         content:
-          "Em 1992, os primeiros exoplanetas foram descobertos por meio deste método, que faz a detecção com auxílio do efeito Doppler. Observa-se o movimento da estrela causado pela gravidade do planeta.",
-        badge: "Primeiro Método",
+          "Measures the tiny wobble in a star’s spectrum caused by an orbiting planet (Doppler effect). In 1995 it revealed 51 Pegasi b, the first planet found around a Sun‑like star.",
+        badge: "Milestone (1995)",
       },
       {
-        subtitle: "Método de Trânsito",
+        subtitle: "Transit method",
         content:
-          "Lançado em 2009, o telescópio espacial Kepler marcou o início deste método, que analisa o brilho de uma estrela para verificar se ela sofre eclipses causados por exoplanetas.",
-        stats: [
-          { label: "Kepler - Confirmados", value: "3.321" },
-          { label: "TESS - Confirmados", value: "542" },
-        ],
-        highlight: "O telescópio TESS (2018) já confirmou 542 planetas e estuda 7.204 candidatos!",
+          "Detects the small dip in a star’s brightness when a planet crosses in front of it. NASA’s Kepler (2009) and TESS (2018) transformed this approach, finding thousands of candidates and many confirmed planets.",
+        highlight: "Transit surveys (Kepler/TESS) have produced thousands of candidates and hundreds to thousands of confirmed planets.",
       },
       {
-        subtitle: "Outros Métodos",
+        subtitle: "Other methods",
         content:
-          "Existem também o método de imagem direta, que busca a emissão de luz refletida por um planeta, e o método de microlente gravitacional, que observa a curvatura da luz de uma estrela causada pela presença de planetas.",
+          "Direct imaging captures faint reflected/emitted light from wide‑orbit planets. Gravitational microlensing uses the bending of starlight by a foreground system to infer planets. Pulsar timing (1992) revealed the first confirmed exoplanets around a pulsar.",
       },
     ],
   },
   types: {
-    title: "Tipos de Exoplanetas",
-    subtitle: "Classificação e características principais",
+    title: "Types of Exoplanets",
+    subtitle: "Main classes and characteristics",
     icon: Layers,
     gradient: "from-orange-600 via-amber-500 to-yellow-400",
     accentColor: "orange",
     sections: [
       {
-        subtitle: "Gigantes Gasosos",
+        subtitle: "Gas giants",
         content:
-          "Planetas do tamanho de Saturno ou Júpiter, ou muito maiores. Os planetas do tipo 'Júpiter quente' são gigantes gasosos que podem alcançar temperaturas extremamente altas devido à sua proximidade com a estrela que orbitam.",
-        badge: "Mais Comuns",
+          "Saturn‑ to Jupiter‑size (or larger) planets. ‘Hot Jupiters’ are gas giants heated to high temperatures by close‑in orbits around their stars.",
+        badge: "Early detections",
         badgeVariant: "default",
       },
       {
-        subtitle: "Planetas Netunianos (Mini-Netuno)",
+        subtitle: "Sub‑Neptunes (mini‑Neptunes)",
         content:
-          "São semelhantes em tamanho a Netuno ou Urano no nosso Sistema Solar. Sua composição interna é mista, com um núcleo rochoso, mas sua atmosfera é composta principalmente por hidrogênio e hélio. A maior parte dos exoplanetas descobertos nos últimos anos são deste tipo.",
-        badge: "Muito Frequentes",
+          "Similar in size to Neptune/Uranus. Likely mixed composition (rock/ice cores with H/He envelopes). They are among the most frequent types found in transit surveys.",
+        badge: "Common in surveys",
         badgeVariant: "secondary",
       },
       {
-        subtitle: "Superterra",
+        subtitle: "Super‑Earths",
         content:
-          "São planetas terrestres mais massivos que a Terra, mas mais leves que Netuno. Podem ter ou não uma atmosfera. Suas características são variadas, algumas semelhantes às da Terra, mas consideravelmente maiores.",
-        badge: "Potencial Habitável",
+          "Rocky planets more massive than Earth but lighter than Neptune. They may or may not retain atmospheres and can have very diverse properties.",
+        badge: "Potentially interesting",
         badgeVariant: "outline",
       },
       {
-        subtitle: "Planetas Rochosos (Terrestres)",
+        subtitle: "Rocky (terrestrial) planets",
         content:
-          "Têm o tamanho da Terra ou são menores, compostos de rocha, silicato, água ou carbono. Podem ter atmosferas, oceanos e outros sinais que sugerem a possibilidade de formação de vida como a conhecemos.",
-        badge: "Mais Interessantes",
+          "Earth‑size or smaller, composed mainly of silicates/iron/ice. They may host atmospheres and oceans — prime targets when searching for life‑friendly conditions.",
+        badge: "High interest",
         badgeVariant: "destructive",
       },
     ],
   },
   characteristics: {
-    title: "Características Únicas",
-    subtitle: "Descobertas fascinantes e mundos extremos",
+    title: "Unique Characteristics",
+    subtitle: "Fascinating discoveries and extreme worlds",
     icon: Atom,
     gradient: "from-emerald-600 via-green-500 to-lime-400",
     accentColor: "green",
     sections: [
       {
-        subtitle: "Composições Variadas",
+        subtitle: "Varied compositions",
         content:
-          "Ao medir os tamanhos e massas dos exoplanetas, podemos ver composições que variam de rochosas (como a Terra e Vênus) a ricas em gás (como Júpiter e Saturno). Alguns planetas podem ser dominados por água ou gelo, enquanto outros são dominados por ferro ou carbono.",
+          "From rocky (Earth/Venus‑like) to gas‑rich (Jupiter/Saturn‑like), and potentially water‑ or carbon‑dominated. Mass–radius measurements reveal a wide continuum of possibilities.",
       },
       {
-        subtitle: "Mundos Extremos",
+        subtitle: "Extreme worlds",
         content:
-          "Existem mundos de lava cobertos por mares derretidos, planetas com a densidade de isopor, e exoplanetas completamente cobertos por água. Cada descoberta desafia nossa compreensão do que é possível no universo.",
-        highlight: "Alguns exoplanetas são tão únicos que não se encaixam em nenhuma categoria conhecida!",
+          "Lava worlds with molten oceans, ultra‑low‑density ‘puffy’ planets, and water‑rich worlds have all been proposed or observed. Each discovery pushes our understanding of planet formation.",
+        highlight: "Some exoplanets don’t fit neatly into any known category.",
       },
       {
-        subtitle: "Planetas Nômades",
+        subtitle: "Rogue planets",
         content:
-          "Alguns planetas se formam ao redor de uma estrela, mas depois são ejetados para vagar sozinhos pelo espaço, sem orbitar nenhuma estrela. Estes são chamados de planetas nômades ou planetas órfãos.",
-        badge: "Fenômeno Raro",
+          "Some planets are ejected from their systems and drift through space without a host star. These are called rogue or orphan planets.",
+        badge: "Rare phenomenon",
       },
     ],
   },
   importance: {
-    title: "Por Que Estudar Exoplanetas?",
-    subtitle: "Impacto científico e questões fundamentais",
+    title: "Why Study Exoplanets?",
+    subtitle: "Scientific impact and fundamental questions",
     icon: Lightbulb,
     gradient: "from-indigo-600 via-violet-500 to-purple-400",
     accentColor: "indigo",
     sections: [
       {
-        subtitle: "Questões Fundamentais",
+        subtitle: "Fundamental questions",
         content:
-          "O estudo dos exoplanetas pode ajudar a responder questões primordiais sobre o universo: Estamos sozinhos? Como os sistemas planetários se formam? Quais condições são necessárias para a vida?",
+          "Exoplanet science addresses big questions: Are we alone? How do planetary systems form and evolve? What conditions allow life to emerge?",
       },
       {
-        subtitle: "Busca por Vida",
+        subtitle: "Search for life",
         content:
-          "Alguns exoplanetas podem apresentar semelhanças com a Terra e até oferecer condições favoráveis ao desenvolvimento da vida. Contudo, é necessário estudá-los com mais profundidade para confirmar essas possibilidades.",
-        highlight: "A descoberta de vida fora da Terra seria uma das maiores descobertas da humanidade!",
+          "Some exoplanets may resemble Earth and could offer conditions favorable to life. Detailed follow‑up is required to test these possibilities.",
+        highlight: "Finding life beyond Earth would be one of humanity’s greatest discoveries.",
       },
       {
-        subtitle: "Compreensão do Nosso Sistema",
+        subtitle: "Understanding our own system",
         content:
-          "Estudar exoplanetas nos ajuda a entender melhor nosso próprio Sistema Solar e como ele se formou. Cada exoplaneta descoberto adiciona uma peça ao quebra-cabeça da formação planetária.",
+          "Studying exoplanets helps us place the Solar System in context and refine models of planet formation and evolution.",
       },
       {
-        subtitle: "Avanço Tecnológico",
+        subtitle: "Technological advances",
         content:
-          "A busca por exoplanetas impulsiona o desenvolvimento de novas tecnologias de telescópios, sensores e análise de dados, incluindo inteligência artificial e machine learning para processar grandes volumes de informações astronômicas.",
-        badge: "IA & ML",
+          "The search for exoplanets drives innovation in telescopes, detectors and data analysis — including AI/ML methods to process massive astronomical datasets.",
+        badge: "AI & ML",
       },
     ],
   },
@@ -232,6 +228,19 @@ export function EducationalModal({ open, onOpenChange, topic }: EducationalModal
 
           <ScrollArea className="h-[calc(90vh-140px)] max-h-[calc(720px-140px)]">
             <div className="px-6 sm:px-8 lg:px-10 py-6 space-y-6 pb-12">
+              {/* Live reference (opens in new tab) */}
+              <div className="flex items-center justify-end">
+                <a
+                  href="https://exoplanetarchive.ipac.caltech.edu/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md border hover:bg-card/70 transition-colors"
+                  title="NASA Exoplanet Archive"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  <span>NASA Exoplanet Archive</span>
+                </a>
+              </div>
               {content.sections.map((section, index) => (
                 <div
                   key={index}

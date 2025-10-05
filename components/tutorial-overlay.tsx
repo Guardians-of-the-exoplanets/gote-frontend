@@ -23,6 +23,8 @@ import {
 } from "lucide-react"
 import { useMode } from "@/lib/mode-context"
 import { Progress } from "@/components/ui/progress"
+import Image from "next/image"
+import { TelescopeFlow } from "@/components/telescope-flow"
 
 interface TutorialStep {
   id: string
@@ -39,153 +41,153 @@ interface TutorialStep {
 const explorerSteps: TutorialStep[] = [
   {
     id: "intro",
-    title: "Bem-vindo ao Guardians of The Exoplanets - Modo Explorador",
+    title: "Welcome to Guardians of The Exoplanets — Explorer Mode",
     description:
-      "O Modo Explorador foi criado para tornar a descoberta de exoplanetas acessível a todos. Você vai aprender a identificar se um sinal astronômico é realmente um planeta orbitando outra estrela!",
+      "Explorer Mode is for enthusiasts, students, and newcomers. It guides you from data entry to a trustworthy classification in just a few steps — no expertise required.",
     details: [
-      "Interface simplificada e intuitiva para iniciantes",
-      "Processo guiado em 3 etapas principais",
-      "Resultados visuais e fáceis de interpretar",
-      "Visualização 3D interativa do exoplaneta descoberto",
+      "Two input paths: manual form with validation or CSV upload",
+      "Live progress while your data is validated and analyzed",
+      "Clear decision with confidence and color‑coded labels",
+      "Optional 3D planet visualization to explore the result",
     ],
     tips: [
-      "Não precisa ser um astrônomo para usar o Guardians of The Exoplanets",
-      "Cada campo tem explicações detalhadas",
-      "Experimente com diferentes valores para ver como afetam o resultado",
+      "No hyperparameters are sent in Explorer — it always runs the baseline model",
+      "Hover any info icon to understand a field before filling it",
+      "Use the Example button to try a realistic set of values",
     ],
     imageQuery: "astronomer looking at stars through telescope, futuristic interface",
     icon: Rocket,
   },
   {
     id: "data-input",
-    title: "Entrada de Dados",
+    title: "Data Entry",
     description:
-      "Primeiro, você precisa inserir os dados observados do seu candidato a exoplaneta. Esses dados vêm de telescópios que medem a luz das estrelas.",
+      "Enter the observed parameters for your candidate. You can type values directly or upload a CSV with one or more candidates.",
     details: [
-      "Quando um planeta passa na frente de sua estrela, ele bloqueia um pouco da luz",
-      "Medimos quanto tempo leva para o planeta completar uma órbita (Período Orbital)",
-      "Também medimos o tamanho do planeta comparado com a Terra",
-      "Outros dados como temperatura e características da estrela ajudam na análise",
+      "When a planet passes in front of its star, it blocks a small fraction of light",
+      "We measure how long the planet takes to complete an orbit (Orbital Period)",
+      "We also estimate the planet’s size relative to Earth",
+      "Other parameters like temperature and stellar properties help the analysis",
     ],
     inputs: [
       {
-        name: "Período Orbital",
-        description: "Tempo que o planeta leva para dar uma volta completa ao redor da estrela (em dias)",
+        name: "Orbital Period",
+        description: "Time the planet takes to complete one full orbit around the star (days)",
       },
-      { name: "Raio do Planeta", description: "Tamanho do planeta em relação à Terra (1.0 = tamanho da Terra)" },
+      { name: "Planet Radius", description: "Planet size relative to Earth (1.0 = Earth size)" },
       {
-        name: "Temperatura de Equilíbrio",
-        description: "Temperatura estimada do planeta baseada na distância da estrela (em Kelvin)",
+        name: "Equilibrium Temperature",
+        description: "Estimated planetary temperature based on stellar distance (Kelvin)",
       },
-      { name: "Razão Sinal/Ruído", description: "Qualidade do sinal detectado (valores maiores = melhor qualidade)" },
+      { name: "Signal‑to‑Noise Ratio", description: "Quality of the detected signal (higher = better)" },
     ],
     outputs: [
       {
-        name: "Dados Validados",
-        description: "Sistema verifica se os valores estão dentro de limites físicos realistas",
+        name: "Validated Data",
+        description: "The system checks whether values are within realistic physical limits",
       },
     ],
     tips: [
-      "Campos obrigatórios estão marcados com asterisco (*)",
-      "Passe o mouse sobre o ícone de informação para ver explicações detalhadas",
-      "Você pode inserir dados manualmente ou fazer upload de um arquivo CSV",
+      "Required fields are marked with an asterisk (*)",
+      "Inline error messages help you fix formatting or invalid ranges",
+      "Use CSV upload for multiple candidates at once",
     ],
     imageQuery: "data entry form with astronomical parameters, modern UI",
     icon: Database,
   },
   {
     id: "classification",
-    title: "Processo de Classificação",
+    title: "Classification Process",
     description:
-      "Quando você clica em 'Classificar', nossa inteligência artificial analisa os dados usando algoritmos treinados com milhares de exoplanetas conhecidos.",
+      "Click ‘Classify’ to start a live, step‑by‑step analysis. You’ll see input validation, preprocessing, model inference and completion in real time.",
     details: [
-      "O modelo compara seus dados com padrões de exoplanetas confirmados",
-      "Também verifica se há características de falsos positivos (como sistemas binários)",
-      "Calcula a probabilidade de ser um planeta real vs. um falso alarme",
-      "Todo o processo leva apenas alguns segundos",
+      "The model compares your data with patterns of confirmed exoplanets",
+      "Checks for common false‑positive signatures (e.g., binaries)",
+      "Outputs a probability that the candidate is a real planet",
+      "Typical runs complete in seconds",
     ],
     outputs: [
-      { name: "Classificação", description: "Confirmado, Candidato ou Falso Positivo" },
-      { name: "Confiança", description: "Porcentagem de certeza da classificação (0-100%)" },
-      { name: "Análise de Fatores", description: "Quais características influenciaram a decisão" },
+      { name: "Classification", description: "Confirmed, Candidate, or False Positive" },
+      { name: "Confidence", description: "Certainty of the decision (0–100%)" },
+      { name: "Factor Analysis", description: "Which features influenced the decision" },
     ],
     tips: [
-      "Confiança acima de 70% indica alta probabilidade de ser um exoplaneta real",
-      "Candidatos entre 50-70% podem precisar de observações adicionais",
-      "Falsos positivos geralmente têm características de sistemas binários",
+      "Confidence above 70% indicates a high likelihood of a real exoplanet",
+      "Candidates between 50–70% may require follow‑up observations",
+      "False positives often match binary‑star or instrumental patterns",
     ],
     imageQuery: "AI analyzing astronomical data, neural network visualization",
     icon: Sparkles,
   },
   {
     id: "results",
-    title: "Interpretando os Resultados",
+    title: "Interpreting Results",
     description:
-      "A aba de Resultados mostra se seu candidato é um exoplaneta confirmado, um candidato promissor ou um falso positivo.",
+      "The Results tab shows the decision and context. For CSV uploads, candidates with the same ID are grouped and can be explored as a history.",
     details: [
-      "Resultado principal mostra a classificação com ícone visual (✓ ou ✗)",
-      "Medidor de confiança indica o quão certo o modelo está",
-      "Análise de fatores-chave explica o que influenciou a decisão",
-      "Seção de próximos passos guia você sobre o que fazer depois",
+      "Main card: classification (✓ or ✗) and confidence",
+      "Grouped table: repeated IDs are merged; click a row to open the pubdate timeline with probabilities",
+      "Color‑coded badges: Confirmed / Candidate / False Positive",
+      "Short guidance on what to do next",
     ],
     outputs: [
-      { name: "Status do Candidato", description: "Confirmado, Candidato ou Falso Positivo com explicação visual" },
-      { name: "Nível de Confiança", description: "Porcentagem e barra de progresso visual" },
-      { name: "Fatores-Chave", description: "Sinal de trânsito, características e probabilidade de falso positivo" },
-      { name: "Recomendações", description: "Sugestões de próximos passos baseadas no resultado" },
+      { name: "Candidate Status", description: "Confirmed, Candidate, or False Positive with a visual cue" },
+      { name: "Confidence Level", description: "Percentage and a visual progress bar" },
+      { name: "History Modal", description: "Timeline of detections by pubdate with classification and confidence" },
+      { name: "Recommendations", description: "Suggested next steps based on the outcome" },
     ],
     tips: [
-      "Leia a explicação educativa para entender como interpretamos os dados",
-      "Verifique os fatores-chave para entender por que chegamos a essa conclusão",
-      "Siga as recomendações de próximos passos para explorar mais",
+      "Click any grouped row to view the candidate’s timeline",
+      "Confidence close to 100% across multiple dates is a strong sign",
+      "A single detection slightly above 95% may still need confirmation",
     ],
     imageQuery: "scientific results dashboard with charts and confidence meters",
     icon: BarChart3,
   },
   {
     id: "visualization",
-    title: "Visualização 3D Interativa",
+    title: "Interactive 3D Visualization",
     description:
-      "Se seu candidato for confirmado ou provável, você pode ver uma representação 3D do exoplaneta comparado com a Terra!",
+      "If your candidate is confirmed or likely, you can view a 3D representation of the exoplanet compared with Earth!",
     details: [
-      "Visualização lado a lado: Terra vs. Exoplaneta descoberto",
-      "Rotação interativa - clique e arraste para girar os planetas",
-      "Textura da Terra real e textura gerada para o exoplaneta",
-      "Informações detalhadas sobre tamanho, temperatura e características",
+      "Side‑by‑side view: Earth vs. the discovered exoplanet",
+      "Interactive rotation — click and drag to spin the planets",
+      "Realistic Earth texture and generated exoplanet texture",
+      "Detailed information on size, temperature, and characteristics",
     ],
     outputs: [
-      { name: "Modelo 3D da Terra", description: "Representação realista do nosso planeta para comparação" },
-      { name: "Modelo 3D do Exoplaneta", description: "Visualização gerada baseada nos dados classificados" },
-      { name: "Dados Comparativos", description: "Tabela mostrando diferenças entre Terra e exoplaneta" },
+      { name: "Earth 3D Model", description: "Realistic representation for comparison" },
+      { name: "Exoplanet 3D Model", description: "Generated visualization based on the classified data" },
+      { name: "Comparative Data", description: "Table showing differences between Earth and the exoplanet" },
     ],
     tips: [
-      "Use o mouse para rotacionar e explorar os planetas em 3D",
-      "A cor e textura do exoplaneta são geradas baseadas em temperatura e tipo",
-      "Compare o tamanho relativo para entender a escala do exoplaneta",
+      "Use the mouse to rotate and explore the planets in 3D",
+      "Exoplanet color and texture are generated from temperature and type",
+      "Compare relative sizes to understand scale",
     ],
     imageQuery: "3D planet comparison Earth vs exoplanet, interactive visualization",
     icon: Globe,
   },
   {
     id: "export",
-    title: "Exportando seus Resultados",
+    title: "Exporting Your Results",
     description:
-      "Salve e compartilhe suas descobertas! Você pode exportar os resultados em diferentes formatos para uso posterior.",
+      "Save and share your discoveries! Export results in multiple formats for later use.",
     details: [
-      "Formato JSON: Dados estruturados para análise programática",
-      "Formato CSV: Compatível com Excel e outras ferramentas de planilha",
-      "Relatório PDF: Documento formatado com gráficos e explicações",
-      "Todos os dados da classificação, confiança e parâmetros incluídos",
+      "JSON: Structured data for programmatic analysis",
+      "CSV: Compatible with Excel and other spreadsheet tools",
+      "PDF Report: Nicely formatted document with charts and explanations",
+      "Includes all classification data, confidence, and parameters",
     ],
     outputs: [
-      { name: "Arquivo JSON", description: "Dados completos em formato estruturado" },
-      { name: "Arquivo CSV", description: "Tabela com todos os parâmetros e resultados" },
-      { name: "Relatório PDF", description: "Documento visual com gráficos e análise completa" },
+      { name: "JSON File", description: "Complete data in a structured format" },
+      { name: "CSV File", description: "Table with all parameters and results" },
+      { name: "PDF Report", description: "Visual document with charts and full analysis" },
     ],
     tips: [
-      "Escolha JSON se for usar os dados em programação",
-      "Use CSV para análise em Excel ou Google Sheets",
-      "PDF é ideal para apresentações e compartilhamento",
+      "Choose JSON if you'll use the data in code",
+      "Use CSV for analysis in Excel or Google Sheets",
+      "PDF is ideal for presentations and sharing",
     ],
     imageQuery: "data export options, file formats, download interface",
     icon: Download,
@@ -195,185 +197,182 @@ const explorerSteps: TutorialStep[] = [
 const researcherSteps: TutorialStep[] = [
   {
     id: "intro",
-    title: "Modo Pesquisador - Pipeline Científico Completo",
+    title: "Researcher Mode — Full Scientific Pipeline",
     description:
-      "O Modo Pesquisador oferece controle total sobre o pipeline de classificação, com configurações avançadas, métricas detalhadas e ferramentas de análise profissional.",
+      "For scientists and power users who need reproducibility, control and metrics. Configure the model, stream the pipeline, and analyze detailed results.",
     details: [
-      "Arquitetura multi-branch: Transformer 1D + CNN 2D + MLP",
-      "Suporte para formatos científicos: CSV, TFRecords, FITS",
-      "Configuração completa de hiperparâmetros do modelo",
-      "Métricas avançadas: ROC, Precision-Recall, Confusion Matrix",
-      "Explicabilidade com SHAP e análise de importância de features",
-      "Sistema de vetting para validação manual",
+      "Input formats: CSV (batch)",
+      "Hyperparameter toggle in Model Configuration",
+      "Advanced metrics: ROC, PR, Confusion Matrix and k‑folds",
+      "Explainability with SHAP and feature importance",
+      "Vetting interface to review candidates",
     ],
     tips: [
-      "Ideal para pesquisadores e cientistas de dados",
-      "Compatível com pipelines Kepler, K2 e TESS",
-      "Suporta processamento em lote de múltiplos candidatos",
+      "Switch on ‘Include hyperparameters’ to send tuned settings",
+      "Turn it off to run a baseline comparable across experiments",
+      "Batch CSV upload is ideal for catalog‑scale studies",
     ],
     imageQuery: "scientific research laboratory, advanced AI pipeline, data analysis",
     icon: Microscope,
   },
   {
     id: "data-input",
-    title: "Entrada de Dados Avançada",
+    title: "Advanced Data Ingestion",
     description:
-      "Suporte para múltiplos formatos de dados astronômicos e processamento em lote para análise de grandes volumes de candidatos.",
+      "Two ways to start: manual form (with validation) or CSV upload with streaming. Batch processing makes it easy to evaluate many candidates.",
     details: [
-      "CSV: Light curves e metadados tabulares",
-      "TFRecords: Dados preprocessados do TensorFlow",
-      "FITS: Formato padrão de astronomia com headers completos",
-      "Processamento em lote: Múltiplos arquivos simultaneamente",
-      "Conexão direta com MAST/ExoFOP para dados públicos",
+      "CSV: Light curves and tabular metadata",
+      "TFRecords: Preprocessed TensorFlow data",
+      "FITS: Astronomy standard with complete headers",
+      "Batch processing: multiple rows per CSV",
+      "Streaming UI: steps appear live as the backend processes the file",
     ],
     inputs: [
-      { name: "Light Curves", description: "Séries temporais de fluxo estelar normalizado" },
-      { name: "Metadados Estelares", description: "Temperatura, raio, massa e metalicidade da estrela hospedeira" },
-      { name: "Parâmetros Orbitais", description: "Período, época, duração e profundidade do trânsito" },
-      { name: "Centroid Motion", description: "Dados de movimento do centroide para detecção de falsos positivos" },
+      { name: "Manual Form", description: "Enter parameters directly; fields are validated inline" },
+      { name: "Light Curves", description: "Time series of normalized stellar flux (optional in CSV)" },
+      { name: "Stellar Metadata", description: "Host star temperature, radius, mass, metallicity" },
+      { name: "Orbital Parameters", description: "Period, epoch, duration, transit depth" },
+      { name: "Centroid Motion", description: "Centroid motion data to flag false positives" },
     ],
     outputs: [
-      { name: "Dados Normalizados", description: "Light curves preprocessadas e normalizadas" },
-      { name: "Features Extraídas", description: "Características automáticas extraídas dos dados brutos" },
+      { name: "Normalized Data", description: "Preprocessed and normalized light curves" },
+      { name: "Extracted Features", description: "Automatically derived features from raw data" },
     ],
     tips: [
-      "Use TFRecords para melhor performance em grandes datasets",
-      "FITS preserva todos os metadados originais",
-      "Processamento em lote é ideal para catálogos completos",
+      "CSV column names should match the dataset schema you selected",
+      "Batch processing is ideal for full catalogs",
+      "Uploads stream step‑by‑step status to the UI",
     ],
     imageQuery: "astronomical data formats, CSV FITS TFRecords, batch processing",
     icon: Database,
   },
   {
     id: "model-config",
-    title: "Configuração do Modelo",
+    title: "Model Configuration",
     description:
-      "Controle total sobre a arquitetura do modelo e hiperparâmetros para otimizar a classificação conforme suas necessidades.",
+      "Control the architecture summary and, when enabled, adjust hyperparameters. A global switch decides whether hyperparameters are sent to the backend.",
     details: [
-      "Transformer 1D: Análise temporal com attention mechanism",
-      "CNN 2D: Extração de features espaciais de phase-folded views",
-      "MLP Fusion: Combinação de features + metadados estelares",
-      "Physics-informed constraints: Restrições baseadas em leis físicas",
-      "Hiperparâmetros ajustáveis: árvores, learning rate, épocas",
+      "1D Transformer: Temporal analysis with an attention mechanism",
+      "2D CNN: Spatial feature extraction from phase‑folded views",
+      "MLP Fusion: Combining features and stellar metadata",
+      "Physics‑informed constraints: Grounded in physical laws",
+      "Hyperparameters (when enabled): trees, learning rate, epochs",
     ],
     inputs: [
-      { name: "Número de Árvores", description: "Quantidade de árvores de decisão no ensemble (10-500)" },
-      { name: "Taxa de Aprendizado", description: "Tamanho dos passos durante treinamento (0.001-0.1)" },
-      { name: "Épocas de Treinamento", description: "Número de iterações sobre o dataset (10-100)" },
-      { name: "Opções de Treinamento", description: "Incremental learning, federated learning, data augmentation" },
+      { name: "Number of Trees", description: "Number of decision trees in the ensemble (10–500)" },
+      { name: "Learning Rate", description: "Step size during training (0.001–0.1)" },
+      { name: "Training Epochs", description: "Number of passes over the dataset (10–100)" },
+      { name: "Hyperparameter Switch", description: "Enable to include hyperparameters in requests; disable to run baseline" },
     ],
     outputs: [
-      { name: "Modelo Configurado", description: "Arquitetura e hiperparâmetros prontos para treinamento" },
-      { name: "Resumo da Configuração", description: "Visão geral dos parâmetros selecionados" },
+      { name: "Configured Model", description: "Architecture and hyperparameters ready for training" },
+      { name: "Configuration Summary", description: "Overview of selected parameters" },
     ],
     tips: [
-      "Mais árvores = maior precisão, mas mais tempo de treinamento",
-      "Learning rate menor = treinamento mais estável",
-      "Use data augmentation para datasets pequenos",
+      "More trees = higher accuracy but longer training",
+      "Lower learning rate = more stable training",
+      "Use data augmentation for small datasets",
     ],
     imageQuery: "neural network architecture, hyperparameter tuning, model configuration",
     icon: Settings,
   },
   {
     id: "pipeline",
-    title: "Pipeline de Processamento",
+    title: "Processing Pipeline (Live)",
     description:
-      "Visualize cada etapa do pipeline de classificação em tempo real, desde a ingestão de dados até a predição final.",
+      "Streamed steps show validation, preprocessing, model download, inference and completion with durations. The first step is seeded immediately for feedback.",
     details: [
-      "Ingestão: Carregamento e validação dos dados",
-      "Preprocessamento: Normalização, detrending, remoção de outliers",
-      "Feature Engineering: Extração de características relevantes",
-      "Classificação: Modelo de ML faz a predição",
-      "Pós-processamento: Calibração de probabilidades e vetting",
-      "Métricas em tempo real de cada etapa",
+      "Ingestion: Loading and validating data",
+      "Preprocessing: Normalization, detrending, outlier removal",
+      "Feature Engineering: Extracting the relevant characteristics",
+      "Classification: ML model performs the prediction",
+      "Post‑processing: Probability calibration and vetting",
+      "Real‑time metrics for each stage",
     ],
     outputs: [
-      { name: "Status do Pipeline", description: "Progresso de cada etapa com indicadores visuais" },
-      { name: "Métricas de Performance", description: "Tempo de execução, uso de memória, throughput" },
-      { name: "Logs Detalhados", description: "Informações técnicas de cada etapa do processamento" },
+      { name: "Pipeline Status", description: "Per‑stage progress with visual indicators" },
+      { name: "Performance Metrics", description: "Runtime, memory usage, throughput" },
+      { name: "Detailed Logs", description: "Technical information for each processing step" },
     ],
     tips: [
-      "Acompanhe o pipeline em tempo real durante o processamento",
-      "Verifique métricas de performance para otimização",
-      "Logs ajudam a diagnosticar problemas nos dados",
+      "Monitor the pipeline in real time during processing",
+      "Check performance metrics for optimization",
+      "Logs help diagnose data issues",
     ],
     imageQuery: "data pipeline visualization, processing stages, real-time metrics",
     icon: Layers,
   },
   {
     id: "visualizations",
-    title: "Visualizações Avançadas",
+    title: "Analytics Dashboard",
     description:
-      "Explore seus dados e resultados através de visualizações interativas e gráficos científicos detalhados.",
+      "A collection of interactive charts to understand performance and data distributions — the same insights you can use in reports.",
     details: [
-      "Light Curves: Visualização das séries temporais originais",
-      "Phase-Folded Views: Trânsitos alinhados por fase orbital",
-      "Distribuições: Histogramas de parâmetros e classificações",
-      "Comparação 3D: Terra vs. Exoplaneta com texturas realistas",
-      "Gráficos interativos com zoom, pan e export",
+      "Distributions and feature importance",
+      "K‑fold metrics (accuracy, precision, recall, F1)",
+      "ROC / PR curves and confusion matrices",
+      "Processing time and live summaries",
+      "Interactive charts with export‑friendly tooltips",
     ],
     outputs: [
-      { name: "Gráficos Interativos", description: "Visualizações manipuláveis com controles avançados" },
-      { name: "Modelos 3D", description: "Representações tridimensionais dos planetas descobertos" },
-      { name: "Dashboards", description: "Painéis com múltiplas visualizações sincronizadas" },
+      { name: "Charts", description: "Curated plots built from live and post‑run metrics" },
+      { name: "Matrices", description: "Confusion matrices for test and blind sets" },
+      { name: "Distributions", description: "Feature and label distributions" },
     ],
     tips: [
-      "Use zoom para examinar detalhes nas light curves",
-      "Phase-folded views revelam a forma do trânsito",
-      "Exporte gráficos em alta resolução para publicações",
+      "Use the dashboard to compare runs and justify thresholds",
+      "Copy metrics to lab notebooks or export figures",
+      "Look for drift across folds to detect instability",
     ],
     imageQuery: "scientific data visualization, interactive charts, 3D planet models",
     icon: Eye,
   },
   {
     id: "results",
-    title: "Resultados e Explicabilidade",
+    title: "Results and Explainability",
     description:
-      "Análise detalhada dos resultados com métricas científicas, explicabilidade do modelo e sistema de vetting para validação manual.",
+      "Table view for classifications with grouping and a candidate timeline (like Explorer), plus optional comparison cards when baseline vs hyperparameters are present.",
     details: [
-      "Métricas de Classificação: Accuracy, Precision, Recall, F1-Score",
-      "Curvas ROC e Precision-Recall para análise de threshold",
-      "Confusion Matrix: Visualização de acertos e erros",
-      "SHAP Values: Explicação de quais features influenciaram a predição",
-      "Feature Importance: Ranking das características mais relevantes",
-      "Sistema de Vetting: Interface para validação manual de candidatos",
+      "Grouped table: click a row to open the pubdate timeline",
+      "Comparison cards: baseline vs tuned hyperparameters (when provided)",
+      "Vetting panel appears automatically when candidates are present",
+      "Explainability and importance available via Analytics",
     ],
     outputs: [
-      { name: "Métricas Detalhadas", description: "Conjunto completo de métricas de performance do modelo" },
-      { name: "Explicações SHAP", description: "Valores de contribuição de cada feature para a predição" },
-      { name: "Matriz de Confusão", description: "Tabela de verdadeiros/falsos positivos e negativos" },
-      { name: "Relatório de Vetting", description: "Validação manual com notas e classificação revisada" },
+      { name: "Grouped Results", description: "Consolidated by object ID with timeline modal" },
+      { name: "Comparison", description: "Side‑by‑side baseline vs hyperparameters" },
+      { name: "Vetting", description: "Manual review workflow for candidates" },
     ],
     tips: [
-      "Use SHAP para entender decisões individuais do modelo",
-      "Confusion matrix ajuda a identificar tipos de erros",
-      "Sistema de vetting é essencial para validação científica",
+      "Use comparison to quantify gains from tuning",
+      "Document vetting notes for reproducibility",
+      "Promote promising candidates to dedicated follow‑up",
     ],
     imageQuery: "machine learning metrics, SHAP values, confusion matrix, scientific analysis",
     icon: BarChart3,
   },
   {
     id: "export",
-    title: "Exportação Científica",
+    title: "Export & Reproducibility",
     description:
-      "Exporte resultados em formatos científicos padrão, prontos para publicação ou compartilhamento com a comunidade astronômica.",
+      "Export artifacts and tabular results for reports and downstream analysis. When hyperparameters are enabled, they are included in the run metadata.",
     details: [
-      "JSON: Dados estruturados com metadados completos",
-      "CSV: Tabelas compatíveis com ferramentas de análise",
-      "HDF5: Formato hierárquico para grandes volumes de dados",
-      "FITS: Padrão astronômico com headers WCS",
-      "Relatórios PDF: Documentos formatados com gráficos e análises",
-      "Integração com ExoFOP: Submissão direta de candidatos",
+      "JSON: Structured data with complete metadata",
+      "CSV: Tables compatible with analysis tools",
+      "HDF5: Hierarchical format for large datasets",
+      "FITS: Astronomy standard with WCS headers",
+      "PDF Reports: Documents with charts and analyses",
+      "ExoFOP integration: Direct submission of candidates",
     ],
     outputs: [
-      { name: "Arquivos Científicos", description: "Dados em formatos padrão da astronomia" },
-      { name: "Relatórios Completos", description: "Documentos com análise detalhada e visualizações" },
-      { name: "Metadados", description: "Informações completas sobre processamento e configuração" },
+      { name: "Files", description: "Astronomy‑standard formats and tabular data" },
+      { name: "Reports", description: "Documents with detailed analysis and visuals" },
+      { name: "Run Metadata", description: "Configuration and (optionally) hyperparameters" },
     ],
     tips: [
-      "HDF5 é ideal para grandes datasets",
-      "FITS preserva compatibilidade com ferramentas astronômicas",
-      "Inclua sempre metadados para reprodutibilidade",
+      "Always include metadata for reproducibility",
+      "CSV is best for quick spreadsheet analysis",
+      "JSON preserves hierarchical structure for pipelines",
     ],
     imageQuery: "scientific data export, file formats, research publication",
     icon: Download,
@@ -384,115 +383,115 @@ const researcherSteps: TutorialStep[] = [
 const ExampleSteps: TutorialStep[] = [
   {
     id: "intro",
-    title: "Kepler - Dados de Exemplo Processados",
+    title: "Kepler — Processed Example Data",
     description:
-      "Nesta experiência você explora um conjunto de dados do Kepler já processado pelos nossos modelos de Machine Learning. O objetivo é visualizar resultados prontos, entender o que significa cada classificação e aprender como o modelo chegou a essas conclusões.",
+      "In this experience you explore a Kepler dataset already processed by our Machine Learning models. The goal is to view ready‑made results, understand what each classification means, and learn how the model reached its conclusions.",
     details: [
-      "O Kepler observou uma região fixa do céu usando o método de trânsito",
-      "Os exemplos incluem KOIs e campanhas K2, com métricas de confiança",
-      "As telas exibem apenas resultados finais (sem necessidade de envio de dados)",
+      "Kepler observed a fixed region of the sky using the transit method",
+      "Examples include KOIs and K2 campaigns, with confidence metrics",
+      "Screens show only final results (no data upload required)",
     ],
     tips: [
-      "Use esta visão para aprender a interpretar classificações reais",
-      "Compare casos confirmados, candidatos e falsos positivos",
+      "Use this view to learn how to interpret real classifications",
+      "Compare confirmed cases, candidates, and false positives",
     ],
     imageQuery: "Kepler space telescope, transit method, exoplanet discovery",
     icon: Globe,
   },
   {
     id: "about",
-    title: "Sobre a Missão Kepler",
+    title: "About the Kepler Mission",
     description:
-      "Resumo didático sobre a missão: como o Kepler revolucionou a estatística de exoplanetas e como a fase K2 expandiu o escopo científico.",
+      "Educational overview of the mission: how Kepler revolutionized exoplanet statistics and how the K2 phase expanded the science.",
     details: [
-      "Método de trânsito em larga escala",
-      "Mais de 2.600 planetas confirmados",
-      "K2: campanhas ao longo da eclíptica usando pressão da luz solar",
+      "Large‑scale transit method",
+      ">2,600 confirmed planets",
+      "K2: campaigns along the ecliptic using solar‑pressure pointing",
     ],
-    tips: ["Veja a aba ‘Sobre’ para o texto completo e destaques da missão"],
+    tips: ["See the ‘About’ tab for the full mission text and highlights"],
     imageQuery: "Kepler mission overview, star field, transit light curves",
     icon: Layers,
   },
   {
     id: "classifications",
-    title: "Classificações (Resultados do Modelo)",
+    title: "Classifications (Model Results)",
     description:
-      "Lista de candidatos classificados pelo nosso pipeline: cada entrada possui rótulo (Confirmado/Candidato/Falso Positivo) e uma probabilidade alta de acerto.",
+      "List of candidates classified by our pipeline: each entry includes a label (Confirmed/Candidate/False Positive) and a high confidence score.",
     details: [
-      "Cada linha corresponde a um objeto (KOI/EPIC)",
-      "A badge de classificação indica o rótulo final",
-      "A coluna de probabilidade resume a confiança do modelo",
+      "Each row corresponds to an object (KOI/EPIC)",
+      "The classification badge indicates the final label",
+      "The probability column summarizes model confidence",
     ],
-    tips: ["Ordene por probabilidade para ver os casos mais fortes"],
+    tips: ["Sort by probability to see the strongest cases first"],
     imageQuery: "classification table, confidence scores, badges",
     icon: BarChart3,
   },
   {
     id: "report",
-    title: "Relatório Técnico",
+    title: "Technical Report",
     description:
-      "Métricas e artefatos gerados durante o processamento: matriz de confusão, curva ROC e outras informações que explicam o desempenho do modelo nos exemplos.",
+      "Metrics and artifacts produced during processing: confusion matrix, ROC curve, and other materials that explain model performance on the examples.",
     details: [
-      "Matriz de confusão para visualizar acertos e erros",
-      "Curva ROC para sensibilidade vs. especificidade",
-      "Resumo técnico do pipeline aplicado aos dados",
+      "Confusion matrix to visualize hits and misses",
+      "ROC curve for sensitivity vs. specificity",
+      "Technical summary of the pipeline applied to the data",
     ],
-    tips: ["Use este material para comparar diferentes versões do modelo"],
+    tips: ["Use this material to compare different model versions"],
     imageQuery: "confusion matrix and roc curve scientific dashboard",
     icon: BarChart3,
   },
   {
     id: "intro",
-    title: "TESS - Dados de Exemplo Processados",
+    title: "TESS — Processed Example Data",
     description:
-      "Aqui você explora um conjunto de dados do TESS processado pelos nossos modelos. O foco é aprender com exemplos prontos e entender como interpretamos as classificações.",
+      "Here you explore a TESS dataset processed by our models. The focus is to learn from ready‑made examples and understand how we interpret the classifications.",
     details: [
-      "A missão TESS cobre ~85% do céu em setores",
-      "Exemplos incluem TICs e setores observacionais",
-      "Não é necessário enviar dados; veja resultados prontos",
+      "The TESS mission surveys ~85% of the sky in sectors",
+      "Examples include TICs and observed sectors",
+      "No data upload required; view ready results",
     ],
-    tips: ["Acompanhe os setores para relacionar as descobertas"],
+    tips: ["Track the sectors to relate discoveries"],
     imageQuery: "TESS satellite, all-sky survey, exoplanet transit",
     icon: Globe,
   },
   {
     id: "about",
-    title: "Sobre a Missão TESS",
+    title: "About the TESS Mission",
     description:
-      "Visão geral da missão TESS e seus objetivos: encontrar mundos próximos e brilhantes que são ideais para caracterização detalhada.",
+      "Overview of the TESS mission and its goals: to find nearby, bright worlds ideal for detailed characterization.",
     details: [
-      "Levantamento quase total do céu",
-      ">200 mil estrelas-alvo, prioridade em alvos brilhantes",
-      "Gera TOIs e confirma centenas de planetas",
+      "Nearly all‑sky survey",
+      ">200k target stars, prioritizing bright targets",
+      "Produces TOIs and confirms hundreds of planets",
     ],
-    tips: ["Confira a aba ‘Sobre’ para o histórico e marcos da TESS"],
+    tips: ["See the ‘About’ tab for TESS history and milestones"],
     imageQuery: "TESS mission overview, sectors map, bright stars",
     icon: Layers,
   },
   {
     id: "classifications",
-    title: "Classificações (Resultados do Modelo)",
+    title: "Classifications (Model Results)",
     description:
-      "Tabela com candidatos do TESS classificados pelo nosso pipeline, incluindo rótulos finais e probabilidades altas de acerto.",
+      "Table of TESS candidates classified by our pipeline, including final labels and high confidence scores.",
     details: [
-      "Cada entrada corresponde a um TIC/Setor",
-      "Rótulo final com badge e probabilidade em %",
-      "Dados prontos para estudo e comparação",
+      "Each entry corresponds to a TIC/Sector",
+      "Final label with badge and probability in %",
+      "Data ready for study and comparison",
     ],
-    tips: ["Use a ordenação por setor para comparar regiões do céu"],
+    tips: ["Sort by sector to compare sky regions"],
     imageQuery: "classification table TESS, sectors, confidence",
     icon: BarChart3,
   },
   {
     id: "report",
-    title: "Relatório Técnico",
+    title: "Technical Report",
     description:
-      "Métricas e artefatos do processamento no conjunto TESS: entenda o desempenho do modelo nesses exemplos.",
+      "Metrics and artifacts for the TESS set: understand model performance on these examples.",
     details: [
-      "Matriz de confusão, curva ROC e métricas auxiliares",
-      "Interpretação dos resultados para apoiar estudos",
+      "Confusion matrix, ROC curve, and supporting metrics",
+      "Interpretation of results to support studies",
     ],
-    tips: ["Compare relatórios entre setores ou versões do modelo"],
+    tips: ["Compare reports across sectors or model versions"],
     imageQuery: "technical report metrics confusion roc",
     icon: BarChart3,
   },
@@ -591,7 +590,7 @@ export function TutorialOverlay() {
           animate={{ opacity: 1, scale: 1 }}
           onClick={handleRestart}
           className="fixed bottom-6 right-6 z-50 p-4 bg-gradient-to-r from-primary via-accent to-secondary rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-110 group"
-          title="Abrir Tutorial"
+          title="Open Tutorial"
         >
           <BookOpen className="h-6 w-6 text-white group-hover:rotate-12 transition-transform" />
         </motion.button>
@@ -633,9 +632,9 @@ export function TutorialOverlay() {
                         <Icon className="h-6 w-6 text-white" />
                       </div>
                       <div>
-                        <h2 className="text-xl font-bold gradient-text">Tutorial Guardians of The Exoplanets</h2>
+                        <h2 className="text-xl font-bold gradient-text">Guardians of The Exoplanets Tutorial</h2>
                         <p className="text-sm text-muted-foreground">
-                          Modo {mode === "explorer" ? "Explorador" : "Pesquisador"}
+                          Mode {mode === "explorer" ? "Explorer" : "Researcher"}
                         </p>
                       </div>
                     </div>
@@ -645,7 +644,7 @@ export function TutorialOverlay() {
                         size="sm"
                         onClick={() => setIsAutoPlay(!isAutoPlay)}
                         className="gap-2"
-                        title={isAutoPlay ? "Pausar reprodução automática" : "Reprodução automática"}
+                        title={isAutoPlay ? "Pause auto‑play" : "Auto‑play"}
                       >
                         {isAutoPlay ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                       </Button>
@@ -673,6 +672,26 @@ export function TutorialOverlay() {
                       transition={{ duration: 0.3 }}
                       className="space-y-6 pb-12"
                     >
+                      {mode === 'example' && (
+                        <div className="p-4 border rounded-xl bg-primary/5">
+                          <h4 className="text-sm font-semibold mb-1">Why this tab exists</h4>
+                          {/(kepler|k2)/i.test(step.title) ? (
+                            <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1">
+                              <li>Deep, long‑baseline photometry — sensitive to small and long‑period planets.</li>
+                              <li>Stable single field enables consistent comparisons across campaigns (Kepler and K2).</li>
+                              <li>Great to inspect historic KOIs with high‑quality light curves.</li>
+                            </ul>
+                          ) : /(tess)/i.test(step.title) ? (
+                            <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1">
+                              <li>Nearly all‑sky coverage focused on bright nearby stars — ideal for follow‑ups.</li>
+                              <li>Large candidate volumes per sector — showcases model classification at scale.</li>
+                              <li>Optimized to surface short‑period transits and frequent detections.</li>
+                            </ul>
+                          ) : (
+                            <p className="text-sm text-muted-foreground">Use the Kepler/K2 or TESS tab in the main page to explore a curated dataset classified by our model. This tutorial explains what you will find in each tab.</p>
+                          )}
+                        </div>
+                      )}
                       {/* Title */}
                       <div className="text-center space-y-2">
                         <h3 className="text-2xl lg:text-3xl font-bold gradient-text">{step.title}</h3>
@@ -697,7 +716,7 @@ export function TutorialOverlay() {
                       <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 space-y-4">
                         <h4 className="text-lg font-semibold flex items-center gap-2">
                           <Sparkles className="h-5 w-5 text-primary" />
-                          Como Funciona
+                          How It Works
                         </h4>
                         <ul className="space-y-3">
                           {step.details.map((detail, index) => (
@@ -714,7 +733,7 @@ export function TutorialOverlay() {
                         <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-2xl p-6 space-y-4">
                           <h4 className="text-lg font-semibold flex items-center gap-2">
                             <Database className="h-5 w-5 text-blue-500" />
-                            Entradas (Inputs)
+                            Inputs
                           </h4>
                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             {step.inputs.map((input, index) => (
@@ -734,7 +753,7 @@ export function TutorialOverlay() {
                         <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-2xl p-6 space-y-4">
                           <h4 className="text-lg font-semibold flex items-center gap-2">
                             <BarChart3 className="h-5 w-5 text-green-500" />
-                            Saídas (Outputs)
+                            Outputs
                           </h4>
                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             {step.outputs.map((output, index) => (
@@ -753,8 +772,8 @@ export function TutorialOverlay() {
                       {step.tips && step.tips.length > 0 && (
                         <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-2xl p-6 space-y-4">
                           <h4 className="text-lg font-semibold flex items-center gap-2">
-                            <Sparkles className="h-5 w-5 text-amber-500" />
-                            Dicas e Melhores Práticas
+                          <Sparkles className="h-5 w-5 text-amber-500" />
+                          Tips & Best Practices
                           </h4>
                           <ul className="space-y-3">
                             {step.tips.map((tip, index) => (
@@ -780,7 +799,7 @@ export function TutorialOverlay() {
                       className="gap-2 border-primary/30 hover:bg-primary/10 bg-transparent"
                     >
                       <ArrowLeft className="h-4 w-4" />
-                      Anterior
+                      Previous
                     </Button>
 
                     <div className="flex items-center gap-2">
@@ -795,7 +814,7 @@ export function TutorialOverlay() {
                                 ? "w-2 bg-primary/50"
                                 : "w-2 bg-border"
                           }`}
-                          title={`Ir para etapa ${index + 1}`}
+                          title={`Go to step ${index + 1}`}
                         />
                       ))}
                     </div>
@@ -804,7 +823,7 @@ export function TutorialOverlay() {
                       onClick={handleNext}
                       className="gap-2 bg-gradient-to-r from-primary via-accent to-secondary hover:opacity-90"
                     >
-                      {currentStep === steps.length - 1 ? "Concluir" : "Próximo"}
+                      {currentStep === steps.length - 1 ? "Finish" : "Next"}
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   </div>
