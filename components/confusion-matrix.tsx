@@ -2,15 +2,25 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
-export function ConfusionMatrix() {
-  // Mock confusion matrix data
-  const matrix = [
+interface ConfusionMatrixProps {
+  title?: string
+  description?: string
+  matrix?: number[][]
+  labels?: string[]
+  accuracy?: number
+}
+
+export function ConfusionMatrix({
+  title = "Matriz de Confusão",
+  description = "Comparação entre predições e valores reais",
+  matrix = [
     [85, 10, 5],
     [8, 78, 14],
     [3, 7, 90],
-  ]
-
-  const labels = ["Confirmado", "Candidato", "Falso Positivo"]
+  ],
+  labels = ["Confirmado", "Candidato", "Falso Positivo"],
+  accuracy,
+}: ConfusionMatrixProps) {
 
   const getColorIntensity = (value: number) => {
     if (value >= 80) return "bg-primary/80 text-primary-foreground"
@@ -23,8 +33,8 @@ export function ConfusionMatrix() {
   return (
     <Card className="bg-card/50">
       <CardHeader>
-        <CardTitle className="text-lg">Matriz de Confusão</CardTitle>
-        <CardDescription className="text-xs">Comparação entre predições e valores reais</CardDescription>
+        <CardTitle className="text-lg">{title}</CardTitle>
+        <CardDescription className="text-xs">{description}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
@@ -61,7 +71,7 @@ export function ConfusionMatrix() {
         <div className="mt-4 pt-4 border-t border-border">
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">Acurácia Geral</span>
-            <span className="font-mono font-semibold text-primary">84.3%</span>
+            <span className="font-mono font-semibold text-primary">{typeof accuracy === 'number' ? `${(accuracy * 100).toFixed(1)}%` : '—'}</span>
           </div>
         </div>
       </CardContent>
