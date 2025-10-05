@@ -35,11 +35,11 @@ export function ModeNavigation() {
   }, [])
 
   const educationalButtons = [
-    { topic: "what-is" as EducationalTopic, label: "O que é?", icon: Globe },
-    { topic: "discovery" as EducationalTopic, label: "Descoberta", icon: Telescope },
-    { topic: "types" as EducationalTopic, label: "Tipos", icon: Layers },
-    { topic: "characteristics" as EducationalTopic, label: "Características", icon: Atom },
-    { topic: "importance" as EducationalTopic, label: "Importância", icon: Lightbulb },
+    { topic: "what-is" as EducationalTopic, label: "What is it?", icon: Globe },
+    { topic: "discovery" as EducationalTopic, label: "Discovery", icon: Telescope },
+    { topic: "types" as EducationalTopic, label: "Types", icon: Layers },
+    { topic: "characteristics" as EducationalTopic, label: "Characteristics", icon: Atom },
+    { topic: "importance" as EducationalTopic, label: "Importance", icon: Lightbulb },
   ]
 
   const handleEducationalClick = (topic: EducationalTopic) => {

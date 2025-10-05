@@ -64,7 +64,7 @@ export function ModeSwitcher({ compact = false }: { compact?: boolean }) {
             />
           )}
           <Compass className="h-3 w-3 relative z-10" />
-          <span className="relative z-10 hidden sm:inline">Explorador</span>
+          <span className="relative z-10 hidden sm:inline">Explorer</span>
         </button>
 
         <button
@@ -81,7 +81,7 @@ export function ModeSwitcher({ compact = false }: { compact?: boolean }) {
             />
           )}
           <Microscope className="h-3 w-3 relative z-10" />
-          <span className="relative z-10 hidden sm:inline">Pesquisador</span>
+          <span className="relative z-10 hidden sm:inline">Researcher</span>
         </button>
       </div>
     )
@@ -142,7 +142,7 @@ export function ModeSwitcher({ compact = false }: { compact?: boolean }) {
           />
         )}
         <Compass className="h-4 w-4 relative z-10" />
-        <span className="relative z-10 hidden sm:inline">Explorador</span>
+        <span className="relative z-10 hidden sm:inline">Explorer</span>
       </button>
 
       <button
@@ -159,7 +159,7 @@ export function ModeSwitcher({ compact = false }: { compact?: boolean }) {
           />
         )}
         <Microscope className="h-4 w-4 relative z-10" />
-        <span className="relative z-10 hidden sm:inline">Pesquisador</span>
+        <span className="relative z-10 hidden sm:inline">Researcher</span>
       </button>
     </div>
   )
