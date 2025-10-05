@@ -16,11 +16,11 @@ export function PipelineSection() {
       <div className="text-center space-y-2">
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/10 border border-accent/20 rounded-full text-sm text-accent mb-2">
           <Workflow className="h-4 w-4" />
-          Pipeline Avançado
+          Advanced Pipeline
         </div>
-        <h2 className="text-4xl font-bold">Processamento de Dados</h2>
+        <h2 className="text-4xl font-bold">Data Processing</h2>
         <p className="text-muted-foreground max-w-2xl mx-auto text-pretty">
-          Visualize cada etapa do pipeline de machine learning em tempo real
+          Visualize each stage of the machine learning pipeline in real time
         </p>
       </div>
 
