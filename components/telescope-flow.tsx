@@ -17,12 +17,11 @@ export function TelescopeFlow() {
   const { mode } = useMode()
   const [keplerDataset, setKeplerDataset] = useState<"kepler" | "k2">("kepler")
 
-  // Agora só renderiza se o modo for "example"
   if (mode !== "example") return null
 
   return (
     <div className="space-y-16">
-      {/* ---------- SEÇÃO KEPLER ---------- */}
+      {/* ---------- KEPLER/K2---------- */}
       <div className="space-y-8">
         <div className="relative w-full overflow-hidden rounded-xl border border-border bg-black/20">
           <Image
@@ -66,7 +65,6 @@ export function TelescopeFlow() {
           </TabsList>
 
           <TabsContent value="about" className="mt-6 space-y-6">
-            {/* Conteúdo Kepler */}
             <Card className="p-6 bg-card/50 space-y-6">
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold">Kepler: the telescope that revealed a galaxy full of worlds</h3>
@@ -116,7 +114,7 @@ export function TelescopeFlow() {
         </Tabs>
       </div>
 
-      {/* ---------- SEÇÃO TESS ---------- */}
+      {/* ---------- TESS ---------- */}
       <div className="space-y-8">
         <div className="relative w-full overflow-hidden rounded-xl border border-border bg-black/20">
           <Image

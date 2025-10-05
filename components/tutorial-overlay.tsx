@@ -381,7 +381,7 @@ const researcherSteps: TutorialStep[] = [
 ]
 
 // New tutorials for Kepler and TESS modes
-const keplerSteps: TutorialStep[] = [
+const ExampleSteps: TutorialStep[] = [
   {
     id: "intro",
     title: "Kepler - Dados de Exemplo Processados",
@@ -441,9 +441,6 @@ const keplerSteps: TutorialStep[] = [
     imageQuery: "confusion matrix and roc curve scientific dashboard",
     icon: BarChart3,
   },
-]
-
-const tessSteps: TutorialStep[] = [
   {
     id: "intro",
     title: "TESS - Dados de Exemplo Processados",
@@ -501,6 +498,7 @@ const tessSteps: TutorialStep[] = [
   },
 ]
 
+
 export function TutorialOverlay() {
   const { mode } = useMode()
   const [isActive, setIsActive] = useState(false)
@@ -509,7 +507,7 @@ export function TutorialOverlay() {
   const [isAutoPlay, setIsAutoPlay] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
-  const steps = mode === "explorer" ? explorerSteps : mode === "researcher" ? researcherSteps : mode === "kepler" ? keplerSteps : tessSteps
+  const steps = mode === "explorer" ? explorerSteps : mode === "researcher" ? researcherSteps : ExampleSteps
   const storageKey = `exolab-tutorial-seen-${mode}`
 
   useEffect(() => {
@@ -551,6 +549,7 @@ export function TutorialOverlay() {
     localStorage.setItem(storageKey, "true")
     setHasSeenTutorial(true)
     setIsAutoPlay(false)
+    setCurrentStep(0)
   }
 
   const handleNext = () => {
