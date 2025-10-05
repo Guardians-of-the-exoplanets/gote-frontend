@@ -35,6 +35,25 @@ export interface StreamPredictionRow {
   probabilidade: number
 }
 
+export interface ResearchMetrics {
+  numFeatures?: number
+  testAccuracy?: number
+  testF1?: number
+  blindTestAccuracy?: number
+  blindTestF1?: number
+  totalTrainingTimeMs?: number
+  testConfusionMatrix?: number[][]
+  blindTestConfusionMatrix?: number[][]
+  labels?: string[]
+  kFoldMetrics?: Array<{
+    fold: number
+    accuracy?: number
+    precision?: number
+    recall?: number
+    f1?: number
+  }>
+}
+
 interface PlanetDataContextType {
   planetData: PlanetData
   setPlanetData: Dispatch<SetStateAction<PlanetData>>
@@ -47,6 +66,9 @@ interface PlanetDataContextType {
   setStreamSteps: Dispatch<SetStateAction<StreamStep[]>>
   streamPredictions: StreamPredictionRow[]
   setStreamPredictions: Dispatch<SetStateAction<StreamPredictionRow[]>>
+  // research metrics (to be filled by backend/colleague)
+  researchMetrics: ResearchMetrics
+  setResearchMetrics: Dispatch<SetStateAction<ResearchMetrics>>
 }
 
 const PlanetDataContext = createContext<PlanetDataContextType | undefined>(undefined)
@@ -57,10 +79,11 @@ export function PlanetDataProvider({ children }: { children: ReactNode }) {
   const [isProcessing, setIsProcessing] = useState(false)
   const [streamSteps, setStreamSteps] = useState<StreamStep[]>([])
   const [streamPredictions, setStreamPredictions] = useState<StreamPredictionRow[]>([])
+  const [researchMetrics, setResearchMetrics] = useState<ResearchMetrics>({})
 
   return (
     <PlanetDataContext.Provider
-      value={{ planetData, setPlanetData, prediction, setPrediction, isProcessing, setIsProcessing, streamSteps, setStreamSteps, streamPredictions, setStreamPredictions }}
+      value={{ planetData, setPlanetData, prediction, setPrediction, isProcessing, setIsProcessing, streamSteps, setStreamSteps, streamPredictions, setStreamPredictions, researchMetrics, setResearchMetrics }}
     >
       {children}
     </PlanetDataContext.Provider>
