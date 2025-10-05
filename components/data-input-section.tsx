@@ -35,7 +35,8 @@ export function DataInputSection() {
     subsample: 0.8,
   })
   const { mode } = useMode()
-  const { setIsProcessing, setStreamSteps, setStreamPredictions, setRunMeta, useHyperparams, setUseHyperparams } = usePlanetData()
+          const { setIsProcessing, setStreamSteps, setStreamPredictions, setRunMeta, useHyperparams, setUseHyperparams, setResearchMetrics } = usePlanetData()
+          const { pushDebugEvent } = usePlanetData() as any
 
   const handleStartBatchClassification = () => {
     const inputs = inputTab === "upload" ? uploadedData : manualRaw
@@ -79,17 +80,20 @@ export function DataInputSection() {
 
           setRunMeta({ inputKind: 'upload', hasHyperparams: mode === 'researcher' })
           setIsProcessing(true)
+          try { if (mode === 'researcher') setResearchMetrics({} as any) } catch {}
      
           const reader = response.body.getReader()
           const decoder = new TextDecoder()
           const stepStart: Record<number, number> = {}
           let lastStep = 0
           let buffer = ""
+          let incompleteJson = "" // Buffer for incomplete JSON across chunks
           setStreamSteps([])
           setStreamPredictions([])
           // seed step 1: Upload received / validating
           stepStart[1] = Date.now()
           setStreamSteps([{ step: 1, status: 'Uploading file & validating', startedAt: stepStart[1] }])
+          lastStep = 1
 
           const maybeFinishStep = (stepNum: number, nowTs: number) => {
             if (stepStart[stepNum]) {
@@ -113,25 +117,34 @@ export function DataInputSection() {
             for (const raw of parts) {
               const line = raw.trim()
               if (!line.startsWith("data:")) continue
-              const data = line.replace("data:", "").trim()
+              const payload = line.replace("data:", "").trim()
               // eslint-disable-next-line no-console
-              console.log("STREAM:", data)
-              try {
-                const json = JSON.parse(data)
+              console.log("STREAM:", payload.substring(0, 100) + (payload.length > 100 ? '...' : ''))
+              
+              // Split payload by newlines - backend may send multiple JSONs in one SSE message
+              const jsonLines = payload.split(/\n+/).map(s => s.trim()).filter(Boolean)
+              
+              for (const jsonStr of jsonLines) {
+                // Try to complete incomplete JSON from previous chunk
+                const completeStr = incompleteJson + jsonStr
+                
+                try {
+                  const json = JSON.parse(completeStr)
+                  // eslint-disable-next-line no-console
+                  console.log(`[UPLOAD] ✅ Step ${json.step ?? '?'} parsed:`, json)
+                  pushDebugEvent?.({ ts: Date.now(), from: 'upload', raw: completeStr, json, step: json.step, status: json.status })
+                  // Success! Clear incomplete buffer
+                  incompleteJson = ""
+                
                 if (typeof json.step === "number" && typeof json.status === "string") {
                   const now = Date.now()
-                  // finalize previous step if we moved forward
                   if (lastStep > 0 && json.step > lastStep) {
                     maybeFinishStep(lastStep, now)
                   }
-
-                  // mark step start if first time seen
                   if (!stepStart[json.step]) stepStart[json.step] = now
                   lastStep = Math.max(lastStep, json.step)
-
-                  // if backend indicates completion in status/flag, finalize same step
                   const doneHints = ["done", "completed", "finished"]
-                  const lower = json.status.toLowerCase()
+                  const lower = String(json.status).toLowerCase()
                   const isExplicitDone = Boolean(json.finished) || doneHints.some((h) => lower.includes(h))
                   setStreamSteps((prev) => [
                     ...prev.filter((s) => s.step !== json.step),
@@ -141,16 +154,103 @@ export function DataInputSection() {
                     maybeFinishStep(json.step, now)
                   }
                 }
-                if (Array.isArray(json.predictions)) {
-                  setStreamPredictions(json.predictions as any)
+                if (json.details) {
+                  // eslint-disable-next-line no-console
+                  console.log('[UPLOAD] 📊 Processing details (step 5 metrics):', json.details)
+                  try {
+                    const d = Array.isArray(json.details) ? json.details[0] : json.details
+                    const toNum = (v:any) => {
+                      const n = typeof v === 'number' ? v : Number(v)
+                      return Number.isFinite(n) ? n : undefined
+                    }
+                    const kfold = Array.isArray(d?.fold_metrics) ? d.fold_metrics.map((m:any)=>({
+                      fold: Number(m.fold) || 0,
+                      accuracy: toNum(m.accuracy),
+                      precision: toNum(m.precision),
+                      recall: toNum(m.recall),
+                      f1: toNum(m.f1_score ?? m.f1)
+                    })) : []
+                    // Parse confusion matrices (test and blind)
+                    const parseCM = (cm:any) => {
+                      if (!cm) return undefined
+                      const order = ["CONFIRMED","CANDIDATE","FALSE POSITIVE"]
+                      const mat = order.map((r)=> order.map((c)=> Number(cm?.[r]?.[c]) || 0))
+                      return mat
+                    }
+                    const testAcc = toNum(d?.test_metrics?.accuracy)
+                    const blindAcc = toNum(d?.blind_metrics?.accuracy)
+                    const testF1 = toNum(d?.test_metrics?.f1_score ?? d?.test_metrics?.f1)
+                    const blindF1 = toNum(d?.blind_metrics?.f1_score ?? d?.blind_metrics?.f1)
+                    const testPrecision = toNum(d?.test_metrics?.precision)
+                    const testRecall = toNum(d?.test_metrics?.recall)
+                    const blindPrecision = toNum(d?.blind_metrics?.precision)
+                    const blindRecall = toNum(d?.blind_metrics?.recall)
+                    const testCM = parseCM(d?.test_metrics?.confusion_matrix)
+                    const blindCM = parseCM(d?.blind_metrics?.confusion_matrix)
+                    const trainingTimeSec = toNum(d?.Training_Test_Total_Time)
+                    // eslint-disable-next-line no-console
+                    console.log('[UPLOAD] 📊 Parsed metrics:', {
+                      n_features: d?.n_features,
+                      Training_Test_Total_Time: trainingTimeSec,
+                      testAcc, blindAcc, testF1, blindF1,
+                      testPrecision, testRecall, blindPrecision, blindRecall,
+                      kFoldCount: kfold.length,
+                      testCM: testCM?.length, blindCM: blindCM?.length
+                    })
+                    setResearchMetrics((prev)=>({
+                      ...prev,
+                      numFeatures: toNum(d?.n_features) ?? prev.numFeatures,
+                      totalTrainingTimeMs: trainingTimeSec ? trainingTimeSec * 1000 : prev.totalTrainingTimeMs,
+                      kFoldMetrics: kfold.length ? kfold : prev.kFoldMetrics,
+                      testAccuracy: testAcc ?? prev.testAccuracy,
+                      blindTestAccuracy: blindAcc ?? prev.blindTestAccuracy,
+                      testF1: testF1 ?? prev.testF1,
+                      blindTestF1: blindF1 ?? prev.blindTestF1,
+                      testPrecision: testPrecision ?? prev.testPrecision,
+                      testRecall: testRecall ?? prev.testRecall,
+                      blindPrecision: blindPrecision ?? prev.blindPrecision,
+                      blindRecall: blindRecall ?? prev.blindRecall,
+                      testConfusionMatrix: testCM ?? prev.testConfusionMatrix,
+                      blindTestConfusionMatrix: blindCM ?? prev.blindTestConfusionMatrix,
+                      labels: ["Confirmado","Candidato","Falso Positivo"],
+                    }))
+                  } catch (err) {
+                    // eslint-disable-next-line no-console
+                    console.error('[UPLOAD] ❌ Error parsing metrics:', err)
+                  }
                 }
-                // allow UI to render between close steps
-                await new Promise((r) => setTimeout(r, 0))
-              } catch {
-                // ignore malformed chunks; buffer logic will reassemble
-              }
-            }
-          }
+                if (Array.isArray(json.predictions)) {
+                  // eslint-disable-next-line no-console
+                  console.log('[UPLOAD] ✅ Received predictions array:', json.predictions.length, 'items')
+                  // eslint-disable-next-line no-console
+                  console.log('[UPLOAD] First prediction pair:', json.predictions[0])
+                  // eslint-disable-next-line no-console
+                  console.log('[UPLOAD] Setting streamPredictions with array of length:', json.predictions.length)
+                  // Store the raw predictions array directly (don't flatten yet)
+                  setStreamPredictions(json.predictions as any[])
+                  // eslint-disable-next-line no-console
+                  console.log('[UPLOAD] ✅ streamPredictions has been set!')
+                  setIsProcessing(false)
+                  // finalize the last seen step to keep pipeline summary consistent
+                  try { if (lastStep > 0) maybeFinishStep(lastStep, Date.now()) } catch {}
+                }
+                } catch (e: any) {
+                  // Check if it's an incomplete JSON (will be completed in next chunk)
+                  if (e.message?.includes('Unexpected end of JSON') || e.message?.includes('Unterminated string')) {
+                    // eslint-disable-next-line no-console
+                    console.log('[UPLOAD] 📦 Incomplete JSON detected, buffering...', completeStr.substring(0, 80))
+                    incompleteJson = completeStr
+                  } else {
+                    // Real parse error - ignore fragment
+                    // eslint-disable-next-line no-console
+                    console.warn('[UPLOAD] ⚠️ Skipping invalid fragment:', e.message, completeStr.substring(0, 50))
+                    incompleteJson = "" // Reset on real errors
+                  }
+                }
+              } // end for jsonLines
+              await new Promise((r) => setTimeout(r, 0))
+            } // end for parts
+          } // end while
           // finalize last step
           if (lastStep > 0) {
             maybeFinishStep(lastStep, Date.now())
