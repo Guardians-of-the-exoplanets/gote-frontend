@@ -75,6 +75,10 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
     e.preventDefault()
     setIsLoading(true)
     setIsProcessing(true)
+    // scroll to pipeline section smoothly if present
+    try {
+      document.querySelector('#pipeline')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    } catch {}
     setError(null)
 
     try {
@@ -160,9 +164,8 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
             <Info className="h-4 w-4" />
             <AlertDescription className="flex items-center justify-between">
               <span>
-                <strong>Como funciona:</strong> Insira os parâmetros observados do planeta candidato. Nosso modelo de
-                inteligência artificial analisará esses dados para determinar se é realmente um exoplaneta ou um falso
-                positivo.
+                <strong>How it works:</strong> Enter the observed parameters of the candidate. Our model analyzes these
+                data to determine whether it is a real exoplanet or a false positive.
               </span>
               <Button
                 type="button"
@@ -172,7 +175,7 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
                 className="ml-4 shrink-0 bg-transparent"
               >
                 <Zap className="h-3 w-3 mr-1" />
-                Exemplo
+                Example
               </Button>
             </AlertDescription>
           </Alert>
@@ -183,80 +186,80 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
         {[
           {
             id: "orbitalPeriod",
-            label: "Período Orbital",
+            label: "Orbital Period",
             required: true,
-            unit: "dias",
+            unit: "days",
             placeholder: "10.5",
             tooltip:
               mode === "explorer"
-                ? "Tempo que o planeta leva para dar uma volta completa ao redor de sua estrela (como o ano da Terra que tem 365 dias)"
-                : "Tempo que o planeta leva para completar uma órbita",
+                ? "Time the planet takes to complete one orbit around its star (Earth year is 365 days)"
+                : "Time the planet takes to complete an orbit",
           },
           {
             id: "planetRadius",
-            label: "Raio Planetário",
+            label: "Planet Radius",
             required: true,
             unit: "R⊕",
             placeholder: "1.2",
             tooltip:
               mode === "explorer"
-                ? "Tamanho do planeta comparado com a Terra. 1.0 = mesmo tamanho da Terra, 2.0 = duas vezes maior"
-                : "Raio do planeta em relação à Terra",
+                ? "Planet size compared to Earth. 1.0 = same as Earth, 2.0 = twice as large"
+                : "Planet radius relative to Earth",
           },
           {
             id: "transitDuration",
-            label: "Duração do Trânsito",
+            label: "Transit Duration",
             required: true,
-            unit: "horas",
+            unit: "hours",
             placeholder: "3.5",
             tooltip:
               mode === "explorer"
-                ? "Quanto tempo o planeta leva para passar na frente da estrela, bloqueando parte de sua luz"
-                : "Tempo que o planeta leva para cruzar a estrela",
+                ? "How long the planet takes to pass in front of the star, blocking part of its light"
+                : "Time the planet takes to cross the stellar disk",
           },
           {
             id: "equilibriumTemp",
-            label: "Temperatura de Equilíbrio",
+            label: "Equilibrium Temperature",
             required: false,
             unit: "K",
             placeholder: "500",
             tooltip:
               mode === "explorer"
-                ? "Temperatura estimada na superfície do planeta (Terra tem ~288K ou 15°C)"
-                : "Temperatura estimada da superfície do planeta",
+                ? "Estimated temperature at the planet surface (Earth ~288K or 15°C)"
+                : "Estimated surface temperature of the planet",
           },
           {
             id: "stellarMagnitude",
-            label: "Magnitude Estelar",
+            label: "Stellar Magnitude",
             required: false,
             unit: "",
             placeholder: "12.0",
             tooltip:
               mode === "explorer"
-                ? "Quão brilhante a estrela parece da Terra. Números menores = mais brilhante"
-                : "Brilho aparente da estrela hospedeira",
+                ? "How bright the star appears from Earth. Lower numbers = brighter"
+                : "Apparent brightness of the host star",
           },
           {
             id: "transitDepth",
-            label: "Profundidade do Trânsito",
+            label: "Transit Depth",
             required: false,
             unit: "%",
             placeholder: "0.01",
             tooltip:
               mode === "explorer"
-                ? "Quanto a luz da estrela diminui quando o planeta passa na frente dela"
-                : "Redução percentual no brilho durante o trânsito",
+                ? "How much the star light drops when the planet transits"
+                : "Percent reduction in brightness during transit",
           },
           {
             id: "signalToNoise",
-            label: "Razão Sinal/Ruído",
+            label: "Signal-to-Noise Ratio",
             required: false,
             unit: "",
             placeholder: "10.0",
             tooltip:
               mode === "explorer"
-                ? "Qualidade da detecção. Valores maiores = sinal mais claro e confiável"
-                : "Qualidade da detecção do sinal de trânsito",
+                ? "Detection quality. Higher values = clearer and more reliable signal"
+                : "Detection quality of the transit signal",
           },
         ].map((field, index) => (
           <motion.div
@@ -315,12 +318,12 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
             {isLoading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Classificando...
+                Classifying...
               </>
             ) : (
               <>
                 <Sparkles className="h-4 w-4" />
-                {mode === "explorer" ? "Descobrir se é um Exoplaneta" : "Classificar Exoplaneta"}
+                {mode === "explorer" ? "Discover if it's an Exoplanet" : "Classify Exoplanet"}
               </>
             )}
           </Button>

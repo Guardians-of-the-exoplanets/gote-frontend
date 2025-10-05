@@ -27,16 +27,122 @@ export function DataInputSection() {
   const [configLearningRate, setConfigLearningRate] = useState([0.01])
   const [configEpochs, setConfigEpochs] = useState([50])
   const { mode } = useMode()
-  const { setIsProcessing } = usePlanetData()
+  const { setIsProcessing, setStreamSteps, setStreamPredictions } = usePlanetData()
 
   const handleStartBatchClassification = () => {
     const inputs = inputTab === "upload" ? uploadedData : manualRaw
     if (!inputs) return
-    const payload = {
-      mode,
-      dataset,
-      inputs: inputTab === "upload" ? (typeof inputs === "string" ? { csv: inputs } : inputs) : inputs,
+
+    if (inputTab === "upload") {
+      const modelName = mode === "researcher" ? "researcher" : "explorer"
+      const fileObj = (inputs as any)?.file as File | undefined
+      if (!fileObj) return
+
+      ;(async () => {
+        try {
+          const formData = new FormData()
+          formData.append("file", fileObj, fileObj.name)
+          formData.append("mode", modelName)
+          formData.append("dataset", dataset)
+
+          const response = await fetch("https://gote-backend.onrender.com/upload/exoplanet", {
+            method: "POST",
+            body: formData,
+          })
+
+          if (!response.ok || !response.body) {
+            // eslint-disable-next-line no-console
+            console.error("Upload error: invalid response")
+            return
+          }
+
+          setIsProcessing(true)
+          // scroll to pipeline section smoothly if present
+          try {
+            document.querySelector('#pipeline')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          } catch {}
+          const reader = response.body.getReader()
+          const decoder = new TextDecoder()
+          const stepStart: Record<number, number> = {}
+          let lastStep = 0
+          let buffer = ""
+          setStreamSteps([])
+          setStreamPredictions([])
+
+          const maybeFinishStep = (stepNum: number, nowTs: number) => {
+            if (stepStart[stepNum]) {
+              const startedAt = stepStart[stepNum]
+              const durationMs = nowTs - startedAt
+              setStreamSteps((prev) => {
+                const others = prev.filter((s) => s.step !== stepNum)
+                const prevStatus = prev.find((s) => s.step === stepNum)?.status || `Step ${stepNum}`
+                return [...others, { step: stepNum, status: prevStatus, startedAt, finishedAt: nowTs, durationMs }]
+              })
+            }
+          }
+
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+            buffer += decoder.decode(value, { stream: true })
+            const parts = buffer.split("\n\n")
+            buffer = parts.pop() || ""
+            for (const raw of parts) {
+              const line = raw.trim()
+              if (!line.startsWith("data:")) continue
+              const data = line.replace("data:", "").trim()
+              // eslint-disable-next-line no-console
+              console.log("STREAM:", data)
+              try {
+                const json = JSON.parse(data)
+                if (typeof json.step === "number" && typeof json.status === "string") {
+                  const now = Date.now()
+                  // finalize previous step if we moved forward
+                  if (lastStep > 0 && json.step > lastStep) {
+                    maybeFinishStep(lastStep, now)
+                  }
+
+                  // mark step start if first time seen
+                  if (!stepStart[json.step]) stepStart[json.step] = now
+                  lastStep = Math.max(lastStep, json.step)
+
+                  // if backend indicates completion in status/flag, finalize same step
+                  const doneHints = ["done", "completed", "finished"]
+                  const lower = json.status.toLowerCase()
+                  const isExplicitDone = Boolean(json.finished) || doneHints.some((h) => lower.includes(h))
+                  setStreamSteps((prev) => [
+                    ...prev.filter((s) => s.step !== json.step),
+                    { step: json.step, status: json.status, startedAt: stepStart[json.step] },
+                  ])
+                  if (isExplicitDone) {
+                    maybeFinishStep(json.step, now)
+                  }
+                }
+                if (Array.isArray(json.predictions)) {
+                  setStreamPredictions(json.predictions as any)
+                }
+              } catch {
+                // ignore malformed chunks; buffer logic will reassemble
+              }
+            }
+          }
+          // finalize last step
+          if (lastStep > 0) {
+            maybeFinishStep(lastStep, Date.now())
+          }
+          // eslint-disable-next-line no-console
+          console.log("Streaming finished")
+          setIsProcessing(false)
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error("Streaming error:", err)
+        }
+      })()
+      return
     }
+
+    // Manual path: log payload only for now
+    const payload = { mode, dataset, inputs }
     // eslint-disable-next-line no-console
     console.log("CLASSIFY_JSON", payload)
     setIsProcessing(true)
@@ -60,31 +166,31 @@ export function DataInputSection() {
     kepler: {
       title: "Kepler",
       summary:
-        "Lançado em 2009, o Kepler mudou a história ao mostrar que planetas são comuns na Via Láctea. Observando uma mesma região por anos e usando o método de trânsito, confirmou milhares de mundos e estabeleceu a estatística de que há mais planetas do que estrelas.",
+        "Launched in 2009, Kepler showed that planets are common in the Milky Way. By monitoring one region for years and using the transit method, it confirmed thousands of worlds and revealed there are more planets than stars.",
       bullets: [
-        "Técnica: fotometria de trânsitos (quedas minúsculas de brilho)",
-        "Região observada: próximo a Cisne e Lira",
-        "Legado: > 2.600 exoplanetas confirmados",
+        "Technique: transit photometry (tiny brightness drops)",
+        "Observed region: near Cygnus and Lyra",
+        "Legacy: > 2,600 confirmed exoplanets",
       ],
     },
     k2: {
-      title: "K2 (Fase Estendida do Kepler)",
+      title: "K2 (Kepler Extended Mission)",
       summary:
-        "Após a falha de rodas de reação, o Kepler foi reconfigurado como K2, observando campos ao longo da eclíptica com a pressão da luz solar auxiliando no apontamento. A K2 adicionou centenas de planetas e ampliou o escopo científico.",
+        "After reaction wheel failures, Kepler was reconfigured as K2, observing fields along the ecliptic with solar pressure assisting pointing. K2 added hundreds of planets and expanded science targets.",
       bullets: [
-        "Campanhas sucessivas por campo ao longo da eclíptica",
-        "Alvos: estrelas jovens, aglomerados, até objetos do Sistema Solar",
-        "Centenas de descobertas adicionais",
+        "Successive campaigns along the ecliptic",
+        "Targets: young stars, clusters, even Solar System objects",
+        "Hundreds of additional discoveries",
       ],
     },
     tess: {
       title: "TESS",
       summary:
-        "Desde 2018, a missão TESS faz um levantamento quase total do céu para encontrar planetas em trânsito ao redor das estrelas mais brilhantes e próximas — ideais para estudos detalhados com o JWST e grandes telescópios.",
+        "Since 2018, TESS has surveyed nearly the entire sky for transiting planets around bright, nearby stars — ideal for detailed study with JWST and large observatories.",
       bullets: [
-        "Cobertura: ~85% do céu em setores",
-        "Alvos: > 200 mil estrelas próximas",
-        "Muitos candidatos (TOIs) e centenas de confirmações",
+        "Coverage: ~85% of the sky",
+        "Targets: > 200k nearby stars",
+        "Thousands of TOIs and hundreds of confirmations",
       ],
     },
   }
@@ -93,35 +199,35 @@ export function DataInputSection() {
 
   const stepList = isResearcher
     ? [
-        { id: "dataset" as const, label: "1. Selecionar Dataset" },
-        { id: "input" as const, label: "2. Inserir Dados" },
-        { id: "config" as const, label: "3. Configurar Modelo" },
+        { id: "dataset" as const, label: "1. Select Dataset" },
+        { id: "config" as const, label: "2. Configure Model" },
+        { id: "input" as const, label: "3. Enter Data" },
       ]
     : [
-        { id: "dataset" as const, label: "1. Selecionar Dataset" },
-        { id: "input" as const, label: "2. Inserir Dados" },
+        { id: "dataset" as const, label: "1. Select Dataset" },
+        { id: "input" as const, label: "2. Enter Data" },
       ]
 
   const getHeader = () => {
     if (activeStep === "dataset") {
       return {
-        title: "Selecione o Dataset",
-        description: "Escolha entre Kepler, K2 ou TESS para adequar os campos e o processamento ao catálogo.",
+        title: "Select Dataset",
+        description: "Choose Kepler, K2 or TESS to tailor fields and processing to the catalog.",
       }
     }
     if (activeStep === "input") {
       return {
-        title: "Entrada de Dados",
+        title: "Data Entry",
         description:
           mode === "explorer"
-            ? "Insira os dados do seu candidato a exoplaneta para descobrir se é real"
-            : "Insira dados de TCEs/KOIs via CSV ou manualmente. Suporte a pipelines Kepler/K2/TESS.",
+            ? "Enter your candidate data to discover if it is a real exoplanet"
+            : "Enter TCE/KOI data via CSV or manually. Supports Kepler/K2/TESS pipelines.",
       }
     }
     return {
-      title: "Configuração do Modelo",
+      title: "Model Configuration",
       description:
-        "Ajuste hiperparâmetros e estratégias do pipeline. A seção de configuração está ao lado direito.",
+        "Adjust hyperparameters and pipeline strategies. The configuration section is on the right.",
     }
   }
 
@@ -157,7 +263,7 @@ export function DataInputSection() {
               className="gap-2 border-primary/30 bg-transparent"
             >
               <ArrowLeft className="h-4 w-4" />
-              Anterior
+              Previous
             </Button>
 
             <div className="flex items-center gap-2">
@@ -174,7 +280,7 @@ export function DataInputSection() {
               disabled={activeStep === stepList[stepList.length - 1].id}
               className="gap-2 bg-gradient-to-r from-primary via-accent to-secondary hover:opacity-90 disabled:opacity-60"
             >
-              Próximo
+              Next
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
@@ -234,45 +340,43 @@ export function DataInputSection() {
                 </Card>
 
                 <div className="mt-4" />
-              </motion.div>
-            )}
+            </motion.div>
+          )}
 
             {activeStep === "input" && (
               <motion.div key="step-input" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <div className="mb-4" />
           
                 <Tabs value={inputTab} onValueChange={(v) => setInputTab(v as any)} className="w-full">
-                  <TabsList
-                    className="grid w-full max-w-md mx-auto grid-cols-2"
-                  >
-                    <TabsTrigger value="manual" className="flex items-center gap-2 text-xs md:text-sm">
-                      <Edit3 className="h-4 w-4" />
-                      <span className="hidden sm:inline">Manual</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="upload" className="flex items-center gap-2 text-xs md:text-sm">
-                      <Upload className="h-4 w-4" />
-                      <span className="hidden sm:inline">Upload</span>
-                    </TabsTrigger>
-                  </TabsList>
+            <TabsList
+              className="grid w-full max-w-md mx-auto grid-cols-2"
+            >
+              <TabsTrigger value="manual" className="flex items-center gap-2 text-xs md:text-sm">
+                <Edit3 className="h-4 w-4" />
+                <span className="hidden sm:inline">Manual</span>
+              </TabsTrigger>
+              <TabsTrigger value="upload" className="flex items-center gap-2 text-xs md:text-sm">
+                <Upload className="h-4 w-4" />
+                <span className="hidden sm:inline">Upload</span>
+              </TabsTrigger>
+            </TabsList>
 
-                  <TabsContent value="manual" className="mt-6">
-                    <ManualDataForm
-                      showSubmit={mode === "explorer"}
-                      formId={mode === "explorer" ? "explorer-data-form" : "researcher-data-form"}
+            <TabsContent value="manual" className="mt-6">
+              <ManualDataForm
+                      showSubmit={true}
+                formId={mode === "explorer" ? "explorer-data-form" : "researcher-data-form"}
                       dataset={dataset}
                       onChangeRaw={setManualRaw}
-                    />
-                  </TabsContent>
+              />
+            </TabsContent>
 
-                  <TabsContent value="upload" className="mt-6">
+            <TabsContent value="upload" className="mt-6">
                     <FileUpload onDataUploaded={setUploadedData} dataset={dataset} />
-                    {mode === "explorer" && (
-                      <div className="flex justify-center pt-4">
-                        <Button type="button" size="lg" className="gap-2 glow-effect" onClick={handleStartBatchClassification} disabled={!uploadedData}>
-                          Classificar Candidatos
-                        </Button>
-                      </div>
-                    )}
+                    <div className="flex justify-center pt-4">
+                      <Button type="button" size="lg" className="gap-2 glow-effect" onClick={handleStartBatchClassification} disabled={!uploadedData}>
+                        Classificar Candidatos
+                      </Button>
+                    </div>
                   </TabsContent>
                 </Tabs>
 
@@ -310,18 +414,18 @@ export function DataInputSection() {
                         </div>
                       </div>
                       <div className="mt-4 p-4 bg-muted/50 rounded-lg border border-border">
-                        <h4 className="text-sm font-medium mb-3">Resumo da Configuração</h4>
+                        <h4 className="text-sm font-medium mb-3">Configuration Summary</h4>
                         <div className="grid grid-cols-3 gap-4 text-sm">
                           <div>
-                            <span className="text-muted-foreground">Árvores:</span>{" "}
+                            <span className="text-muted-foreground">Trees:</span>{" "}
                             <span className="font-mono font-medium">{configNumTrees[0]}</span>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Taxa:</span>{" "}
+                            <span className="text-muted-foreground">Learning rate:</span>{" "}
                             <span className="font-mono font-medium">{configLearningRate[0].toFixed(3)}</span>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Épocas:</span>{" "}
+                            <span className="text-muted-foreground">Epochs:</span>{" "}
                             <span className="font-mono font-medium">{configEpochs[0]}</span>
                           </div>
                         </div>
@@ -356,17 +460,6 @@ export function DataInputSection() {
                       </div>
                     </TabsContent>
                   </Tabs>
-                </div>
-                <div className="flex justify-center pt-6">
-                  <Button
-                    type="button"
-                    size="lg"
-                    className="gap-2 glow-effect"
-                    onClick={handleStartBatchClassification}
-                    disabled={!(inputTab === "upload" ? uploadedData : manualRaw)}
-                  >
-                    Iniciar Classificação
-                  </Button>
                 </div>
                 <div className="mt-4" />
               </motion.div>
