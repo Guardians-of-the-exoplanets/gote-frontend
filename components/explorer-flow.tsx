@@ -11,7 +11,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { CheckCircle2, Circle, BarChart3, Globe, Download, Database, SlidersHorizontal, Brain, ShieldCheck, Timer, History, ChevronRight, Sparkles, Search, Zap, Target, FileSearch, Telescope } from "lucide-react"
+import { CheckCircle2, Circle, BarChart3, Globe, Download, Database, SlidersHorizontal, Brain, ShieldCheck, Timer, History, ChevronRight, Sparkles, Search, Zap, Target, FileSearch, Telescope, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Info } from "lucide-react"
 import { CandidateHistoryDialog } from "@/components/candidate-history-dialog"
@@ -185,34 +185,100 @@ export function ExplorerFlow() {
 
   return (
     <div className="space-y-8">
-      <Card className="p-4 md:p-6 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
-        <div className="flex flex-col gap-4">
-          <div>
-            <h2 className="text-lg font-semibold mb-1">Explorer Mode</h2>
-            <p className="text-sm text-muted-foreground">Discover if your signal is an exoplanet in 3 simple steps</p>
-          </div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center gap-3 w-full sm:w-auto">
-                <div className="flex items-center gap-2 flex-1 sm:flex-initial">
-                  <div className="flex-shrink-0">
-                    {step.completed ? (
-                      <CheckCircle2 className="h-5 w-5 text-primary" />
-                    ) : (
-                      <div className="relative">
-                        <Circle className="h-5 w-5 text-muted-foreground" />
-                        <span className="absolute inset-0 flex items-center justify-center text-xs font-medium">
-                          {step.id}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <span className="text-sm font-medium">{step.name}</span>
+      {/* Enhanced Explorer Mode Header */}
+      <Card className="overflow-hidden bg-gradient-to-br from-primary/5 via-background to-accent/5 border-primary/20">
+        <div className="p-5 md:p-6">
+          {/* Hero Section */}
+          <div className="flex items-start gap-4 mb-5">
+            <div className="flex-shrink-0 p-3 bg-primary/10 rounded-xl">
+              <Telescope className="h-6 w-6 md:h-7 md:w-7 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                <h2 className="text-xl md:text-2xl font-bold">Explorer Mode</h2>
+                <div className="flex items-center gap-1.5">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    AI-Powered
+                  </span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-accent/10 text-accent border border-accent/20">
+                    <Zap className="h-3 w-3 mr-1" />
+                    Fast
+                  </span>
                 </div>
-                {index < steps.length - 1 && <div className="hidden sm:block w-8 h-px bg-border flex-shrink-0" />}
               </div>
-            ))}
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Discover if your astronomical signal is an exoplanet using advanced machine learning. 
+                <span className="hidden md:inline"> Our trained neural network analyzes your data in seconds, providing confidence scores and detailed classifications.</span>
+              </p>
+            </div>
           </div>
+
+          {/* Steps Flow */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Step 1 */}
+            <div className="group relative p-3.5 rounded-lg border border-border bg-card/50 hover:bg-card transition-all hover:shadow-md">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 p-2 bg-blue-500/10 rounded-lg group-hover:scale-110 transition-transform">
+                  <Database className="h-4 w-4 text-blue-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold">1</span>
+                    <h4 className="text-sm font-semibold">Enter Data</h4>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Upload CSV or input manually
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="group relative p-3.5 rounded-lg border border-border bg-card/50 hover:bg-card transition-all hover:shadow-md">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 p-2 bg-emerald-500/10 rounded-lg group-hover:scale-110 transition-transform">
+                  <Brain className="h-4 w-4 text-emerald-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold">2</span>
+                    <h4 className="text-sm font-semibold">AI Analysis</h4>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Neural network processes signal
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="group relative p-3.5 rounded-lg border border-border bg-card/50 hover:bg-card transition-all hover:shadow-md">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 p-2 bg-violet-500/10 rounded-lg group-hover:scale-110 transition-transform">
+                  <Target className="h-4 w-4 text-violet-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold">3</span>
+                    <h4 className="text-sm font-semibold">View Results</h4>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Get classification & confidence
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Info Banner */}
+          <Alert className="mt-4 border-primary/30 bg-primary/5">
+            <Info className="h-4 w-4" />
+            <AlertDescription className="text-xs">
+              <strong>Perfect for enthusiasts!</strong> This mode is designed for quick exoplanet detection. 
+              <span className="hidden sm:inline"> Choose from Kepler, K2, or TESS datasets and get instant AI-powered classifications.</span>
+            </AlertDescription>
+          </Alert>
         </div>
       </Card>
 
@@ -319,10 +385,20 @@ export function ExplorerFlow() {
                           .map((s, idx) => {
                             const done = typeof s.durationMs === 'number'
                             const isActive = idx === streamSteps.filter(st=>st.durationMs!=null).length && !done
+                            const isError = s.step === 400
                             
                             // Map steps to educational content based on actual backend status
                             const stepInfo = (() => {
                               const statusLower = s.status.toLowerCase()
+                              
+                              // Handle error step 400
+                              if (isError) {
+                                return {
+                                  icon: <AlertCircle className="h-5 w-5" />,
+                                  title: s.status,
+                                  description: "The uploaded file doesn't match the selected dataset. Please ensure you're uploading data from the correct telescope mission (Kepler, K2, or TESS) and try again.",
+                                }
+                              }
                               
                               // Use actual status as title, map to educational descriptions
                               if (statusLower.includes('reading') && statusLower.includes('csv')) {
@@ -381,7 +457,9 @@ export function ExplorerFlow() {
                                 key={s.step} 
                                 className={`
                                   relative p-4 rounded-xl border-2 transition-all duration-300
-                                  ${done 
+                                  ${isError
+                                    ? 'border-red-500/50 bg-red-500/10 shadow-lg'
+                                    : done 
                                     ? 'border-emerald-500/30 bg-emerald-500/5 shadow-sm' 
                                     : isActive 
                                     ? 'border-accent/50 bg-accent/10 shadow-lg animate-pulse' 
@@ -394,16 +472,18 @@ export function ExplorerFlow() {
                                   <div className="flex-shrink-0 relative">
                                     <div className={`
                                       p-3 rounded-xl transition-all
-                                      ${done 
+                                      ${isError
+                                        ? 'bg-red-500/20 text-red-500'
+                                        : done 
                                         ? 'bg-emerald-500/20 text-emerald-500' 
                                         : isActive 
                                         ? 'bg-accent/20 text-accent' 
                                         : 'bg-muted text-muted-foreground'
                                       }
                                     `}>
-                                      {done ? <CheckCircle2 className="h-5 w-5" /> : stepInfo.icon}
+                                      {isError ? <AlertCircle className="h-5 w-5" /> : done ? <CheckCircle2 className="h-5 w-5" /> : stepInfo.icon}
                                     </div>
-                                    {!done && isActive && (
+                                    {!done && isActive && !isError && (
                                       <div className="absolute -top-1 -right-1">
                                         <span className="relative flex h-3 w-3">
                                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
@@ -416,31 +496,36 @@ export function ExplorerFlow() {
                                   {/* Content */}
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-1">
-                                      <span className="text-xs font-mono font-semibold text-muted-foreground">
+                                      <span className={`text-xs font-mono font-semibold ${isError ? 'text-red-500' : 'text-muted-foreground'}`}>
                                         STEP {s.step}
                                       </span>
-                                      {done && (
+                                      {isError && (
+                                        <span className="text-xs font-mono text-red-500 font-bold">
+                                          ✗ ERROR
+                                        </span>
+                                      )}
+                                      {done && !isError && (
                                         <span className="text-xs font-mono text-emerald-500">
                                           ✓ {(s.durationMs!/1000).toFixed(2)}s
                                         </span>
                                       )}
-                                      {isActive && (
+                                      {isActive && !isError && (
                                         <span className="text-xs font-mono text-accent animate-pulse">
                                           ⚡ Processing...
                                         </span>
                                       )}
                                     </div>
-                                    <h4 className="font-semibold text-foreground mb-1">
+                                    <h4 className={`font-semibold mb-1 ${isError ? 'text-red-500' : 'text-foreground'}`}>
                                       {stepInfo.title}
                                     </h4>
-                                    <p className="text-sm text-muted-foreground leading-relaxed">
+                                    <p className={`text-sm leading-relaxed ${isError ? 'text-red-400' : 'text-muted-foreground'}`}>
                                       {stepInfo.description}
                                     </p>
                                   </div>
                                 </div>
 
                                 {/* Connection line to next step */}
-                                {idx < streamSteps.length - 1 && (
+                                {idx < streamSteps.length - 1 && !isError && (
                                   <div className="absolute left-[2.75rem] top-full h-4 w-0.5 bg-gradient-to-b from-border to-transparent" />
                                 )}
                               </div>
