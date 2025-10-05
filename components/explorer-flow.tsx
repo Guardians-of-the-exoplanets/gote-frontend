@@ -217,7 +217,7 @@ export function ExplorerFlow() {
             <div className="mt-4 text-center">
               <div className="inline-flex flex-col items-center gap-2 p-4 border rounded-xl bg-card/60 shadow-sm">
                 <Info className="h-5 w-5 text-primary" />
-                <p className="text-sm text-muted-foreground">Conclua as etapas de seleção de dataset, entrada e configuração do modelo para iniciar o pipeline.</p>
+                <p className="text-sm text-muted-foreground">Complete the dataset selection, input, and model configuration steps to start the pipeline.</p>
               </div>
             </div>
           )}
@@ -299,7 +299,7 @@ export function ExplorerFlow() {
                     </span>
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border ${runMeta.hasHyperparams ? 'border-emerald-400/50 text-emerald-400 bg-emerald-500/10' : 'border-amber-400/50 text-amber-400 bg-amber-500/10'}`}>
                       <span className={`h-1.5 w-1.5 rounded-full ${runMeta.hasHyperparams ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-                      {runMeta.hasHyperparams ? 'With Hyperparameters' : 'Baseline'}
+                      {runMeta.hasHyperparams ? 'With Hyperparametersww' : 'Baseline'}
                     </span>
                   </div>
                 )}
