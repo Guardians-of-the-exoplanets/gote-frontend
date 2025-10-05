@@ -23,8 +23,6 @@ import {
 } from "lucide-react"
 import { useMode } from "@/lib/mode-context"
 import { Progress } from "@/components/ui/progress"
-import Image from "next/image"
-import { TelescopeFlow } from "@/components/telescope-flow"
 
 interface TutorialStep {
   id: string
@@ -34,7 +32,6 @@ interface TutorialStep {
   inputs?: { name: string; description: string }[]
   outputs?: { name: string; description: string }[]
   tips?: string[]
-  imageQuery?: string
   icon: any
 }
 
@@ -48,14 +45,12 @@ const explorerSteps: TutorialStep[] = [
       "Two input paths: manual form with validation or CSV upload",
       "Live progress while your data is validated and analyzed",
       "Clear decision with confidence and color‑coded labels",
-      "Optional 3D planet visualization to explore the result",
     ],
     tips: [
       "No hyperparameters are sent in Explorer — it always runs the baseline model",
       "Hover any info icon to understand a field before filling it",
       "Use the Example button to try a realistic set of values",
     ],
-    imageQuery: "astronomer looking at stars through telescope, futuristic interface",
     icon: Rocket,
   },
   {
@@ -92,7 +87,6 @@ const explorerSteps: TutorialStep[] = [
       "Inline error messages help you fix formatting or invalid ranges",
       "Use CSV upload for multiple candidates at once",
     ],
-    imageQuery: "data entry form with astronomical parameters, modern UI",
     icon: Database,
   },
   {
@@ -116,7 +110,6 @@ const explorerSteps: TutorialStep[] = [
       "Candidates between 50–70% may require follow‑up observations",
       "False positives often match binary‑star or instrumental patterns",
     ],
-    imageQuery: "AI analyzing astronomical data, neural network visualization",
     icon: Sparkles,
   },
   {
@@ -141,7 +134,6 @@ const explorerSteps: TutorialStep[] = [
       "Confidence close to 100% across multiple dates is a strong sign",
       "A single detection slightly above 95% may still need confirmation",
     ],
-    imageQuery: "scientific results dashboard with charts and confidence meters",
     icon: BarChart3,
   },
   {
@@ -165,7 +157,6 @@ const explorerSteps: TutorialStep[] = [
       "Exoplanet color and texture are generated from temperature and type",
       "Compare relative sizes to understand scale",
     ],
-    imageQuery: "3D planet comparison Earth vs exoplanet, interactive visualization",
     icon: Globe,
   },
   {
@@ -189,7 +180,6 @@ const explorerSteps: TutorialStep[] = [
       "Use CSV for analysis in Excel or Google Sheets",
       "PDF is ideal for presentations and sharing",
     ],
-    imageQuery: "data export options, file formats, download interface",
     icon: Download,
   },
 ]
@@ -203,16 +193,14 @@ const researcherSteps: TutorialStep[] = [
     details: [
       "Input formats: CSV (batch)",
       "Hyperparameter toggle in Model Configuration",
+      "Retrain the model with your own data",
       "Advanced metrics: ROC, PR, Confusion Matrix and k‑folds",
-      "Explainability with SHAP and feature importance",
-      "Vetting interface to review candidates",
     ],
     tips: [
-      "Switch on ‘Include hyperparameters’ to send tuned settings",
+      "Switch on 'Include hyperparameters' to send tuned settings",
       "Turn it off to run a baseline comparable across experiments",
       "Batch CSV upload is ideal for catalog‑scale studies",
     ],
-    imageQuery: "scientific research laboratory, advanced AI pipeline, data analysis",
     icon: Microscope,
   },
   {
@@ -243,7 +231,6 @@ const researcherSteps: TutorialStep[] = [
       "Batch processing is ideal for full catalogs",
       "Uploads stream step‑by‑step status to the UI",
     ],
-    imageQuery: "astronomical data formats, CSV FITS TFRecords, batch processing",
     icon: Database,
   },
   {
@@ -273,7 +260,6 @@ const researcherSteps: TutorialStep[] = [
       "Lower learning rate = more stable training",
       "Use data augmentation for small datasets",
     ],
-    imageQuery: "neural network architecture, hyperparameter tuning, model configuration",
     icon: Settings,
   },
   {
@@ -299,7 +285,6 @@ const researcherSteps: TutorialStep[] = [
       "Check performance metrics for optimization",
       "Logs help diagnose data issues",
     ],
-    imageQuery: "data pipeline visualization, processing stages, real-time metrics",
     icon: Layers,
   },
   {
@@ -324,7 +309,6 @@ const researcherSteps: TutorialStep[] = [
       "Copy metrics to lab notebooks or export figures",
       "Look for drift across folds to detect instability",
     ],
-    imageQuery: "scientific data visualization, interactive charts, 3D planet models",
     icon: Eye,
   },
   {
@@ -348,7 +332,6 @@ const researcherSteps: TutorialStep[] = [
       "Document vetting notes for reproducibility",
       "Promote promising candidates to dedicated follow‑up",
     ],
-    imageQuery: "machine learning metrics, SHAP values, confusion matrix, scientific analysis",
     icon: BarChart3,
   },
   {
@@ -374,7 +357,6 @@ const researcherSteps: TutorialStep[] = [
       "CSV is best for quick spreadsheet analysis",
       "JSON preserves hierarchical structure for pipelines",
     ],
-    imageQuery: "scientific data export, file formats, research publication",
     icon: Download,
   },
 ]
@@ -395,7 +377,6 @@ const ExampleSteps: TutorialStep[] = [
       "Use this view to learn how to interpret real classifications",
       "Compare confirmed cases, candidates, and false positives",
     ],
-    imageQuery: "Kepler space telescope, transit method, exoplanet discovery",
     icon: Globe,
   },
   {
@@ -408,8 +389,7 @@ const ExampleSteps: TutorialStep[] = [
       ">2,600 confirmed planets",
       "K2: campaigns along the ecliptic using solar‑pressure pointing",
     ],
-    tips: ["See the ‘About’ tab for the full mission text and highlights"],
-    imageQuery: "Kepler mission overview, star field, transit light curves",
+    tips: ["See the 'About' tab for the full mission text and highlights"],
     icon: Layers,
   },
   {
@@ -423,7 +403,6 @@ const ExampleSteps: TutorialStep[] = [
       "The probability column summarizes model confidence",
     ],
     tips: ["Sort by probability to see the strongest cases first"],
-    imageQuery: "classification table, confidence scores, badges",
     icon: BarChart3,
   },
   {
@@ -437,7 +416,6 @@ const ExampleSteps: TutorialStep[] = [
       "Technical summary of the pipeline applied to the data",
     ],
     tips: ["Use this material to compare different model versions"],
-    imageQuery: "confusion matrix and roc curve scientific dashboard",
     icon: BarChart3,
   },
   {
@@ -451,7 +429,6 @@ const ExampleSteps: TutorialStep[] = [
       "No data upload required; view ready results",
     ],
     tips: ["Track the sectors to relate discoveries"],
-    imageQuery: "TESS satellite, all-sky survey, exoplanet transit",
     icon: Globe,
   },
   {
@@ -464,8 +441,7 @@ const ExampleSteps: TutorialStep[] = [
       ">200k target stars, prioritizing bright targets",
       "Produces TOIs and confirms hundreds of planets",
     ],
-    tips: ["See the ‘About’ tab for TESS history and milestones"],
-    imageQuery: "TESS mission overview, sectors map, bright stars",
+    tips: ["See the 'About' tab for TESS history and milestones"],
     icon: Layers,
   },
   {
@@ -479,7 +455,6 @@ const ExampleSteps: TutorialStep[] = [
       "Data ready for study and comparison",
     ],
     tips: ["Sort by sector to compare sky regions"],
-    imageQuery: "classification table TESS, sectors, confidence",
     icon: BarChart3,
   },
   {
@@ -492,7 +467,6 @@ const ExampleSteps: TutorialStep[] = [
       "Interpretation of results to support studies",
     ],
     tips: ["Compare reports across sectors or model versions"],
-    imageQuery: "technical report metrics confusion roc",
     icon: BarChart3,
   },
 ]
@@ -700,17 +674,6 @@ export function TutorialOverlay() {
                         </p>
                       </div>
 
-                      {/* Image placeholder */}
-                      {step.imageQuery && (
-                        <div className="relative w-full aspect-video rounded-2xl overflow-hidden border-2 border-primary/20 shadow-xl">
-                          <img
-                            src={`/.jpg?height=400&width=800&query=${encodeURIComponent(step.imageQuery)}`}
-                            alt={step.title}
-                            className="w-full h-full object-cover"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                        </div>
-                      )}
 
                       {/* Details */}
                       <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 space-y-4">
