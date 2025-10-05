@@ -157,6 +157,14 @@ export function DataInputSection() {
           }
           // eslint-disable-next-line no-console
           console.log("Streaming finished")
+          if(lastStep === 2) {
+            console.log("Finish in 2")
+            setStreamSteps((prev) => [
+                    ...prev,
+                    { step: 400, status: "CSV file may not be valid for this model", startedAt: Date.now()}
+                  ])
+            return
+           }
           setIsProcessing(false)
         } catch (err) {
           // eslint-disable-next-line no-console
