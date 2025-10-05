@@ -20,7 +20,7 @@ export default function Home() {
         <ResearcherFlow />
       </main>
 
-      <footer className="border-t border-border/50 mt-20">
+      <footer className="border-t border-border/50 mt-5">
         <div className="container mx-auto px-4 py-8 max-w-7xl">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <Image
