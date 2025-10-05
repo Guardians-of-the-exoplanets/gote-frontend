@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useMode } from "@/lib/mode-context"
 import { usePlanetData } from "@/lib/planet-data-context"
 import { DataInputSection } from "@/components/data-input-section"
@@ -17,12 +17,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Microscope, BarChart3, FileOutput, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AnalyticsDashboard } from "./analytics-dashboard"
+import { CandidateHistoryDialog } from "@/components/candidate-history-dialog"
+import { groupRowsById, normalizeId, normalizeClassification, normalizeProbability, normalizePubdate } from "@/lib/utils"
+import { Switch } from "@/components/ui/switch"
 
 export function ResearcherFlow() {
   const { mode } = useMode()
-  const { isProcessing, prediction, streamSteps, streamPredictions } = usePlanetData()
+  const { isProcessing, prediction, streamSteps, streamPredictions, runMeta, useHyperparams, setUseHyperparams } = usePlanetData()
   const [activeTab, setActiveTab] = useState("pipeline")
   const [tabsVisible, setTabsVisible] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [historySelection, setHistorySelection] = useState<{ id: string; entries: any[] } | null>(null)
 
   const hasResults = (prediction !== null) || (streamPredictions && streamPredictions.length > 0)
   const canAccessPipeline = isProcessing || hasResults
@@ -38,7 +43,44 @@ export function ResearcherFlow() {
     }
   }, [isProcessing])
 
-  if (mode !== "researcher") return null
+  // Do not early-return before hooks; render null at the bottom if needed
+
+  // Flatten potential nested arrays from backend
+  const normalizedPredictions = Array.isArray(streamPredictions) && streamPredictions.length > 0 && Array.isArray((streamPredictions as any)[0])
+    ? (streamPredictions as any[]).flat() as any[]
+    : (streamPredictions || [])
+
+  const isComparison = Array.isArray(normalizedPredictions) && normalizedPredictions.some((x:any) => 'old_classificacao' in x || 'new_classificacao' in x)
+
+  // Group rows by id for standard tables
+  const grouped = useMemo(() => {
+    const map = groupRowsById(normalizedPredictions || [])
+    const toRank = (d: string | null) => {
+      if (!d) return -Infinity
+      const [y, m] = String(d).split('-')
+      const yy = Number(y) || 0
+      const mm = Number(m) || 0
+      return yy * 12 + mm
+    }
+    const arr = Array.from(map.entries()).map(([id, rows]) => {
+      const entries = rows.map((r:any)=>({
+        id: normalizeId(r),
+        classification: normalizeClassification(r),
+        probability: normalizeProbability(r),
+        pubdate: normalizePubdate(r),
+      }))
+      entries.sort((a,b)=> toRank(a.pubdate) - toRank(b.pubdate))
+      const latest = entries.slice(-1)[0] || { classification: 'Candidate', probability: 0 }
+      const sortProb = latest?.probability ?? Math.max(0, ...entries.map(e=>e.probability))
+      return { id, entries, latest, sortProb }
+    })
+    arr.sort((a,b)=> b.sortProb - a.sortProb)
+    return arr
+  }, [normalizedPredictions])
+
+  if (mode !== "researcher") {
+    return null
+  }
 
   return (
     <div className="space-y-8">
@@ -131,8 +173,8 @@ export function ResearcherFlow() {
                 <div className="space-y-6">
                   <div className="p-6 border rounded-xl">
                     <div className="text-center space-y-2 mb-4">
-                      <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-full text-xs text-accent">
-                        <Microscope className="h-4 w-4" />
+                      <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 rounded-full text-xs">
+                        <Microscope className="h-4 w-4 text-primary" />
                         Live Pipeline
                       </div>
                       <h4 className="text-xl font-semibold">Processing</h4>
@@ -146,14 +188,19 @@ export function ResearcherFlow() {
                         .map((s) => {
                           const done = typeof s.durationMs === 'number'
                           return (
-                            <div key={s.step} className={`p-3 rounded-lg border transition-all ${done ? 'border-primary/30 bg-primary/5' : 'border-accent/30 bg-accent/5'} `}>
+                            <div key={s.step} className={`p-3 rounded-lg border transition-all ${done ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-sky-500/30 bg-sky-500/5'} `}>
                               <div className="flex items-center justify-between gap-3 min-w-0">
                                 <div className="min-w-0 flex-1">
-                                  <div className="text-xs text-muted-foreground">Step {s.step}</div>
+                                  <div className="text-[10px] text-muted-foreground tracking-wide uppercase">Step {s.step}</div>
                                   <div className="font-medium truncate">{s.status}</div>
                                 </div>
-                                <div className="text-xs font-mono text-muted-foreground flex-shrink-0">
-                                  {done ? `${(s.durationMs!/1000).toFixed(2)}s` : 'running…'}
+                                <div className="flex items-center gap-3">
+                                  <div className="hidden sm:block w-28 h-1.5 bg-muted rounded overflow-hidden">
+                                    <div className={`h-1.5 ${done ? 'bg-emerald-500' : 'bg-primary animate-pulse'} w-full`} />
+                                  </div>
+                                  <div className="text-xs font-mono text-muted-foreground flex-shrink-0">
+                                    {done ? `${(s.durationMs!/1000).toFixed(2)}s` : 'running…'}
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -171,8 +218,10 @@ export function ResearcherFlow() {
                           <div className="text-[10px] text-muted-foreground mt-0.5 truncate">Elapsed</div>
                         </div>
                         <div>
-                          <div className="text-lg font-bold text-secondary">—</div>
-                          <div className="text-[10px] text-muted-foreground mt-0.5 truncate">Remaining</div>
+                          <div className="text-[10px] text-muted-foreground mt-0.5 truncate">Mode</div>
+                          <div className="text-xs">
+                            {runMeta?.inputKind === 'upload' ? 'Upload' : 'Manual'} • {runMeta?.hasHyperparams ? 'Hyperparams' : 'Baseline'}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -196,7 +245,54 @@ export function ResearcherFlow() {
 
           {hasResults && (
             <TabsContent value="results" className="mt-6 space-y-8">
-              {streamPredictions && streamPredictions.length > 0 ? (
+              {runMeta && (
+                <Card className="p-4 border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10">
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded border ${runMeta.inputKind==='upload' ? 'border-primary/30 text-primary' : 'border-secondary/30 text-secondary'}`}>
+                      {runMeta.inputKind === 'upload' ? 'Uploaded CSV' : 'Manual Input'}
+                    </span>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded border ${runMeta.hasHyperparams ? 'border-emerald-400/40 text-emerald-400' : 'border-amber-400/40 text-amber-400'}`}>
+                      {runMeta.hasHyperparams ? 'With Hyperparameters' : 'Baseline'}
+                    </span>
+                  </div>
+                </Card>
+              )}
+              {isComparison ? (
+                (() => {
+                  const oldItem:any = normalizedPredictions.find((x:any) => 'old_classificacao' in x || 'old_probabilidade' in x)
+                  const newItem:any = normalizedPredictions.find((x:any) => 'new_classificacao' in x || 'new_probabilidade' in x)
+                  if (oldItem || newItem) {
+                    const oldCls = String(oldItem?.old_classificacao ?? '')
+                    const oldProb = Number(oldItem?.old_probabilidade ?? 0)
+                    const newCls = String(newItem?.new_classificacao ?? '')
+                    const newProb = Number(newItem?.new_probabilidade ?? 0)
+                    const badge = (cls:string) => cls.toLowerCase().includes('confirm')
+                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                      : cls.toLowerCase().includes('candidate')
+                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                      : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                    return (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Card className="border-primary/20">
+                          <div className="p-5 space-y-3">
+                            <div className="text-xs text-muted-foreground">Baseline (sem hiperparâmetros)</div>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded border text-sm ${badge(oldCls)}`}>{oldCls || '—'}</span>
+                            <div className="text-sm font-mono">{Number.isFinite(oldProb) ? `${oldProb.toFixed(2)}%` : '—'}</div>
+                          </div>
+                        </Card>
+                        <Card className="border-accent/20">
+                          <div className="p-5 space-y-3">
+                            <div className="text-xs text-muted-foreground">Com hiperparâmetros</div>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded border text-sm ${badge(newCls)}`}>{newCls || '—'}</span>
+                            <div className="text-sm font-mono">{Number.isFinite(newProb) ? `${newProb.toFixed(2)}%` : '—'}</div>
+                          </div>
+                        </Card>
+                      </div>
+                    )
+                  }
+                  return null
+                })()
+              ) : normalizedPredictions && normalizedPredictions.length > 0 ? (
                 <>
                 <div className="rounded-xl border overflow-hidden">
                   <table className="w-full text-sm">
@@ -208,29 +304,35 @@ export function ResearcherFlow() {
                       </tr>
                     </thead>
                     <tbody>
-                      {streamPredictions.map((row:any, idx:number) => {
-                        const prob = Number(row.probabilidade)
-                        const raw = String(row.classificacao ?? row.classification ?? '')
-                        const norm = raw.toLowerCase().normalize('NFD').replace(/[^a-z ]/g,'')
-                        const cls = norm.includes('confirm') ? 'Confirmed' : norm.includes('candidate') || norm.includes('candidat') ? 'Candidate' : 'False Positive'
+                      {grouped.map((g:any, idx:number) => {
+                        const idVal = g.id
+                        const cls = g.latest.classification as 'Confirmed' | 'Candidate' | 'False Positive'
+                        const prob = g.latest.probability as number
                         const badgeClass = cls === 'Confirmed'
                           ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                           : cls === 'Candidate'
                           ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                           : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                        const key = String(row.id ?? row.object_id ?? row.koi ?? `${norm}-${prob}-${idx}`)
+                        const key = `${idVal}-${idx}`
                         return (
-                          <tr key={key} className="border-t">
-                            <td className="p-3 font-mono">{row.id}</td>
+                          <tr
+                            key={key}
+                            className="border-t hover:bg-muted/30 cursor-pointer"
+                            onClick={() => { setHistorySelection({ id: idVal, entries: g.entries }); setHistoryOpen(true) }}
+                          >
+                            <td className="p-3 font-mono">{idVal}</td>
                             <td className="p-3">
                               <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs ${badgeClass}`}>{cls}</span>
+                              {g.entries.length > 1 && (
+                                <span className="ml-2 text-xs text-muted-foreground">{g.entries.length}×</span>
+                              )}
                             </td>
                             <td className="p-3">
                               <div className="flex items-center gap-2">
                                 <div className="relative w-full h-2 bg-muted rounded">
                                   <div className="absolute left-0 top-0 h-2 rounded bg-primary/80" style={{ width: `${prob}%` }} />
                                 </div>
-                                <span className="text-right w-16 font-mono">{prob.toFixed(2)}%</span>
+                                <span className="text-right w-16 font-mono">{Number.isFinite(prob) ? prob.toFixed(2) : '—'}%</span>
                               </div>
                             </td>
                           </tr>
@@ -239,7 +341,18 @@ export function ResearcherFlow() {
                     </tbody>
                   </table>
                 </div>
-                {streamPredictions.some((row:any) => String(row.classificacao) === "Candidato") && (
+                <CandidateHistoryDialog
+                  open={historyOpen}
+                  onOpenChange={setHistoryOpen}
+                  candidateId={historySelection?.id || ''}
+                  entries={(historySelection?.entries || []).map((r:any)=>({
+                    id: normalizeId(r),
+                    classification: normalizeClassification(r),
+                    probability: normalizeProbability(r),
+                    pubdate: normalizePubdate(r),
+                  }))}
+                />
+                {normalizedPredictions.some((row:any) => String(row.classificacao ?? row.classification ?? '') === "Candidato") && (
                   <div className="mt-6">
                     <VettingSection />
                   </div>
