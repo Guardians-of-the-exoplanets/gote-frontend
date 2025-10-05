@@ -66,6 +66,7 @@ export interface ResearchMetrics {
 export type RunMeta = {
   inputKind: 'manual' | 'upload'
   hasHyperparams: boolean
+  dataset?: 'kepler' | 'tess'
 }
 
 export interface ComparisonResult {
