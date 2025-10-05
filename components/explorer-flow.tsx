@@ -242,9 +242,21 @@ export function ExplorerFlow() {
                     <div className="space-y-3">
                       {streamSteps
                         .slice()
-                        .sort((a,b)=>a.step-b.step)
+                        .sort((a, b) => a.step - b.step)
                         .map((s) => {
                           const done = typeof s.durationMs === 'number'
+                          if (s.step === 400) {
+                            return (
+                              <div key={s.step} className={`p-3 rounded-lg border transition-all border-destructive/30 bg-destructive/5 `}>
+                                <div className="flex items-center justify-between gap-3 min-w-0">
+                                  <div className="min-w-0 flex-1">
+                                    <div className="text-xs text-muted-foreground">Error</div>
+                                    <div className="font-medium truncate">{s.status}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          } else {
                           return (
                             <div key={s.step} className={`p-3 rounded-lg border transition-all ${done ? 'border-primary/30 bg-primary/5' : 'border-accent/30 bg-accent/5'} `}>
                               <div className="flex items-center justify-between gap-3 min-w-0">
@@ -258,7 +270,7 @@ export function ExplorerFlow() {
                               </div>
                             </div>
                           )
-                        })}
+                        }})}
                     </div>
 
                     {/* Small summary, inspired by PipelineVisualization */}
