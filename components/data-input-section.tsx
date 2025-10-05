@@ -15,6 +15,7 @@ import { usePlanetData } from "@/lib/planet-data-context"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
+import { Input } from "@/components/ui/input"
 import { motion, AnimatePresence } from "framer-motion"
 
 export function DataInputSection() {
@@ -23,9 +24,15 @@ export function DataInputSection() {
   const [dataset, setDataset] = useState<"kepler" | "k2" | "tess">("kepler")
   const [activeStep, setActiveStep] = useState<"dataset" | "input" | "config">("dataset")
   const [inputTab, setInputTab] = useState<"manual" | "upload">("manual")
-  const [configNumTrees, setConfigNumTrees] = useState([100])
-  const [configLearningRate, setConfigLearningRate] = useState([0.01])
-  const [configEpochs, setConfigEpochs] = useState([50])
+  const [hyperparams, setHyperparams] = useState({
+    eval_metric: "mlogloss",
+    objective: "multi:softprob",
+    colsample_bytree: 0.8,
+    learning_rate: 0.1,
+    max_depth: 4,
+    n_estimators: 300,
+    subsample: 0.8,
+  })
   const { mode } = useMode()
   const { setIsProcessing, setStreamSteps, setStreamPredictions } = usePlanetData()
 
@@ -366,6 +373,7 @@ export function DataInputSection() {
                       showSubmit={true}
                 formId={mode === "explorer" ? "explorer-data-form" : "researcher-data-form"}
                       dataset={dataset}
+                      hyperparameters={hyperparams}
                       onChangeRaw={setManualRaw}
               />
             </TabsContent>
@@ -415,47 +423,57 @@ export function DataInputSection() {
                       </div>
                       <div className="mt-4 p-4 bg-muted/50 rounded-lg border border-border">
                         <h4 className="text-sm font-medium mb-3">Configuration Summary</h4>
-                        <div className="grid grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">Trees:</span>{" "}
-                            <span className="font-mono font-medium">{configNumTrees[0]}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Learning rate:</span>{" "}
-                            <span className="font-mono font-medium">{configLearningRate[0].toFixed(3)}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Epochs:</span>{" "}
-                            <span className="font-mono font-medium">{configEpochs[0]}</span>
-                          </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                          <div><span className="text-muted-foreground">Eval metric:</span> <span className="font-mono font-medium">{hyperparams.eval_metric}</span></div>
+                          <div><span className="text-muted-foreground">Objective:</span> <span className="font-mono font-medium">{hyperparams.objective}</span></div>
+                          <div><span className="text-muted-foreground">Trees:</span> <span className="font-mono font-medium">{hyperparams.n_estimators}</span></div>
+                          <div><span className="text-muted-foreground">Max depth:</span> <span className="font-mono font-medium">{hyperparams.max_depth}</span></div>
+                          <div><span className="text-muted-foreground">LR:</span> <span className="font-mono font-medium">{hyperparams.learning_rate}</span></div>
+                          <div><span className="text-muted-foreground">Subsample:</span> <span className="font-mono font-medium">{hyperparams.subsample}</span></div>
                         </div>
                       </div>
                     </TabsContent>
                     <TabsContent value="hyperparams" className="mt-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
                         <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <Label htmlFor="numTreesCfg" className="text-sm font-medium">Número de Árvores</Label>
-                            <span className="text-sm font-mono text-primary">{configNumTrees[0]}</span>
-                          </div>
-                          <Slider id="numTreesCfg" min={10} max={500} step={10} value={configNumTrees} onValueChange={setConfigNumTrees} className="w-full" />
-                          <div className="flex justify-between text-xs text-muted-foreground"><span>10</span><span>500</span></div>
+                          <Label htmlFor="eval_metric" className="text-sm font-medium">Evaluation Metric</Label>
+                          <Input id="eval_metric" value={hyperparams.eval_metric} onChange={(e) => setHyperparams((p) => ({ ...p, eval_metric: e.target.value }))} />
+                        </div>
+                        <div className="space-y-3">
+                          <Label htmlFor="objective" className="text-sm font-medium">Model Objective</Label>
+                          <Input id="objective" value={hyperparams.objective} onChange={(e) => setHyperparams((p) => ({ ...p, objective: e.target.value }))} />
                         </div>
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
-                            <Label htmlFor="lrCfg" className="text-sm font-medium">Taxa de Aprendizado</Label>
-                            <span className="text-sm font-mono text-primary">{configLearningRate[0].toFixed(3)}</span>
+                            <Label htmlFor="colsample_bytree" className="text-sm font-medium">Column Sample by Tree</Label>
+                            <span className="text-sm font-mono text-primary">{hyperparams.colsample_bytree.toFixed(2)}</span>
                           </div>
-                          <Slider id="lrCfg" min={0.001} max={0.1} step={0.001} value={configLearningRate} onValueChange={setConfigLearningRate} className="w-full" />
-                          <div className="flex justify-between text-xs text-muted-foreground"><span>0.001</span><span>0.1</span></div>
+                          <Slider id="colsample_bytree" min={0.1} max={1} step={0.05} value={[hyperparams.colsample_bytree]} onValueChange={(v) => setHyperparams((p) => ({ ...p, colsample_bytree: v[0] }))} className="w-full" />
+                          <div className="flex justify-between text-xs text-muted-foreground"><span>0.1</span><span>1.0</span></div>
                         </div>
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
-                            <Label htmlFor="epochsCfg" className="text-sm font-medium">Épocas de Treinamento</Label>
-                            <span className="text-sm font-mono text-primary">{configEpochs[0]}</span>
+                            <Label htmlFor="learning_rate" className="text-sm font-medium">Learning Rate</Label>
+                            <span className="text-sm font-mono text-primary">{hyperparams.learning_rate.toFixed(3)}</span>
                           </div>
-                          <Slider id="epochsCfg" min={10} max={100} step={5} value={configEpochs} onValueChange={setConfigEpochs} className="w-full" />
-                          <div className="flex justify-between text-xs text-muted-foreground"><span>10</span><span>100</span></div>
+                          <Slider id="learning_rate" min={0.01} max={0.5} step={0.01} value={[hyperparams.learning_rate]} onValueChange={(v) => setHyperparams((p) => ({ ...p, learning_rate: v[0] }))} className="w-full" />
+                          <div className="flex justify-between text-xs text-muted-foreground"><span>0.01</span><span>0.5</span></div>
+                        </div>
+                        <div className="space-y-3">
+                          <Label htmlFor="max_depth" className="text-sm font-medium">Maximum Depth</Label>
+                          <Input id="max_depth" type="number" min={1} max={32} step={1} value={hyperparams.max_depth} onChange={(e) => setHyperparams((p) => ({ ...p, max_depth: Number(e.target.value) }))} />
+                        </div>
+                        <div className="space-y-3">
+                          <Label htmlFor="n_estimators" className="text-sm font-medium">Number of Trees</Label>
+                          <Input id="n_estimators" type="number" min={10} max={2000} step={10} value={hyperparams.n_estimators} onChange={(e) => setHyperparams((p) => ({ ...p, n_estimators: Number(e.target.value) }))} />
+                        </div>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="subsample" className="text-sm font-medium">Sample Ratio per Tree</Label>
+                            <span className="text-sm font-mono text-primary">{hyperparams.subsample.toFixed(2)}</span>
+                          </div>
+                          <Slider id="subsample" min={0.1} max={1} step={0.05} value={[hyperparams.subsample]} onValueChange={(v) => setHyperparams((p) => ({ ...p, subsample: v[0] }))} className="w-full" />
+                          <div className="flex justify-between text-xs text-muted-foreground"><span>0.1</span><span>1.0</span></div>
                         </div>
                       </div>
                     </TabsContent>
