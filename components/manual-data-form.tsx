@@ -44,9 +44,9 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
 
   const loadExampleData = () => {
     const defs = getDatasetFields(dataset as DatasetKey)
-    const sample: Record<string, string> = {}
+    const sample: Record<string, string > = {}
     defs.forEach((d) => {
-      if (d.placeholder) sample[d.key] = d.placeholder
+      if (d.exampleValue) sample[d.key] = d.exampleValue
     })
     setFormData(sample)
   }
@@ -79,28 +79,35 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
         const raw = formData[d.key]
         const valueToUse = (raw === undefined || raw === "") && d.defaultValue !== undefined ? String(d.defaultValue) : raw
 
+        console.log("fields", d)
         // Required validation ("" invalid, but 0 is valid)
-        if (d.required && (valueToUse === undefined || valueToUse === "")) {
-          errors.push(`${d.name} (${d.key}) é obrigatório`)
-          perField[d.key] = "Obrigatório"
+        if (d.required && (valueToUse === null)) {
+          errors.push(`${d.name} (${d.key}) is mandatory`)
+          perField[d.key] = "Mandatory"
           return
         }
+
+        // if ((d.min && d.min > valueToUse) || (d.max && d.max < valueToUse) {
+        //   errors.push(`${d.name} (${d.key}) value must be between ${d.min} and ${d.max}`)
+        //   perField[d.key] = "Invalid value"
+        //   return
+        // }
 
         if (valueToUse === undefined || valueToUse === "") return
 
         if (d.type === "int") {
           const n = coerceInt(valueToUse)
           if (!Number.isFinite(n) || !Number.isInteger(n)) {
-            errors.push(`${d.name} deve ser inteiro`)
-            perField[d.key] = "Inteiro inválido"
+            errors.push(`${d.name} must be integer`)
+            perField[d.key] = "Invalid integer"
             return
           }
           payloadData[d.key] = n
         } else if (d.type === "float") {
           const n = coerceFloat(valueToUse)
           if (!Number.isFinite(n)) {
-            errors.push(`${d.name} deve ser número (float) válido`)
-            perField[d.key] = "Número inválido"
+            errors.push(`${d.name} must be (float) valid`)
+            perField[d.key] = "Invalid number"
             return
           }
           payloadData[d.key] = n
@@ -109,8 +116,8 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
           if (dataset === "k2" && d.key === "soltype") {
             const allowed = ["Published Confirmed", "Published Candidate", "TESS Project Candidate"]
             if (!allowed.includes(String(valueToUse))) {
-              errors.push(`${d.name} possui valor inválido`)
-              perField[d.key] = "Valor inválido"
+              errors.push(`${d.name} has invalid value`)
+              perField[d.key] = "Invalid value"
               return
             }
           }
@@ -244,11 +251,11 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
 
   const getClassificationColor = (classification: string) => {
     switch (classification) {
-      case "Confirmado":
+      case "Confirmed":
         return "bg-green-500/10 text-green-500 border-green-500/20"
-      case "Candidato":
+      case "Candidate":
         return "bg-blue-500/10 text-blue-500 border-blue-500/20"
-      case "Falso Positivo":
+      case "False Positive":
         return "bg-red-500/10 text-red-500 border-red-500/20"
       default:
         return "bg-muted text-muted-foreground"
@@ -257,11 +264,11 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
 
   const getConfidenceColor = (confidence: string) => {
     switch (confidence) {
-      case "Alta":
+      case "High":
         return "text-green-500"
-      case "Média":
+      case "Medium":
         return "text-blue-500"
-      case "Baixa":
+      case "Low":
         return "text-red-500"
       default:
         return "text-muted-foreground"

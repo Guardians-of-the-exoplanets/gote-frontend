@@ -10,6 +10,9 @@ export interface DatasetFieldDef {
   required: boolean
   placeholder?: string
   defaultValue?: string | number
+  exampleValue?: string
+  min?: number
+  max?: number
 }
 
 const KEPLER_FIELDS: DatasetFieldDef[] = [
@@ -21,6 +24,9 @@ const KEPLER_FIELDS: DatasetFieldDef[] = [
     type: "int",
     required: false,
     placeholder: "0 | 1",
+    exampleValue: "1",
+    min: 0,
+    max: 1
   },
   {
     key: "koi_fpflag_nt",
@@ -30,6 +36,9 @@ const KEPLER_FIELDS: DatasetFieldDef[] = [
     type: "int",
     required: false,
     placeholder: "0 | 1",
+    exampleValue: "1",
+    min: 0,
+    max: 1
   },
   {
     key: "koi_fpflag_co",
@@ -39,6 +48,9 @@ const KEPLER_FIELDS: DatasetFieldDef[] = [
     type: "int",
     required: false,
     placeholder: "0 | 1",
+    exampleValue: "1",
+    min: 0,
+    max: 1
   },
   {
     key: "koi_fpflag_ec",
@@ -48,6 +60,9 @@ const KEPLER_FIELDS: DatasetFieldDef[] = [
     type: "int",
     required: false,
     placeholder: "0 | 1",
+    exampleValue: "1",
+    min: 0,
+    max: 1
   },
   {
     key: "koi_model_snr",
@@ -56,6 +71,7 @@ const KEPLER_FIELDS: DatasetFieldDef[] = [
     type: "float",
     required: false,
     placeholder: "15.0",
+    exampleValue: "15.0"
   },
   {
     key: "koi_prad",
@@ -65,6 +81,7 @@ const KEPLER_FIELDS: DatasetFieldDef[] = [
     type: "float",
     required: false,
     placeholder: "1.2",
+    exampleValue: "1.2"
   },
   {
     key: "koi_duration_err1",
@@ -74,6 +91,7 @@ const KEPLER_FIELDS: DatasetFieldDef[] = [
     type: "float",
     required: false,
     placeholder: "0.1",
+    exampleValue: "0.1"
   },
   {
     key: "koi_steff_err1",
@@ -82,6 +100,7 @@ const KEPLER_FIELDS: DatasetFieldDef[] = [
     type: "float",
     required: false,
     placeholder: "50",
+    exampleValue: "50"
   },
   {
     key: "koi_steff_err2",
@@ -90,6 +109,7 @@ const KEPLER_FIELDS: DatasetFieldDef[] = [
     type: "float",
     required: false,
     placeholder: "50",
+    exampleValue: "50"
   },
 ]
 
@@ -101,6 +121,7 @@ const K2_FIELDS: DatasetFieldDef[] = [
     type: "int",
     required: false,
     placeholder: "0",
+    exampleValue: "0"
   },
   {
     key: "soltype",
@@ -110,6 +131,7 @@ const K2_FIELDS: DatasetFieldDef[] = [
     required: true,
     placeholder: "Published Confirmed",
     defaultValue: "Published Confirmed",
+    exampleValue: "Published Confirmed"
   },
   {
     key: "pl_orbper",
@@ -118,6 +140,7 @@ const K2_FIELDS: DatasetFieldDef[] = [
     type: "float",
     required: false,
     placeholder: "0.1",
+    exampleValue: "0.1"
   },
   {
     key: "sy_vmag",
@@ -126,6 +149,7 @@ const K2_FIELDS: DatasetFieldDef[] = [
     type: "float",
     required: false,
     placeholder: "10.5",
+    exampleValue: "10.5"
   },
   {
     key: "sy_kmag",
@@ -134,6 +158,7 @@ const K2_FIELDS: DatasetFieldDef[] = [
     type: "float",
     required: false,
     placeholder: "9.3",
+    exampleValue: "9.3"
   },
   {
     key: "sy_gaiamag",
@@ -142,6 +167,7 @@ const K2_FIELDS: DatasetFieldDef[] = [
     type: "float",
     required: false,
     placeholder: "12.0",
+    exampleValue: "12.0"
   },
   {
     key: "st_rad",
@@ -150,6 +176,7 @@ const K2_FIELDS: DatasetFieldDef[] = [
     type: "float",
     required: false,
     placeholder: "1.0",
+    exampleValue: "1.0"
   },
   {
     key: "sy_dist",
@@ -158,10 +185,102 @@ const K2_FIELDS: DatasetFieldDef[] = [
     type: "float",
     required: false,
     placeholder: "100.0",
+    exampleValue: "100.0"
   },
 ]
 
-const TESS_FIELDS: DatasetFieldDef[] = []
+const TESS_FIELDS: DatasetFieldDef[] = [
+  {
+    key: "st_tmag",
+    name: "TESS Magnitude",
+    description: "Brightness of the host star as measured using the TESS-band in units of magnitudes as reported in the TESS Input Catalog.",
+    type: "float",
+    required: true,
+    placeholder: "1.0",
+    exampleValue: "1.0"
+  },
+  {
+    key: "pl_tranmid",
+    name: "Planet Transit Midpoint [BJD]",
+    description: "The time given by the average of the time the planet begins to cross the stellar limb and the time the planet finishes crossing the stellar limb.",
+    type: "float",
+    required: true,
+    placeholder: "1.0",
+    exampleValue: "1.0"
+  },
+  {
+    key: "pl_tranmiderr2",
+    name: "Planet Transit Midpoint [BJD] Uncertainties Column (negative -)",
+    description: "",
+    type: "float",
+    required: true,
+    placeholder: "1.0",
+    exampleValue: "1.0"
+  },
+  {
+    key: "st_dist",
+    name: "Stellar Distance [pc]",
+    description: "Distance to the planetary system in units of parsecs as reported in the TESS Input Catalog.",
+    type: "float",
+    required: false,
+    placeholder: "1.0",
+    exampleValue: "1.0"
+  },
+  {
+    key: "pl_eqt",
+    name: "Planet Equilibrium Temperature [K]",
+    description: "The equilibrium temperature of the planet as modeled by a black body heated only by its host star.",
+    type: "float",
+    required: false,
+    placeholder: "1.0",
+    exampleValue: "1.0"
+  },
+  {
+    key: "pl_insol",
+    name: "Planet Insolation [Earth flux]",
+    description: "Insolation flux is the measure of the amount of stellar radiation received by the planet in units relative to that measured from the Earth from the Sun.",
+    type: "float",
+    required: false,
+    placeholder: "1.0",
+    exampleValue: "1.0"
+  },
+  {
+    key: "st_disterr",
+    name: "Stellar Distance [pc] Uncertainties Column (negative -)",
+    description: "",
+    type: "float",
+    required: false,
+    placeholder: "1.0",
+    exampleValue: "1.0"
+  },
+  {
+    key: "st_disterr1",
+    name: "Stellar Distance [pc] Uncertainties Column (positive +)",
+    description: "",
+    type: "float",
+    required: false,
+    placeholder: "1.0",
+    exampleValue: "1.0"
+  },
+  {
+    key: "pl_rade",
+    name: "Planet Radius [R_Earth]",
+    description: "Length of a line segment from the center of the planet to its surface, measured in units of radius of the Earth.",
+    type: "float",
+    required: false,
+    placeholder: "1.0",
+    exampleValue: "1.0"
+  },
+  {
+    key: "st_raderr2",
+    name: "Stellar Radius [R_Sun] Uncertainties Column (negative -)",
+    description: "",
+    type: "float",
+    required: false,
+    placeholder: "1.0",
+    exampleValue: "1.0"
+  },
+]
 
 export function getDatasetFields(dataset: DatasetKey): DatasetFieldDef[] {
   if (dataset === "kepler") return KEPLER_FIELDS
