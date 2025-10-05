@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Sparkles, CheckCircle2, XCircle, HelpCircle, TrendingUp, Info, History, ChevronRight } from "lucide-react"
+import { Sparkles, CheckCircle2, XCircle, HelpCircle, TrendingUp, Info, History, ChevronRight, BarChart3 } from "lucide-react"
 import { useMode } from "@/lib/mode-context"
 import { usePlanetData } from "@/lib/planet-data-context"
 import { motion } from "framer-motion"
@@ -12,6 +12,9 @@ import { normalizeId, normalizeClassification, normalizeProbability, groupRowsBy
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { CandidateHistoryDialog } from "@/components/candidate-history-dialog"
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Cell } from "recharts"
+import { Badge } from "@/components/ui/badge"
 
 export function ResultsSection() {
   const { mode } = useMode()
@@ -112,11 +115,17 @@ export function ResultsSection() {
         }
         const norm = cls.toLowerCase().normalize('NFD').replace(/[^a-z ]/g,'')
         const finalCls = norm.includes('confirm') ? 'Confirmed' : norm.includes('candidate') || norm.includes('candidat') ? 'Candidate' : 'False Positive'
+        
+        // Extract pubdate from the record (supports K2, Kepler, TESS formats)
+        // K2 format: "2018-03", Kepler: koi_pdisposition_date, TESS: publication_date
+        const pubdate = r?.pubdate ?? r?.koi_pdisposition_date ?? r?.publication_date ?? r?.koi_disposition_date ?? null
+        
         return {
           id,
           classification: finalCls as 'Confirmed' | 'Candidate' | 'False Positive',
           probability: prob,
           isNew,
+          pubdate,
           raw: r
         }
       })
@@ -161,6 +170,10 @@ export function ResultsSection() {
     console.log('[ResultsSection] 📦 comparisonGroups sample:', comparisonGroups[0])
     // eslint-disable-next-line no-console
     console.log('[ResultsSection] 📦 groupedSummary sample:', groupedSummary[0])
+    // eslint-disable-next-line no-console
+    if (groupedSummary[0]?.entries) {
+      console.log('[ResultsSection] 📅 First entry with pubdate:', groupedSummary[0].entries[0])
+    }
   }
 
   // Detect dataset type from first item
@@ -330,10 +343,11 @@ export function ResultsSection() {
         onOpenChange={setHistoryOpen}
         candidateId={historySelection?.id || ''}
         entries={(historySelection?.entries || []).map((r:any)=>({
-          id: normalizeId(r),
-          classification: normalizeClassification(r),
-          probability: normalizeProbability(r),
-          pubdate: null,
+          id: r?.id ?? normalizeId(r),
+          classification: r?.classification ?? normalizeClassification(r),
+          probability: r?.probability ?? normalizeProbability(r),
+          // Extract pubdate from entry or raw record (K2: pubdate, Kepler: koi_pdisposition_date, TESS: publication_date)
+          pubdate: r?.pubdate ?? r?.raw?.pubdate ?? r?.raw?.koi_pdisposition_date ?? r?.raw?.publication_date ?? r?.raw?.koi_disposition_date ?? null,
         }))}
       />
     </section>
@@ -455,6 +469,201 @@ export function ResultsSection() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Classification Distribution Analysis - Full Width Bar Chart */}
+        {flatPreds.length > 0 && (
+          <Card className="border-primary/20 w-full">
+            <CardHeader className="pb-4">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div>
+                  <CardTitle className="text-base md:text-lg flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                    Análise de Distribuição das Classificações
+                  </CardTitle>
+                  <CardDescription className="text-[10px] md:text-xs mt-1">
+                    Interpretação detalhada dos resultados • Distribuição estatística por categoria
+                  </CardDescription>
+                </div>
+                <Badge variant="outline" className="text-[10px] font-mono w-fit">
+                  {flatPreds.length} predições
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {(() => {
+                // Calculate distribution from flatPreds
+                const norm = (v: any) => String(v ?? "").toLowerCase().normalize("NFD").replace(/[^a-z ]/g, "").trim()
+                const getLabel = (row: any) => {
+                  const raw = norm(row?.new_classification ?? row?.old_classification ?? row?.classificacao ?? row?.classification ?? '')
+                  if (raw.includes("confirm")) return "confirmed"
+                  if (raw.includes("candidate") || raw.includes("candidat")) return "candidate"
+                  if (raw.includes("false") || raw.includes("falso") || raw.includes("fp")) return "false_positive"
+                  return "unknown"
+                }
+                
+                const confirmed = flatPreds.filter((r: any) => getLabel(r) === "confirmed").length
+                const candidate = flatPreds.filter((r: any) => getLabel(r) === "candidate").length
+                const falsePositive = flatPreds.filter((r: any) => getLabel(r) === "false_positive").length
+                const total = confirmed + candidate + falsePositive
+                
+                const distributionData = [
+                  { 
+                    name: "Confirmado", 
+                    value: confirmed, 
+                    percentage: total > 0 ? (confirmed / total * 100) : 0,
+                    color: "#10b981",
+                    interpretation: "Objetos com alta probabilidade de serem exoplanetas confirmados",
+                    icon: "✓"
+                  },
+                  { 
+                    name: "Candidato", 
+                    value: candidate, 
+                    percentage: total > 0 ? (candidate / total * 100) : 0,
+                    color: "#f59e0b",
+                    interpretation: "Objetos que requerem observações adicionais para confirmação",
+                    icon: "?"
+                  },
+                  { 
+                    name: "Falso Positivo", 
+                    value: falsePositive, 
+                    percentage: total > 0 ? (falsePositive / total * 100) : 0,
+                    color: "#ef4444",
+                    interpretation: "Sinais que não correspondem a exoplanetas reais",
+                    icon: "✕"
+                  },
+                ]
+
+                return (
+                  <>
+                    {/* Summary Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                      {distributionData.map((item) => (
+                        <div 
+                          key={item.name} 
+                          className="relative overflow-hidden rounded-lg border bg-card/50 p-4 transition-all hover:shadow-md"
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="flex items-center justify-center w-8 h-8 rounded-full text-white font-bold"
+                                style={{ backgroundColor: item.color }}
+                              >
+                                {item.icon}
+                              </div>
+                              <div>
+                                <div className="text-xs text-muted-foreground">{item.name}</div>
+                                <div className="text-2xl font-bold font-mono" style={{ color: item.color }}>
+                                  {item.value}
+                                </div>
+                              </div>
+                            </div>
+                            <Badge variant="outline" className="text-xs font-mono">
+                              {item.percentage.toFixed(1)}%
+                            </Badge>
+                          </div>
+                          <p className="text-[10px] md:text-xs text-muted-foreground leading-relaxed">
+                            {item.interpretation}
+                          </p>
+                          {/* Progress bar */}
+                          <div className="mt-3 h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                            <div 
+                              className="h-full transition-all duration-500"
+                              style={{ 
+                                width: `${item.percentage}%`,
+                                backgroundColor: item.color 
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Bar Chart */}
+                    <div className="rounded-lg bg-card/30 p-3 md:p-4 border border-border/50">
+                      <ChartContainer
+                        config={{
+                          confirmed: { label: "Confirmado", color: "#10b981" },
+                          candidate: { label: "Candidato", color: "#f59e0b" },
+                          falsePositive: { label: "Falso Positivo", color: "#ef4444" },
+                        }}
+                        className="h-[300px] md:h-[350px] w-full"
+                      >
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={distributionData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
+                            <XAxis 
+                              dataKey="name" 
+                              tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.7)' }}
+                              stroke="rgba(255,255,255,0.3)"
+                            />
+                            <YAxis 
+                              tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.7)' }}
+                              stroke="rgba(255,255,255,0.3)"
+                              label={{ value: 'Quantidade', angle: -90, position: 'insideLeft', fontSize: 11, fill: 'rgba(255,255,255,0.6)' }}
+                            />
+                            <ChartTooltip
+                              content={({ active, payload }) => {
+                                if (active && payload && payload.length) {
+                                  const data = payload[0].payload
+                                  return (
+                                    <div className="rounded-lg border-2 bg-background/95 backdrop-blur-sm p-3 shadow-xl">
+                                      <div className="space-y-2">
+                                        <div className="flex items-center gap-2 border-b pb-2">
+                                          <div 
+                                            className="h-3 w-3 rounded-full" 
+                                            style={{ backgroundColor: data.color }} 
+                                          />
+                                          <span className="text-sm font-bold">{data.name}</span>
+                                        </div>
+                                        <div className="grid gap-1.5">
+                                          <div className="flex justify-between gap-4">
+                                            <span className="text-xs text-muted-foreground">Quantidade:</span>
+                                            <span className="text-sm font-mono font-bold">{data.value}</span>
+                                          </div>
+                                          <div className="flex justify-between gap-4">
+                                            <span className="text-xs text-muted-foreground">Percentual:</span>
+                                            <span className="text-sm font-mono font-bold">{data.percentage.toFixed(1)}%</span>
+                                          </div>
+                                          <div className="flex justify-between gap-4">
+                                            <span className="text-xs text-muted-foreground">Do total:</span>
+                                            <span className="text-sm font-mono">{total} objetos</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )
+                                }
+                                return null
+                              }}
+                            />
+                            <Bar dataKey="value" radius={[8, 8, 0, 0]} maxBarSize={120}>
+                              {distributionData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </ChartContainer>
+                    </div>
+
+                    {/* Interpretation Alert */}
+                    <Alert className="border-primary/30 bg-primary/5">
+                      <Info className="h-4 w-4" />
+                      <AlertDescription className="text-[10px] md:text-xs">
+                        <strong>Interpretação dos Resultados:</strong> A distribuição acima reflete a confiança do modelo em cada classificação.
+                        <ul className="mt-2 ml-4 space-y-1 list-disc">
+                          <li><strong>Confirmados</strong>: Alta certeza baseada em padrões de trânsito consistentes e características orbitais</li>
+                          <li><strong>Candidatos</strong>: Sinais promissores que necessitam de validação adicional ou dados complementares</li>
+                          <li><strong>Falsos Positivos</strong>: Sinais descartados por características inconsistentes com exoplanetas</li>
+                        </ul>
+                      </AlertDescription>
+                    </Alert>
+                  </>
+                )
+              })()}
+            </CardContent>
+          </Card>
+        )}
       </motion.div>
     </section>
   )

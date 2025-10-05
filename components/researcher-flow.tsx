@@ -77,25 +77,31 @@ export function ResearcherFlow() {
 
   // Auto-switch to results tab when pipeline completes (only once per run)
   useEffect(() => {
+    // Check if we have a final step (step 7 = predictions done)
+    const hasFinalStep = streamSteps.some(s => s.step === 7 || (s.status && s.status.toLowerCase().includes('prediction') && s.status.toLowerCase().includes('done')))
+
     // Only auto-switch if:
     // 1. We haven't auto-switched yet for this run
-    // 2. We have predictions available
+    // 2. We have predictions available (or final step exists)
     // 3. Processing is done
     // 4. We're currently on the pipeline tab
     if (
       !hasAutoSwitchedRef.current &&
-      streamPredictions &&
-      Array.isArray(streamPredictions) &&
-      streamPredictions.length > 0 &&
+      (
+        (streamPredictions && Array.isArray(streamPredictions) && streamPredictions.length > 0) ||
+        hasFinalStep
+      ) &&
       !isProcessing &&
       activeTab === "pipeline"
     ) {
       // eslint-disable-next-line no-console
       console.log('[ResearcherFlow] 🎯 Auto-switching to Results tab')
-      setActiveTab("results")
-      hasAutoSwitchedRef.current = true
+      setTimeout(() => {
+        setActiveTab("results")
+        hasAutoSwitchedRef.current = true
+      }, 150) // Small delay to ensure state updates have propagated
     }
-  }, [streamPredictions, isProcessing, activeTab])
+  }, [streamPredictions, isProcessing, activeTab, streamSteps])
 
   // Reset auto-switch flag when processing starts (new run)
   useEffect(() => {
@@ -112,7 +118,9 @@ export function ResearcherFlow() {
     : []
 
   // Simplified: results are available if we have predictions or a non-null single prediction
-  const hasResults = (normalizedPredictions.length > 0 || prediction !== null)
+  // Also check streamSteps for final completion status
+  const hasFinalStep = streamSteps.some(s => s.step === 7 || (s.status && s.status.toLowerCase().includes('prediction') && s.status.toLowerCase().includes('done')))
+  const hasResults = (normalizedPredictions.length > 0 || prediction !== null || (hasFinalStep && !isProcessing))
   const canAccessPipeline = isProcessing || hasResults || (streamSteps && streamSteps.length > 0)
   const canAccessVisualization = hasResults
   const canAccessResults = hasResults
@@ -231,7 +239,7 @@ export function ResearcherFlow() {
           </TabsList>
 
 
-          <TabsContent value="pipeline" className="mt-6 space-y-8">
+          <TabsContent value="pipeline" className="mt-0 space-y-8">
             {/* Ensure scroll target is inside the visible tab */}
             <div id="pipeline" className="h-0" />
             {streamSteps.length > 0 ? (
