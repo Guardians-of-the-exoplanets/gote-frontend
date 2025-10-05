@@ -73,6 +73,7 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
       const errors: string[] = []
       const perField: Record<string, string> = {}
 
+      const coerceFloat = (v: string) => Number.parseFloat(v.replace(",", "."))
       const coerceInt = (v: string) => Number.parseInt(v, 10)
 
       defs.forEach((d) => {
@@ -104,6 +105,14 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
           if (!Number.isFinite(n) || !Number.isInteger(n)) {
             errors.push(`${d.name} must be integer`)
             perField[d.key] = "Invalid integer"
+            return
+          }
+          payloadData[d.key] = n
+        } else if (d.type === "float") {
+          const n = coerceFloat(valueToUse)
+          if (!Number.isFinite(n)) {
+            errors.push(`${d.name} must be (float) valid`)
+            perField[d.key] = "Invalid number"
             return
           }
           payloadData[d.key] = n
