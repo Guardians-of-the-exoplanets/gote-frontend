@@ -49,7 +49,8 @@ export function DataInputSection() {
             isProcessing,
             prediction,
             streamPredictions,
-            setPrediction
+            setPrediction,
+            setPlanetData
           } = usePlanetData()
           const { pushDebugEvent } = usePlanetData() as any
 
@@ -411,6 +412,7 @@ export function DataInputSection() {
     setStreamSteps([])
     setStreamPredictions([])
     setRunMeta(null)
+    setPlanetData({}) // Reset planet visualization data
     setResearchMetrics({
       testAccuracy: 0,
       testF1: 0,

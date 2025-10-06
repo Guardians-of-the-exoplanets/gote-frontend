@@ -96,6 +96,28 @@ export function ExplorerFlow() {
       hasAutoSwitchedRef.current = false
     }
   }, [isProcessing])
+
+  // Reset to pipeline tab when user clicks "New Classification"
+  useEffect(() => {
+    // Detect if all data was cleared (New Classification was clicked)
+    const allCleared = 
+      !isProcessing &&
+      streamSteps.length === 0 &&
+      normalizedPredictions.length === 0 &&
+      prediction === null &&
+      runMeta === null
+    
+    if (allCleared && activeTab !== "pipeline") {
+      // eslint-disable-next-line no-console
+      console.log('[ExplorerFlow] 🔄 Resetting to Pipeline tab after New Classification')
+      setActiveTab("pipeline")
+      hasAutoSwitchedRef.current = false
+      setCurrentPage(1) // Reset pagination
+      setHistoryOpen(false) // Close history dialog if open
+      setHistorySelection(null) // Clear history selection
+    }
+  }, [isProcessing, streamSteps, normalizedPredictions, prediction, runMeta, activeTab])
+
   const isExoplanet = prediction?.classification === "Confirmado" || prediction?.classification === "Candidato"
   const showVisualization = isExoplanet && Object.keys(planetData).length > 0
 
