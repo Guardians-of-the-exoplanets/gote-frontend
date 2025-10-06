@@ -97,7 +97,7 @@ export function RetrainModal({ open, onOpenChange, dataset, file, hyperparameter
       })
 
       if (!response.ok || !response.body) {
-        throw new Error("Erro na resposta do servidor")
+        throw new Error("Server response error")
       }
 
       const reader = response.body.getReader()
@@ -160,7 +160,7 @@ export function RetrainModal({ open, onOpenChange, dataset, file, hyperparameter
         }
       }
     } catch (err: any) {
-      setError(err.message || "Erro ao retreinar modelo")
+      setError(err.message || "Error retraining model")
       // eslint-disable-next-line no-console
       console.error('[Retrain] Error:', err)
     } finally {
@@ -243,8 +243,8 @@ export function RetrainModal({ open, onOpenChange, dataset, file, hyperparameter
           </DialogTitle>
           <DialogDescription className="text-xs sm:text-sm">
             {isViewingMode 
-              ? `Concluído em ${existingSession ? new Date(existingSession.completedAt).toLocaleString() : ''}`
-              : 'Treinando novo modelo com seus dados personalizados'
+              ? `Completed in ${existingSession ? new Date(existingSession.completedAt).toLocaleString() : ''}`
+              : 'Training a new model with your custom data'
             }
           </DialogDescription>
         </DialogHeader>
@@ -253,7 +253,7 @@ export function RetrainModal({ open, onOpenChange, dataset, file, hyperparameter
           {/* Progress Bar */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs sm:text-sm">
-              <span className="text-muted-foreground">Progresso</span>
+              <span className="text-muted-foreground">Progress</span>
               <span className="font-mono font-semibold">{Math.round(progress)}%</span>
             </div>
             <Progress value={progress} className="h-1.5 sm:h-2" />
@@ -366,9 +366,9 @@ export function RetrainModal({ open, onOpenChange, dataset, file, hyperparameter
               <AlertDescription>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:justify-between">
                   <div className="flex-1">
-                    <strong className="text-emerald-500 text-xs sm:text-sm">Retreino concluído!</strong>
+                    <strong className="text-emerald-500 text-xs sm:text-sm">Retraining complete!</strong>
                     <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
-                      Seu modelo personalizado está pronto para download
+                      Your custom template is ready for download.
                     </p>
                   </div>
                   <Button

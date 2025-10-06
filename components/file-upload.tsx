@@ -110,8 +110,8 @@ export function FileUpload({ onDataUploaded, dataset = "kepler", hyperparameters
           </div>
 
           <div className="space-y-2">
-            <p className="text-lg font-medium">Arraste e solte seu arquivo aqui</p>
-            <p className="text-sm text-muted-foreground">ou clique para selecionar</p>
+            <p className="text-lg font-medium">Drag and drop your file here</p>
+            <p className="text-sm text-muted-foreground">or click to select</p>
           </div>
 
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -147,7 +147,7 @@ export function FileUpload({ onDataUploaded, dataset = "kepler", hyperparameters
                     </div>
                     <div className="flex-1">
                       <h3 className="text-base sm:text-lg font-bold">
-                        Arquivo Carregado com Sucesso!
+                        File successfully uploaded!
                       </h3>
                       <p className="text-xs sm:text-sm text-muted-foreground">
                         <span className="font-mono font-medium">{uploadedFile.name}</span> • {(uploadedFile.size / 1024).toFixed(1)} KB
@@ -168,7 +168,7 @@ export function FileUpload({ onDataUploaded, dataset = "kepler", hyperparameters
                     <div className="p-2 sm:p-3 rounded-lg bg-muted/50 border border-border">
                       <div className="flex items-center gap-1.5 mb-1">
                         <FileSpreadsheet className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground" />
-                        <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Formato</span>
+                        <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Format</span>
                       </div>
                       <p className="text-xs sm:text-sm font-semibold">{uploadedFile.name.split('.').pop()?.toUpperCase()}</p>
                     </div>
@@ -176,7 +176,7 @@ export function FileUpload({ onDataUploaded, dataset = "kepler", hyperparameters
                     <div className="p-2 sm:p-3 rounded-lg bg-muted/50 border border-border">
                       <div className="flex items-center gap-1.5 mb-1">
                         <Brain className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground" />
-                        <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Modelo</span>
+                        <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Model</span>
                       </div>
                       <p className="text-xs sm:text-sm font-semibold">{useHyperparams ? 'Tuned' : 'Baseline'}</p>
                     </div>
@@ -200,9 +200,9 @@ export function FileUpload({ onDataUploaded, dataset = "kepler", hyperparameters
                       </div>
                       
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-sm sm:text-base font-semibold mb-1">Retreinar Modelo Personalizado</h4>
+                        <h4 className="text-sm sm:text-base font-semibold mb-1">Retrain Custom Model</h4>
                         <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed mb-2">
-                          Utilize seus dados para treinar um modelo customizado com StratifiedKFold CV e métricas completas de avaliação.
+                            Use your data to train a customized model with StratifiedKFold CV and comprehensive evaluation metrics.
                         </p>
                         <div className="flex flex-wrap items-center gap-1.5">
                           <Badge variant="outline" className="text-[9px] sm:text-[10px] px-1.5 py-0">
@@ -227,7 +227,7 @@ export function FileUpload({ onDataUploaded, dataset = "kepler", hyperparameters
                           className="gap-2"
                         >
                           <RefreshCw className="h-4 w-4" />
-                          Retreinar Agora
+                          Retrain Now
                         </Button>
                         
                         {retrainSession && (
@@ -238,7 +238,7 @@ export function FileUpload({ onDataUploaded, dataset = "kepler", hyperparameters
                             className="gap-2"
                   >
                             <FileText className="h-4 w-4" />
-                            Ver Logs
+                            View Logs
                   </Button>
                 )}
               </div>
@@ -250,7 +250,7 @@ export function FileUpload({ onDataUploaded, dataset = "kepler", hyperparameters
                     <div className="flex items-center justify-between text-[10px] sm:text-xs text-muted-foreground">
                       <div className="flex items-center gap-1.5">
                         <CheckCircle2 className="h-3 w-3 text-primary" />
-                        <span>Arquivo validado e pronto para uso</span>
+                        <span>File validated and ready for use</span>
                       </div>
                       <span className="font-mono">{new Date().toLocaleTimeString()}</span>
                     </div>
@@ -262,7 +262,7 @@ export function FileUpload({ onDataUploaded, dataset = "kepler", hyperparameters
               <Alert className="border-primary/30 bg-primary/5">
                 <CheckCircle2 className="h-4 w-4 text-primary" />
             <AlertDescription>
-                  Arquivo <strong>{uploadedFile.name}</strong> carregado com sucesso!
+                  Arquivo <strong>{uploadedFile.name}</strong> Successfully loaded!
             </AlertDescription>
           </Alert>
             )}
@@ -299,7 +299,7 @@ export function FileUpload({ onDataUploaded, dataset = "kepler", hyperparameters
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Erro ao processar arquivo. Certifique-se de que é um arquivo CSV ou JSON válido.
+            Error processing file. Please ensure it is a valid CSV or JSON file.
           </AlertDescription>
         </Alert>
       )}

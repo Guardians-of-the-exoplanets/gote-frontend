@@ -143,27 +143,27 @@ export function AnalyticsDashboard() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
           <CardHeader className="pb-2 md:pb-3">
-            <CardDescription className="text-[10px] md:text-xs">Total de Objetos</CardDescription>
+            <CardDescription className="text-[10px] md:text-xs">Total Objects</CardDescription>
             <CardTitle className="text-2xl md:text-3xl font-bold font-mono">{totalObjects}</CardTitle>
           </CardHeader>
         </Card>
 
         <Card className="border-accent/20 bg-gradient-to-br from-accent/5 to-transparent">
           <CardHeader className="pb-2 md:pb-3">
-            <CardDescription className="text-[10px] md:text-xs">Acurácia (Cego)</CardDescription>
+            <CardDescription className="text-[10px] md:text-xs">Accuracy (Blind)</CardDescription>
             <CardTitle className="text-2xl md:text-3xl font-bold font-mono">{fmtPct(researchMetrics.blindTestAccuracy)}</CardTitle>
           </CardHeader>
           <CardContent className="pt-0 md:pt-2">
             <div className="flex items-center gap-1 md:gap-2 text-[10px] md:text-xs text-muted-foreground">
               <Target className="h-3 w-3 text-accent flex-shrink-0" />
-              <span className="line-clamp-1">Teste cego</span>
+              <span className="line-clamp-1">Blind test</span>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
           <CardHeader className="pb-2 md:pb-3">
-            <CardDescription className="text-[10px] md:text-xs">Confirmados</CardDescription>
+            <CardDescription className="text-[10px] md:text-xs">Confirmed</CardDescription>
             <CardTitle className="text-2xl md:text-3xl font-bold font-mono text-emerald-500">{confirmedCount}</CardTitle>
           </CardHeader>
           <CardContent className="pt-0 md:pt-2">
@@ -176,13 +176,13 @@ export function AnalyticsDashboard() {
 
         <Card className="border-accent/20 bg-gradient-to-br from-accent/5 to-transparent">
           <CardHeader className="pb-2 md:pb-3">
-            <CardDescription className="text-[10px] md:text-xs">Tempo</CardDescription>
+            <CardDescription className="text-[10px] md:text-xs">Time</CardDescription>
             <CardTitle className="text-2xl md:text-3xl font-bold font-mono">{(processingMs / 1000).toFixed(2)}s</CardTitle>
           </CardHeader>
           <CardContent className="pt-0 md:pt-2">
             <div className="flex items-center gap-1 md:gap-2 text-[10px] md:text-xs text-muted-foreground">
               <TrendingUp className="h-3 w-3 text-accent flex-shrink-0" />
-              <span className="line-clamp-1">Inferência</span>
+              <span className="line-clamp-1">Inference</span>
             </div>
           </CardContent>
         </Card>
@@ -199,14 +199,14 @@ export function AnalyticsDashboard() {
 
         <Card className="border-accent/20 bg-gradient-to-br from-accent/5 to-transparent">
           <CardHeader className="pb-2 md:pb-3">
-            <CardDescription className="text-[10px] md:text-xs">F1 (Cego)</CardDescription>
+            <CardDescription className="text-[10px] md:text-xs">F1 (Blind)</CardDescription>
             <CardTitle className="text-2xl md:text-3xl font-bold font-mono">{fmtPct(researchMetrics.blindTestF1)}</CardTitle>
           </CardHeader>
         </Card>
 
         <Card className="border-accent/20 bg-gradient-to-br from-accent/5 to-transparent">
           <CardHeader className="pb-2 md:pb-3">
-            <CardDescription className="text-[10px] md:text-xs">Precisão</CardDescription>
+            <CardDescription className="text-[10px] md:text-xs">Accuracy</CardDescription>
             <CardTitle className="text-2xl md:text-3xl font-bold font-mono">{fmtPct(researchMetrics.blindPrecision)}</CardTitle>
           </CardHeader>
         </Card>
@@ -220,14 +220,14 @@ export function AnalyticsDashboard() {
 
         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
           <CardHeader className="pb-2 md:pb-3">
-            <CardDescription className="text-[10px] md:text-xs">Treinamento</CardDescription>
+            <CardDescription className="text-[10px] md:text-xs">Training</CardDescription>
             <CardTitle className="text-xl md:text-3xl font-bold font-mono">{fmtTimeMinutes(researchMetrics.totalTrainingTimeMs)}</CardTitle>
           </CardHeader>
         </Card>
 
         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
           <CardHeader className="pb-2 md:pb-3">
-            <CardDescription className="text-[10px] md:text-xs">Tamanho Teste</CardDescription>
+            <CardDescription className="text-[10px] md:text-xs">Test Size</CardDescription>
             <CardTitle className="text-2xl md:text-3xl font-bold font-mono">{fmtInt(researchMetrics.blindTestConfusionMatrix?.flat().reduce((a, b) => a + b, 0))}</CardTitle>
           </CardHeader>
         </Card>
@@ -240,10 +240,10 @@ export function AnalyticsDashboard() {
             <div>
               <CardTitle className="text-base md:text-lg flex items-center gap-2">
                 <Activity className="h-4 w-4 md:h-5 md:w-5 text-primary" />
-                Cross-Validation: Métricas por Fold (K={kFold.length})
+                Cross-Validation: Metrics per Fold (K={kFold.length})
               </CardTitle>
               <CardDescription className="text-[10px] md:text-xs mt-1">
-                Validação cruzada estratificada • Estabilidade e generalização do modelo
+                Stratified cross-validation • Model stability and generalization
               </CardDescription>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -292,8 +292,8 @@ export function AnalyticsDashboard() {
           <div className="rounded-lg bg-card/30 p-3 md:p-4 border border-border/50">
             <ChartContainer
               config={{
-                accuracy: { label: "Acurácia", color: "#3b82f6" },
-                precision: { label: "Precisão", color: "#8b5cf6" },
+                accuracy: { label: "Accuracy", color: "#3b82f6" },
+                precision: { label: "Precision", color: "#8b5cf6" },
                 recall: { label: "Recall", color: "#ec4899" },
                 f1: { label: "F1-Score", color: "#10b981" },
               }}
@@ -414,9 +414,9 @@ export function AnalyticsDashboard() {
           <Alert className="border-primary/30 bg-primary/5">
             <Activity className="h-4 w-4" />
             <AlertDescription className="text-[10px] md:text-xs">
-              <strong>Interpretação:</strong> Desvio padrão baixo (σ) indica estabilidade do modelo. 
-              Diferenças significativas entre folds podem sugerir sensibilidade à divisão dos dados ou classes desbalanceadas.
-              Valores consistentemente altos (≥95%) indicam boa generalização.
+              <strong>Interpretation:</strong> Low standard deviation (σ) indicates model stability.  
+              Significant differences between folds may suggest sensitivity to data splitting or unbalanced classes.
+              Consistently high values (≥95%) indicate good generalization.
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -425,17 +425,17 @@ export function AnalyticsDashboard() {
       {/* 2) Matrizes de Confusão lado a lado */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 lg:gap-8">
         <ConfusionMatrix
-          title="Matriz de Confusão (Teste)"
-          description="Desempenho no conjunto de teste"
+          title="Confusion Matrix (Test)"
+          description="Performance in the test set"
           matrix={researchMetrics.testConfusionMatrix}
-          labels={researchMetrics.labels || ["Confirmado", "Candidato", "Falso Positivo"]}
+          labels={researchMetrics.labels || ["Confirmed", "Candidate", "False Positive"]}
           accuracy={researchMetrics.testAccuracy}
         />
         <ConfusionMatrix
-          title="Matriz de Confusão (Teste Cego)"
-          description="Desempenho em teste cego (holdout)"
+          title="Confusion Matrix (Blind Test)"
+          description="Blind test performance (holdout)"
           matrix={researchMetrics.blindTestConfusionMatrix}
-          labels={researchMetrics.labels || ["Confirmado", "Candidato", "Falso Positivo"]}
+          labels={researchMetrics.labels || ["Confirmed", "Candidate", "False Positive"]}
           accuracy={researchMetrics.blindTestAccuracy}
         />
       </div>
