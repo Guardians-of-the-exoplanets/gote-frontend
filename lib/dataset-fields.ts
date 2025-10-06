@@ -22,7 +22,7 @@ const KEPLER_FIELDS: DatasetFieldDef[] = [
     description:
       "A KOI that is observed to have a significant secondary event, transit shape, or out-of-eclipse variability, which indicates that the transit-like event is most likely caused by an eclipsing binary.",
     type: "int",
-    required: false,
+    required: true,
     placeholder: "0 | 1",
     exampleValue: "1",
     min: "0",
@@ -34,7 +34,7 @@ const KEPLER_FIELDS: DatasetFieldDef[] = [
     description:
       "KOI whose light curve is not consistent with that of a transiting planet (instrumental artifacts or non-transiting variability).",
     type: "int",
-    required: false,
+    required: true,
     placeholder: "0 | 1",
     exampleValue: "1",
     min: "0",
@@ -46,7 +46,7 @@ const KEPLER_FIELDS: DatasetFieldDef[] = [
     description:
       "Source of the signal is from a nearby star as inferred by measuring the centroid location of the image, or by the strength of the transit signal in the target's outer pixels.",
     type: "int",
-    required: false,
+    required: true,
     placeholder: "0 | 1",
     exampleValue: "1",
     min: "0",
@@ -58,7 +58,7 @@ const KEPLER_FIELDS: DatasetFieldDef[] = [
     description:
       "The KOI shares the same period and epoch as another object and is judged to be the result of flux contamination or electronic crosstalk.",
     type: "int",
-    required: false,
+    required: true,
     placeholder: "0 | 1",
     exampleValue: "1",
     min: "0",
@@ -69,7 +69,7 @@ const KEPLER_FIELDS: DatasetFieldDef[] = [
     name: "Transit Signal-to-Noise",
     description: "Transit depth normalized by the mean uncertainty in the flux during the transits.",
     type: "float",
-    required: false,
+    required: true,
     placeholder: "15.0",
     exampleValue: "15.0"
   },
@@ -79,7 +79,7 @@ const KEPLER_FIELDS: DatasetFieldDef[] = [
     description:
       "The radius of the planet. Planetary radius is the product of the planet star radius ratio and the stellar radius.",
     type: "float",
-    required: false,
+    required: true,
     placeholder: "1.2",
     exampleValue: "1.2"
   },
@@ -119,7 +119,7 @@ const K2_FIELDS: DatasetFieldDef[] = [
     name: "Number of Planets",
     description: "Number of confirmed planets in the planetary system",
     type: "int",
-    required: false,
+    required: true,
     placeholder: "0",
     exampleValue: "0"
   },
@@ -138,7 +138,7 @@ const K2_FIELDS: DatasetFieldDef[] = [
     name: "Orbital Period [days]",
     description: "Time the candidate takes to make a complete orbit around the host star or system.",
     type: "float",
-    required: false,
+    required: true,
     placeholder: "0.1",
     exampleValue: "0.1"
   },
