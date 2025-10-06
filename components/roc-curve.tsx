@@ -22,14 +22,14 @@ export function RocCurve() {
   return (
     <Card className="bg-card/50">
       <CardHeader>
-        <CardTitle className="text-lg">Curva ROC</CardTitle>
-        <CardDescription className="text-xs">Taxa de Verdadeiros Positivos vs Falsos Positivos</CardDescription>
+        <CardTitle className="text-lg">ROC curve</CardTitle>
+        <CardDescription className="text-xs">True Positive vs False Positive Rate</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer
           config={{
             tpr: {
-              label: "Taxa de Verdadeiros Positivos",
+              label: "True Positive Rate",
               color: "hsl(var(--chart-1))",
             },
           }}
@@ -46,13 +46,13 @@ export function RocCurve() {
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis
                 dataKey="fpr"
-                label={{ value: "Taxa de Falsos Positivos", position: "insideBottom", offset: -5 }}
+                label={{ value: "False Positive Rate", position: "insideBottom", offset: -5 }}
                 className="text-xs"
                 tick={{ fontSize: 10 }}
               />
               <YAxis
                 dataKey="tpr"
-                label={{ value: "Taxa de Verdadeiros Positivos", angle: -90, position: "insideLeft" }}
+                label={{ value: "True Positive Rate", angle: -90, position: "insideLeft" }}
                 className="text-xs"
                 tick={{ fontSize: 10 }}
               />

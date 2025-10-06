@@ -15,12 +15,12 @@ export function ExplainabilitySection() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Brain className="h-5 w-5 text-primary" />
-            <CardTitle className="text-2xl">Explicabilidade do Modelo</CardTitle>
+            <CardTitle className="text-2xl">Model Explainability</CardTitle>
           </div>
           <CardDescription>
             {mode === "explorer"
-              ? "Entenda quais variáveis mais influenciaram as decisões do modelo de classificação"
-              : "SHAP values, attention weights, e physics-informed constraints para interpretabilidade completa"}
+              ? "Understand which variables most influenced the classification model's decisions"
+              : "SHAP values, attention weights, and physics-informed constraints for complete interpretability"}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -28,8 +28,8 @@ export function ExplainabilitySection() {
             <Lightbulb className="h-4 w-4 text-primary" />
             <AlertDescription className="text-sm text-foreground">
               {mode === "explorer"
-                ? "A importância das features indica o peso relativo de cada variável nas predições do modelo. Valores mais altos significam maior influência na classificação."
-                : "Análise multi-camada: SHAP para importância global, attention maps para contexto temporal, e validação física para consistência astronômica."}
+                ? "Feature importance indicates the relative weight of each variable in the model's predictions. Higher values ​​mean greater influence on the classification."
+                : "Multi-layer analysis: SHAP for global importance, attention maps for temporal context, and physical validation for astronomical consistency."}
             </AlertDescription>
           </Alert>
 
@@ -39,21 +39,19 @@ export function ExplainabilitySection() {
             <div className="mt-6 p-6 border border-border rounded-xl space-y-4">
               <div className="flex items-center gap-2 mb-4">
                 <Layers className="h-5 w-5 text-accent" />
-                <h3 className="font-semibold text-lg">Análise Avançada</h3>
+                <h3 className="font-semibold text-lg">Advanced Analysis</h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 bg-muted/50 rounded-lg">
                   <h4 className="font-medium mb-2 text-sm">Attention Weights</h4>
                   <p className="text-xs text-muted-foreground">
-                    Visualização dos pontos temporais mais relevantes identificados pelo Transformer durante a análise
-                    da light curve.
+                    Visualization of the most relevant time points identified by the Transformer during the analysis of the light curve.
                   </p>
                 </div>
                 <div className="p-4 bg-muted/50 rounded-lg">
                   <h4 className="font-medium mb-2 text-sm">Physics Constraints</h4>
                   <p className="text-xs text-muted-foreground">
-                    Validação automática contra leis de Kepler, limites de densidade planetária, e compatibilidade
-                    estelar.
+                    Automatic validation against Kepler's laws, planetary density limits, and stellar compatibility.
                   </p>
                 </div>
               </div>

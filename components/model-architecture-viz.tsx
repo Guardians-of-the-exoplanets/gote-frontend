@@ -48,9 +48,9 @@ export function ModelArchitectureViz() {
       <CardHeader>
         <div className="flex items-center gap-2">
           <Layers className="h-5 w-5 text-primary" />
-          <CardTitle className="text-2xl">Architecture do Modelo</CardTitle>
+          <CardTitle className="text-2xl">Model Architecture</CardTitle>
         </div>
-        <CardDescription>Visualização interativa da rede neural multi-branch</CardDescription>
+        <CardDescription>Interactive visualization of the multi-branch neural network</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
@@ -98,15 +98,15 @@ export function ModelArchitectureViz() {
             </div>
             <div>
               <div className="text-2xl font-bold text-accent">10</div>
-              <div className="text-xs text-muted-foreground mt-1">Camadas</div>
+              <div className="text-xs text-muted-foreground mt-1">Layers</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-secondary">52.8KB</div>
-              <div className="text-xs text-muted-foreground mt-1">Tamanho</div>
+              <div className="text-xs text-muted-foreground mt-1">Size</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-chart-1">~15ms</div>
-              <div className="text-xs text-muted-foreground mt-1">Inferência</div>
+              <div className="text-xs text-muted-foreground mt-1">Inference</div>
             </div>
           </div>
         </div>

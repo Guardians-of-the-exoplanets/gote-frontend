@@ -28,8 +28,8 @@ export function FeatureImportanceChart() {
   return (
     <Card className="border-primary/20">
       <CardHeader>
-        <CardTitle className="text-lg">Importância das Features</CardTitle>
-        <CardDescription className="text-xs">Contribuição de cada parâmetro para a classificação</CardDescription>
+        <CardTitle className="text-lg">Importance of Features</CardTitle>
+        <CardDescription className="text-xs">Contribution of each parameter to the classification</CardDescription>
       </CardHeader>
       <CardContent className="overflow-hidden">
         <ChartContainer

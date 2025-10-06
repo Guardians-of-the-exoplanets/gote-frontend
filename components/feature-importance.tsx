@@ -15,7 +15,7 @@ const featureData = [
 export function FeatureImportance() {
   return (
     <Card className="bg-card/50 p-6">
-      <h3 className="text-lg font-semibold mb-6">Importância das Variáveis</h3>
+      <h3 className="text-lg font-semibold mb-6">Importance of Variables</h3>
 
       <ChartContainer
         config={{

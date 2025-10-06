@@ -19,7 +19,7 @@ export function VettingSection() {
         </div>
         <h2 className="text-4xl font-bold">Sistema de Vetting</h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Revisão manual de candidatos com confiança abaixo do threshold para garantir qualidade máxima
+          Manual review of candidates with confidence below threshold to ensure maximum quality
         </p>
       </div>
 
