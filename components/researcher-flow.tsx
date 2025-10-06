@@ -109,6 +109,24 @@ export function ResearcherFlow() {
     }
   }, [isProcessing])
 
+  // Reset to pipeline tab when user clicks "New Classification"
+  useEffect(() => {
+    // Detect if all data was cleared (New Classification was clicked)
+    const allCleared = 
+      !isProcessing &&
+      streamSteps.length === 0 &&
+      streamPredictions.length === 0 &&
+      prediction === null &&
+      runMeta === null
+    
+    if (allCleared && activeTab !== "pipeline") {
+      // eslint-disable-next-line no-console
+      console.log('[ResearcherFlow] 🔄 Resetting to Pipeline tab after New Classification')
+      setActiveTab("pipeline")
+      hasAutoSwitchedRef.current = false
+    }
+  }, [isProcessing, streamSteps, streamPredictions, prediction, runMeta, activeTab])
+
   // Do not early-return before hooks; render null at the bottom if needed
 
   // Flatten potential nested arrays from backend
@@ -124,6 +142,8 @@ export function ResearcherFlow() {
   const canAccessVisualization = hasResults
   const canAccessResults = hasResults
   const canAccessExport = hasResults
+  // Analytics tab only available for batch uploads, not manual input
+  const canAccessAnalytics = hasResults && runMeta?.inputKind === 'upload'
 
   const isComparison = Array.isArray(normalizedPredictions) && normalizedPredictions.some((x:any) => (
     'old_classificacao' in (x || {}) ||
@@ -212,9 +232,10 @@ export function ResearcherFlow() {
             <TabsTrigger
               value="analytics"
               className="flex items-center gap-2 py-3"
-              disabled={!hasResults}
+              disabled={!canAccessAnalytics}
+              title={!canAccessAnalytics && hasResults ? "Analytics only available for batch CSV uploads" : ""}
             >
-              <div className={`w-full px-3 py-2 rounded-lg border-2 transition-all ${hasResults ? "hover:bg-accent/10 hover:border-accent/40" : "opacity-60"} data-[state=active]:bg-gradient-to-r data-[state=active]:from-accent/20 data-[state=active]:to-primary/20 data-[state=active]:border-accent/60 data-[state=active]:shadow-lg`}>
+              <div className={`w-full px-3 py-2 rounded-lg border-2 transition-all ${canAccessAnalytics ? "hover:bg-accent/10 hover:border-accent/40" : "opacity-60"} data-[state=active]:bg-gradient-to-r data-[state=active]:from-accent/20 data-[state=active]:to-primary/20 data-[state=active]:border-accent/60 data-[state=active]:shadow-lg`}>
                 <div className="flex items-center gap-2 justify-center">
                   <TrendingUp className="h-4 w-4" />
                   <span className="text-xs md:text-sm font-semibold">Analytics</span>
@@ -494,14 +515,6 @@ export function ResearcherFlow() {
                     </div>
                   </div>
                 </Card>
-
-                {/* Technical Note */}
-                <Alert className="border-primary/30 bg-primary/5">
-                  <Brain className="h-4 w-4 text-primary" />
-                  <AlertDescription className="text-xs leading-relaxed">
-                    <span className="font-semibold">Pipeline Architecture:</span> Multi-stage ensemble combining 1D Transformer (temporal features), 2D CNN (phase-folded views), and MLP fusion layer for stellar metadata integration. All metrics computed using stratified k-fold cross-validation.
-                  </AlertDescription>
-                </Alert>
               </>
             ) : (
               <Card className="border-dashed border-2 border-border">
@@ -569,8 +582,24 @@ export function ResearcherFlow() {
           </TabsContent>
 
           <TabsContent value="analytics" className="mt-6 space-y-8">
-            {/* Technical Analytics Header */}
-            <Card className="border-accent/20 bg-gradient-to-br from-accent/5 via-background to-primary/5">
+            {/* Show message if manual input - Analytics not available */}
+            {runMeta?.inputKind === 'manual' ? (
+              <Card className="border-dashed border-2 border-border">
+                <div className="p-12 text-center">
+                  <TrendingUp className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <h4 className="text-lg font-semibold mb-2">Analytics Not Available for Manual Input</h4>
+                  <p className="text-muted-foreground text-sm max-w-md mx-auto">
+                    Performance analytics (cross-validation metrics, confusion matrices, statistical analysis) are only available for batch CSV uploads with multiple predictions.
+                  </p>
+                  <p className="text-muted-foreground text-xs max-w-md mx-auto mt-4">
+                    For manual input, check the <strong>Results</strong> tab to see your prediction comparison.
+                  </p>
+                </div>
+              </Card>
+            ) : (
+              <>
+                {/* Technical Analytics Header */}
+                <Card className="border-accent/20 bg-gradient-to-br from-accent/5 via-background to-primary/5">
               <div className="p-6">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
                   <div className="space-y-2">
@@ -641,7 +670,9 @@ export function ResearcherFlow() {
               </div>
             </Card>
 
-            <AnalyticsDashboard />
+                <AnalyticsDashboard />
+              </>
+            )}
           </TabsContent>
 
           <TabsContent value="export" className="mt-6">

@@ -49,7 +49,8 @@ export function DataInputSection() {
             isProcessing,
             prediction,
             streamPredictions,
-            setPrediction
+            setPrediction,
+            setPlanetData
           } = usePlanetData()
           const { pushDebugEvent } = usePlanetData() as any
 
@@ -411,6 +412,7 @@ export function DataInputSection() {
     setStreamSteps([])
     setStreamPredictions([])
     setRunMeta(null)
+    setPlanetData({}) // Reset planet visualization data
     setResearchMetrics({
       testAccuracy: 0,
       testF1: 0,
@@ -432,6 +434,9 @@ export function DataInputSection() {
     const targetFormId = mode === "explorer" ? "explorer-data-form" : "researcher-data-form"
     const form = document.getElementById(targetFormId) as HTMLFormElement | null
     form?.reset()
+    
+    // Scroll to top smoothly
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
