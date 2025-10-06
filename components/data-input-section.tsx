@@ -623,8 +623,8 @@ export function DataInputSection() {
                   {/* Toggle banner controlling hyperparams usage */}
                   <div className="flex items-center justify-between p-3 border rounded-xl bg-card/60">
                     <div className="text-sm">
-                      <div className="font-medium">Incluir hiperparâmetros nas requisições</div>
-                      <div className="text-muted-foreground text-xs">Quando desativado, a aba de hiperparâmetros fica indisponível e não é enviada ao backend.</div>
+                      <div className="font-medium">Include hyperparameters in requests</div>
+                      <div className="text-muted-foreground text-xs">When disabled, the hyperparameters tab becomes unavailable and is not sent to the backend.</div>
                     </div>
                     <Switch checked={useHyperparams} onCheckedChange={setUseHyperparams as any} />
                   </div>
@@ -632,29 +632,136 @@ export function DataInputSection() {
                   <Tabs defaultValue="architecture" className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="architecture" className="flex items-center gap-2">
-                        Arquitetura
+                        Architecture
                       </TabsTrigger>
                       <TabsTrigger value="hyperparams" className="flex items-center gap-2" disabled={!useHyperparams}>
                         Hiperparâmetros
                       </TabsTrigger>
                     </TabsList>
-                    <TabsContent value="architecture" className="mt-4 space-y-6">
+                    <TabsContent value="architecture" className="mt-4 space-y-3">
                       <div className="grid grid-cols-1 gap-3">
-                        <div className="p-3 border border-primary/30 rounded-lg bg-primary/5">
-                          <h4 className="font-semibold mb-2">Transformer 1D</h4>
-                          <p className="text-xs text-muted-foreground leading-relaxed">Análise temporal de light curves com attention mechanism</p>
+                        {/* Dataset Splitting */}
+                        <div className="p-3 border border-blue-500/30 rounded-lg bg-blue-500/5">
+                          <h4 className="font-semibold mb-2 flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                            Dataset Splitting: 70% / 20% / 10%
+                          </h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed mb-2">
+                            <span className="font-medium text-foreground">Training (70%):</span> Model learning phase • 
+                            <span className="font-medium text-foreground"> Test (20%):</span> Performance evaluation • 
+                            <span className="font-medium text-foreground"> Blind Validation (10%):</span> Unbiased generalization test
+                          </p>
+                          <p className="text-xs text-emerald-600 dark:text-emerald-400 leading-relaxed">
+                            ✓ Prevents data leakage • Ensures robust evaluation • Industry standard for scientific ML
+                          </p>
                         </div>
-                        <div className="p-3 border border-accent/30 rounded-lg bg-accent/5">
-                          <h4 className="font-semibold mb-2">CNN 2D</h4>
-                          <p className="text-xs text-muted-foreground leading-relaxed">Extração de features espaciais de phase-folded views</p>
+
+                        {/* Overfitting Prevention */}
+                        <div className="p-3 border border-purple-500/30 rounded-lg bg-purple-500/5">
+                          <h4 className="font-semibold mb-2 flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full bg-purple-500"></div>
+                            StratifiedKFold Cross-Validation (K=5)
+                          </h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed mb-2">
+                            5-fold cross-validation with stratified sampling to maintain class distribution across all folds. Test partition evaluated separately from training folds.
+                          </p>
+                          <p className="text-xs text-emerald-600 dark:text-emerald-400 leading-relaxed">
+                            ✓ Detects overfitting early • Validates model stability • Maximizes training data usage • Preserves class balance
+                          </p>
                         </div>
-                        <div className="p-3 border border-secondary/30 rounded-lg bg-secondary/5">
-                          <h4 className="font-semibold mb-2">MLP Fusion</h4>
-                          <p className="text-xs text-muted-foreground leading-relaxed">Combinação de features + metadados estelares</p>
+
+                        {/* XGBoost Models */}
+                        <div className="p-3 border border-amber-500/30 rounded-lg bg-amber-500/5">
+                          <h4 className="font-semibold mb-2 flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full bg-amber-500"></div>
+                            XGBoost Ensemble Models
+                          </h4>
+                          <div className="space-y-2 text-xs text-muted-foreground leading-relaxed">
+                            <div>
+                              <span className="font-medium text-foreground">Version 1 (Baseline):</span>
+                              <code className="ml-1 text-[10px] bg-muted px-1 py-0.5 rounded">XGBClassifier(eval_metric='mlogloss', objective='multi:softprob')</code>
+                            </div>
+                            <div>
+                              <span className="font-medium text-foreground">Version 2 (Tuned):</span>
+                              <code className="ml-1 text-[10px] bg-muted px-1 py-0.5 rounded">colsample_bytree=0.8, learning_rate=0.1, max_depth=6, n_estimators=100, subsample=0.8</code>
+                            </div>
+                          </div>
+                          <p className="text-xs text-emerald-600 dark:text-emerald-400 leading-relaxed mt-2">
+                            ✓ Gradient boosting handles non-linear patterns • Robust to outliers • Fast inference • Proven for tabular astronomical data
+                          </p>
+                        </div>
+
+                        {/* Feature Selection */}
+                        <div className="p-3 border border-cyan-500/30 rounded-lg bg-cyan-500/5">
+                          <h4 className="font-semibold mb-2 flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full bg-cyan-500"></div>
+                            Intelligent Feature Selection
+                          </h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed mb-2">
+                            Analysis identifies the <span className="font-medium text-foreground">top 10 most important features</span> during training. Model performance compared at <span className="font-medium text-foreground">90%, 95%, and 99%</span> feature thresholds using test and blind validation metrics.
+                          </p>
+                          <p className="text-xs text-emerald-600 dark:text-emerald-400 leading-relaxed">
+                            ✓ Reduces dimensionality • Prevents curse of dimensionality • Improves interpretability • Faster inference
+                          </p>
+                        </div>
+
+                        {/* Comprehensive Evaluation */}
+                        <div className="p-3 border border-rose-500/30 rounded-lg bg-rose-500/5">
+                          <h4 className="font-semibold mb-2 flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full bg-rose-500"></div>
+                            Multi-Metric Evaluation Framework
+                          </h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed mb-2">
+                            Classification Report includes: <span className="font-medium text-foreground">Accuracy, Precision, Recall, F1-Score, Macro-Avg, Weighted-Avg</span>. Evaluated on both test partition and blind validation set.
+                          </p>
+                          <p className="text-xs text-emerald-600 dark:text-emerald-400 leading-relaxed">
+                            ✓ Balanced view of performance • Detects class imbalance issues • Standard for scientific publication • Enables fair model comparison
+                          </p>
+                        </div>
+
+                        {/* Grid Search Optimization */}
+                        <div className="p-3 border border-emerald-500/30 rounded-lg bg-emerald-500/5">
+                          <h4 className="font-semibold mb-2 flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                            Hyperparameter Optimization via Grid Search CV
+                          </h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed mb-2">
+                            Systematic exploration of hyperparameter space using cross-validation. Applied when appropriate to identify optimal configuration for <span className="font-medium text-foreground">colsample_bytree, learning_rate, max_depth, n_estimators, subsample</span>.
+                          </p>
+                          <p className="text-xs text-emerald-600 dark:text-emerald-400 leading-relaxed">
+                            ✓ Data-driven optimization • Avoids manual tuning bias • Reproducible methodology • Maximizes predictive performance
+                          </p>
                         </div>
                       </div>
+
+                      {/* Why This Architecture Is Effective */}
+                      <div className="mt-4 p-4 border-2 border-primary/20 rounded-lg bg-gradient-to-br from-primary/5 to-accent/5">
+                        <h4 className="font-semibold mb-3 flex items-center gap-2 text-primary">
+                          <Rocket className="h-4 w-4" />
+                          Why This Architecture Is Effective
+                        </h4>
+                        <div className="space-y-2 text-xs text-muted-foreground leading-relaxed">
+                          <p>
+                            <span className="font-medium text-foreground">🔬 Scientific Rigor:</span> Blind validation ensures unbiased performance estimates, critical for publishable research and real-world deployment confidence.
+                          </p>
+                          <p>
+                            <span className="font-medium text-foreground">⚖️ Class Balance Preservation:</span> StratifiedKFold maintains the proportion of confirmed/candidate/false-positive across folds, preventing model bias toward majority classes.
+                          </p>
+                          <p>
+                            <span className="font-medium text-foreground">🎯 Exoplanet Domain Fit:</span> XGBoost excels at capturing non-linear interactions in tabular astronomical features (orbital periods, stellar parameters, transit depths) without requiring massive datasets.
+                          </p>
+                          <p>
+                            <span className="font-medium text-foreground">🚀 Computational Efficiency:</span> Feature selection (top 10) and optimized hyperparameters enable real-time inference while maintaining 92%+ accuracy, crucial for large-scale survey processing.
+                          </p>
+                          <p>
+                            <span className="font-medium text-foreground">🔁 Reproducibility:</span> Explicit train/test/blind splits + Grid Search CV + version-controlled models ensure experiments can be replicated by other researchers.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Configuration Summary */}
                       <div className="mt-4 p-4 bg-muted/50 rounded-lg border border-border">
-                        <h4 className="text-sm font-medium mb-3">Configuration Summary</h4>
+                        <h4 className="text-sm font-medium mb-3">Current Hyperparameters Configuration</h4>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                           <div><span className="text-muted-foreground">Eval metric:</span> <span className="font-mono font-medium">{hyperparams.eval_metric}</span></div>
                           <div><span className="text-muted-foreground">Objective:</span> <span className="font-mono font-medium">{hyperparams.objective}</span></div>
