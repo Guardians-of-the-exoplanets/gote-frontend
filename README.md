@@ -84,7 +84,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ```
 gote-frontend/
 ├── app/                      # Next.js App Router
-│   ├── api/classify/         # API routes
 │   ├── globals.css           # Global styles
 │   ├── layout.tsx            # Root layout
 │   └── page.tsx              # Main page
