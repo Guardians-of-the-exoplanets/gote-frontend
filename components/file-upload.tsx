@@ -4,11 +4,14 @@ import type React from "react"
 
 import { useState, useCallback } from "react"
 import { useMode } from "@/lib/mode-context"
-import { Upload, FileJson, FileSpreadsheet, CheckCircle2, AlertCircle, RefreshCw } from "lucide-react"
+import { Upload, FileJson, FileSpreadsheet, CheckCircle2, AlertCircle, RefreshCw, Brain, Rocket, Zap, Database, TrendingUp, FileText } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { RetrainModal } from "@/components/retrain-modal"
+import { RetrainModal, RetrainSessionData } from "@/components/retrain-modal"
 import { usePlanetData } from "@/lib/planet-data-context"
+import { Badge } from "@/components/ui/badge"
+import { Card } from "@/components/ui/card"
+import { motion, AnimatePresence } from "framer-motion"
 
 interface FileUploadProps {
   onDataUploaded: (data: any) => void
@@ -23,6 +26,8 @@ export function FileUpload({ onDataUploaded, dataset = "kepler", hyperparameters
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [uploadStatus, setUploadStatus] = useState<"idle" | "success" | "error">("idle")
   const [retrainModalOpen, setRetrainModalOpen] = useState(false)
+  const [retrainSession, setRetrainSession] = useState<RetrainSessionData | null>(null)
+  const [viewingLogs, setViewingLogs] = useState(false)
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -58,6 +63,7 @@ export function FileUpload({ onDataUploaded, dataset = "kepler", hyperparameters
   const processFile = (file: File) => {
     setUploadedFile(file)
     setUploadStatus("success")
+    setRetrainSession(null) // Reset session when new file is uploaded
 
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -70,6 +76,14 @@ export function FileUpload({ onDataUploaded, dataset = "kepler", hyperparameters
       }
     }
     reader.readAsText(file)
+  }
+
+  const handleSessionComplete = (session: RetrainSessionData) => {
+    setRetrainSession(session)
+  }
+
+  const handleViewLogs = () => {
+    setViewingLogs(true)
   }
 
   return (
@@ -113,42 +127,173 @@ export function FileUpload({ onDataUploaded, dataset = "kepler", hyperparameters
         </div>
       </div>
 
+      <AnimatePresence mode="wait">
       {uploadStatus === "success" && uploadedFile && (
-        <>
-          <Alert className="border-green-500/50 bg-green-500/10">
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
-            <AlertDescription>
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-green-500">
-                  Arquivo <strong>{uploadedFile.name}</strong> carregado com sucesso!
-                </span>
-                {mode === "researcher" && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {mode === "researcher" ? (
+              // Researcher Mode - Enhanced Retrain Banner
+              <Card className="relative overflow-hidden border border-primary/20 bg-card shadow-md">
+
+                <div className="relative p-4 sm:p-6">
+                  {/* Success Badge Header */}
+                  <div className="flex items-center gap-2 sm:gap-3 mb-4">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-base sm:text-lg font-bold">
+                        Arquivo Carregado com Sucesso!
+                      </h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground">
+                        <span className="font-mono font-medium">{uploadedFile.name}</span> • {(uploadedFile.size / 1024).toFixed(1)} KB
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Info Cards Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4">
+                    <div className="p-2 sm:p-3 rounded-lg bg-muted/50 border border-border">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Database className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground" />
+                        <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Dataset</span>
+                      </div>
+                      <p className="text-xs sm:text-sm font-semibold">{dataset.toUpperCase()}</p>
+                    </div>
+                    
+                    <div className="p-2 sm:p-3 rounded-lg bg-muted/50 border border-border">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <FileSpreadsheet className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground" />
+                        <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Formato</span>
+                      </div>
+                      <p className="text-xs sm:text-sm font-semibold">{uploadedFile.name.split('.').pop()?.toUpperCase()}</p>
+                    </div>
+                    
+                    <div className="p-2 sm:p-3 rounded-lg bg-muted/50 border border-border">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Brain className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground" />
+                        <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Modelo</span>
+                      </div>
+                      <p className="text-xs sm:text-sm font-semibold">{useHyperparams ? 'Tuned' : 'Baseline'}</p>
+                    </div>
+                    
+                    <div className="p-2 sm:p-3 rounded-lg bg-muted/50 border border-border">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <TrendingUp className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground" />
+                        <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Status</span>
+                      </div>
+                      <p className="text-xs sm:text-sm font-semibold text-primary">Ready</p>
+                    </div>
+                  </div>
+
+                  {/* Retrain CTA Section */}
+                  <div className="p-3 sm:p-4 rounded-lg bg-primary/5 border border-primary/20">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                      <div className="flex-shrink-0">
+                        <div className="p-2 sm:p-3 rounded-lg bg-primary/10">
+                          <RefreshCw className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                        </div>
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm sm:text-base font-semibold mb-1">Retreinar Modelo Personalizado</h4>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed mb-2">
+                          Utilize seus dados para treinar um modelo customizado com StratifiedKFold CV e métricas completas de avaliação.
+                        </p>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <Badge variant="outline" className="text-[9px] sm:text-[10px] px-1.5 py-0">
+                            <Zap className="h-2.5 w-2.5 mr-1" />
+                            XGBoost
+                          </Badge>
+                          <Badge variant="outline" className="text-[9px] sm:text-[10px] px-1.5 py-0">
+                            <TrendingUp className="h-2.5 w-2.5 mr-1" />
+                            K-Fold CV
+                          </Badge>
+                          <Badge variant="outline" className="text-[9px] sm:text-[10px] px-1.5 py-0">
+                            <Rocket className="h-2.5 w-2.5 mr-1" />
+                            Download .model
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                   <Button
                     onClick={() => setRetrainModalOpen(true)}
+                          size="lg"
+                          className="gap-2"
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                          Retreinar Agora
+                        </Button>
+                        
+                        {retrainSession && (
+                          <Button
+                            onClick={handleViewLogs}
+                            size="lg"
                     variant="outline"
-                    size="sm"
-                    className="border-accent/50 hover:bg-accent/10 text-accent hover:text-accent flex-shrink-0"
+                            className="gap-2"
                   >
-                    <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-                    Retreinar Modelo
+                            <FileText className="h-4 w-4" />
+                            Ver Logs
                   </Button>
                 )}
               </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom Info */}
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <div className="flex items-center justify-between text-[10px] sm:text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1.5">
+                        <CheckCircle2 className="h-3 w-3 text-primary" />
+                        <span>Arquivo validado e pronto para uso</span>
+                      </div>
+                      <span className="font-mono">{new Date().toLocaleTimeString()}</span>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ) : (
+              // Explorer Mode - Simple Success Banner
+              <Alert className="border-primary/30 bg-primary/5">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+            <AlertDescription>
+                  Arquivo <strong>{uploadedFile.name}</strong> carregado com sucesso!
             </AlertDescription>
           </Alert>
+            )}
 
           {/* Retrain Modal */}
           {mode === "researcher" && (
+              <>
             <RetrainModal
               open={retrainModalOpen}
               onOpenChange={setRetrainModalOpen}
               dataset={dataset}
               file={uploadedFile}
               hyperparameters={useHyperparams ? hyperparameters : undefined}
+                  onSessionComplete={handleSessionComplete}
+                />
+                
+                {/* Logs Viewer Modal */}
+                {retrainSession && (
+                  <RetrainModal
+                    open={viewingLogs}
+                    onOpenChange={setViewingLogs}
+                    dataset={retrainSession.dataset}
+                    file={null}
+                    existingSession={retrainSession}
             />
           )}
         </>
       )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {uploadStatus === "error" && (
         <Alert variant="destructive">

@@ -9,7 +9,7 @@ import { ManualDataForm } from "@/components/manual-data-form"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { Info, Telescope } from "lucide-react"
-import { Upload, Edit3, Database, FileText, Rocket, ArrowLeft, ArrowRight, RotateCcw, Sparkles } from "lucide-react"
+import { Upload, Edit3, Database, FileText, Rocket, ArrowLeft, ArrowRight, RotateCcw, Sparkles, Activity, Brain, TrendingUp, Target, Zap } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { useMode } from "@/lib/mode-context"
 import { usePlanetData } from "@/lib/planet-data-context"
@@ -638,124 +638,178 @@ export function DataInputSection() {
                         Hiperparâmetros
                       </TabsTrigger>
                     </TabsList>
-                    <TabsContent value="architecture" className="mt-4 space-y-3">
-                      <div className="grid grid-cols-1 gap-3">
+                    <TabsContent value="architecture" className="mt-4 space-y-4">
+                      {/* Architecture Components Grid */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                         {/* Dataset Splitting */}
-                        <div className="p-3 border border-blue-500/30 rounded-lg bg-blue-500/5">
-                          <h4 className="font-semibold mb-2 flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-                            Dataset Splitting: 70% / 20% / 10%
-                          </h4>
+                        <div className="p-4 rounded-lg border border-border bg-card hover:border-primary/30 transition-colors">
+                          <div className="flex items-start gap-3 mb-3">
+                            <div className="p-2 rounded-md bg-primary/10 flex-shrink-0">
+                              <Database className="h-4 w-4 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-sm mb-1">Dataset Splitting</h4>
+                              <p className="text-xs text-muted-foreground">70% / 20% / 10%</p>
+                            </div>
+                          </div>
                           <p className="text-xs text-muted-foreground leading-relaxed mb-2">
-                            <span className="font-medium text-foreground">Training (70%):</span> Model learning phase • 
-                            <span className="font-medium text-foreground"> Test (20%):</span> Performance evaluation • 
-                            <span className="font-medium text-foreground"> Blind Validation (10%):</span> Unbiased generalization test
+                            <span className="font-medium text-foreground">Training (70%)</span> for model learning, 
+                            <span className="font-medium text-foreground"> Test (20%)</span> for evaluation, 
+                            <span className="font-medium text-foreground"> Blind (10%)</span> for unbiased validation.
                           </p>
-                          <p className="text-xs text-emerald-600 dark:text-emerald-400 leading-relaxed">
-                            ✓ Prevents data leakage • Ensures robust evaluation • Industry standard for scientific ML
-                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">Prevents leakage</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">Robust eval</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">ML standard</span>
+                          </div>
                         </div>
 
                         {/* Overfitting Prevention */}
-                        <div className="p-3 border border-purple-500/30 rounded-lg bg-purple-500/5">
-                          <h4 className="font-semibold mb-2 flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-purple-500"></div>
-                            StratifiedKFold Cross-Validation (K=5)
-                          </h4>
+                        <div className="p-4 rounded-lg border border-border bg-card hover:border-primary/30 transition-colors">
+                          <div className="flex items-start gap-3 mb-3">
+                            <div className="p-2 rounded-md bg-primary/10 flex-shrink-0">
+                              <Activity className="h-4 w-4 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-sm mb-1">StratifiedKFold CV</h4>
+                              <p className="text-xs text-muted-foreground">K=5 Cross-Validation</p>
+                            </div>
+                          </div>
                           <p className="text-xs text-muted-foreground leading-relaxed mb-2">
-                            5-fold cross-validation with stratified sampling to maintain class distribution across all folds. Test partition evaluated separately from training folds.
+                            5-fold validation with stratified sampling maintains class distribution across folds. Test partition evaluated separately.
                           </p>
-                          <p className="text-xs text-emerald-600 dark:text-emerald-400 leading-relaxed">
-                            ✓ Detects overfitting early • Validates model stability • Maximizes training data usage • Preserves class balance
-                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">Detects overfitting</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">Model stability</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">Class balance</span>
+                          </div>
                         </div>
 
                         {/* XGBoost Models */}
-                        <div className="p-3 border border-amber-500/30 rounded-lg bg-amber-500/5">
-                          <h4 className="font-semibold mb-2 flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-amber-500"></div>
-                            XGBoost Ensemble Models
-                          </h4>
-                          <div className="space-y-2 text-xs text-muted-foreground leading-relaxed">
-                            <div>
-                              <span className="font-medium text-foreground">Version 1 (Baseline):</span>
-                              <code className="ml-1 text-[10px] bg-muted px-1 py-0.5 rounded">XGBClassifier(eval_metric='mlogloss', objective='multi:softprob')</code>
+                        <div className="p-4 rounded-lg border border-border bg-card hover:border-primary/30 transition-colors">
+                          <div className="flex items-start gap-3 mb-3">
+                            <div className="p-2 rounded-md bg-primary/10 flex-shrink-0">
+                              <Brain className="h-4 w-4 text-primary" />
                             </div>
-                            <div>
-                              <span className="font-medium text-foreground">Version 2 (Tuned):</span>
-                              <code className="ml-1 text-[10px] bg-muted px-1 py-0.5 rounded">colsample_bytree=0.8, learning_rate=0.1, max_depth=6, n_estimators=100, subsample=0.8</code>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-sm mb-1">XGBoost Models</h4>
+                              <p className="text-xs text-muted-foreground">Baseline vs Tuned</p>
                             </div>
                           </div>
-                          <p className="text-xs text-emerald-600 dark:text-emerald-400 leading-relaxed mt-2">
-                            ✓ Gradient boosting handles non-linear patterns • Robust to outliers • Fast inference • Proven for tabular astronomical data
-                          </p>
+                          <div className="space-y-1.5 text-xs text-muted-foreground mb-2">
+                            <div className="flex items-start gap-2">
+                              <span className="font-medium text-foreground text-[10px] flex-shrink-0">V1:</span>
+                              <code className="text-[10px] bg-muted px-1.5 py-0.5 rounded flex-1">eval_metric='mlogloss', objective='multi:softprob'</code>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <span className="font-medium text-foreground text-[10px] flex-shrink-0">V2:</span>
+                              <code className="text-[10px] bg-muted px-1.5 py-0.5 rounded flex-1">colsample=0.8, lr=0.1, depth=6, n=100, sub=0.8</code>
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">Non-linear patterns</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">Fast inference</span>
+                          </div>
                         </div>
 
                         {/* Feature Selection */}
-                        <div className="p-3 border border-cyan-500/30 rounded-lg bg-cyan-500/5">
-                          <h4 className="font-semibold mb-2 flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-cyan-500"></div>
-                            Intelligent Feature Selection
-                          </h4>
+                        <div className="p-4 rounded-lg border border-border bg-card hover:border-primary/30 transition-colors">
+                          <div className="flex items-start gap-3 mb-3">
+                            <div className="p-2 rounded-md bg-primary/10 flex-shrink-0">
+                              <TrendingUp className="h-4 w-4 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-sm mb-1">Feature Selection</h4>
+                              <p className="text-xs text-muted-foreground">Intelligent Analysis</p>
+                            </div>
+                          </div>
                           <p className="text-xs text-muted-foreground leading-relaxed mb-2">
-                            Analysis identifies the <span className="font-medium text-foreground">top 10 most important features</span> during training. Model performance compared at <span className="font-medium text-foreground">90%, 95%, and 99%</span> feature thresholds using test and blind validation metrics.
+                            Identifies <span className="font-medium text-foreground">top 10 features</span> during training. Performance compared at <span className="font-medium text-foreground">90%, 95%, 99%</span> thresholds.
                           </p>
-                          <p className="text-xs text-emerald-600 dark:text-emerald-400 leading-relaxed">
-                            ✓ Reduces dimensionality • Prevents curse of dimensionality • Improves interpretability • Faster inference
-                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">Reduces dimensionality</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">Interpretability</span>
+                          </div>
                         </div>
 
                         {/* Comprehensive Evaluation */}
-                        <div className="p-3 border border-rose-500/30 rounded-lg bg-rose-500/5">
-                          <h4 className="font-semibold mb-2 flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-rose-500"></div>
-                            Multi-Metric Evaluation Framework
-                          </h4>
+                        <div className="p-4 rounded-lg border border-border bg-card hover:border-primary/30 transition-colors">
+                          <div className="flex items-start gap-3 mb-3">
+                            <div className="p-2 rounded-md bg-primary/10 flex-shrink-0">
+                              <Target className="h-4 w-4 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-sm mb-1">Multi-Metric Evaluation</h4>
+                              <p className="text-xs text-muted-foreground">Comprehensive Framework</p>
+                            </div>
+                          </div>
                           <p className="text-xs text-muted-foreground leading-relaxed mb-2">
-                            Classification Report includes: <span className="font-medium text-foreground">Accuracy, Precision, Recall, F1-Score, Macro-Avg, Weighted-Avg</span>. Evaluated on both test partition and blind validation set.
+                            Classification report: <span className="font-medium text-foreground">Accuracy, Precision, Recall, F1-Score, Macro/Weighted-Avg</span>. Test + blind validation.
                           </p>
-                          <p className="text-xs text-emerald-600 dark:text-emerald-400 leading-relaxed">
-                            ✓ Balanced view of performance • Detects class imbalance issues • Standard for scientific publication • Enables fair model comparison
-                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">Balanced view</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">Publication ready</span>
+                          </div>
                         </div>
 
                         {/* Grid Search Optimization */}
-                        <div className="p-3 border border-emerald-500/30 rounded-lg bg-emerald-500/5">
-                          <h4 className="font-semibold mb-2 flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
-                            Hyperparameter Optimization via Grid Search CV
-                          </h4>
+                        <div className="p-4 rounded-lg border border-border bg-card hover:border-primary/30 transition-colors">
+                          <div className="flex items-start gap-3 mb-3">
+                            <div className="p-2 rounded-md bg-primary/10 flex-shrink-0">
+                              <Zap className="h-4 w-4 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-sm mb-1">Hyperparameter Optimization</h4>
+                              <p className="text-xs text-muted-foreground">Grid Search CV</p>
+                            </div>
+                          </div>
                           <p className="text-xs text-muted-foreground leading-relaxed mb-2">
-                            Systematic exploration of hyperparameter space using cross-validation. Applied when appropriate to identify optimal configuration for <span className="font-medium text-foreground">colsample_bytree, learning_rate, max_depth, n_estimators, subsample</span>.
+                            Systematic exploration via CV for optimal <span className="font-medium text-foreground">colsample_bytree, learning_rate, max_depth, n_estimators, subsample</span>.
                           </p>
-                          <p className="text-xs text-emerald-600 dark:text-emerald-400 leading-relaxed">
-                            ✓ Data-driven optimization • Avoids manual tuning bias • Reproducible methodology • Maximizes predictive performance
-                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">Data-driven</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">Reproducible</span>
+                          </div>
                         </div>
                       </div>
 
                       {/* Why This Architecture Is Effective */}
-                      <div className="mt-4 p-4 border-2 border-primary/20 rounded-lg bg-gradient-to-br from-primary/5 to-accent/5">
-                        <h4 className="font-semibold mb-3 flex items-center gap-2 text-primary">
-                          <Rocket className="h-4 w-4" />
+                      <div className="mt-4 p-4 rounded-lg border border-primary/20 bg-card">
+                        <h4 className="font-semibold mb-3 flex items-center gap-2">
+                          <Rocket className="h-4 w-4 text-primary" />
                           Why This Architecture Is Effective
                         </h4>
-                        <div className="space-y-2 text-xs text-muted-foreground leading-relaxed">
-                          <p>
-                            <span className="font-medium text-foreground">🔬 Scientific Rigor:</span> Blind validation ensures unbiased performance estimates, critical for publishable research and real-world deployment confidence.
-                          </p>
-                          <p>
-                            <span className="font-medium text-foreground">⚖️ Class Balance Preservation:</span> StratifiedKFold maintains the proportion of confirmed/candidate/false-positive across folds, preventing model bias toward majority classes.
-                          </p>
-                          <p>
-                            <span className="font-medium text-foreground">🎯 Exoplanet Domain Fit:</span> XGBoost excels at capturing non-linear interactions in tabular astronomical features (orbital periods, stellar parameters, transit depths) without requiring massive datasets.
-                          </p>
-                          <p>
-                            <span className="font-medium text-foreground">🚀 Computational Efficiency:</span> Feature selection (top 10) and optimized hyperparameters enable real-time inference while maintaining 92%+ accuracy, crucial for large-scale survey processing.
-                          </p>
-                          <p>
-                            <span className="font-medium text-foreground">🔁 Reproducibility:</span> Explicit train/test/blind splits + Grid Search CV + version-controlled models ensure experiments can be replicated by other researchers.
-                          </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <span className="font-medium text-foreground text-xs">Scientific Rigor</span>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                              Blind validation ensures unbiased performance estimates, critical for research and deployment.
+                            </p>
+                          </div>
+                          <div className="space-y-1">
+                            <span className="font-medium text-foreground text-xs">Class Balance</span>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                              StratifiedKFold maintains class proportions across folds, preventing bias toward majority classes.
+                            </p>
+                          </div>
+                          <div className="space-y-1">
+                            <span className="font-medium text-foreground text-xs">Domain Fit</span>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                              XGBoost captures non-linear interactions in astronomical features without requiring massive datasets.
+                            </p>
+                          </div>
+                          <div className="space-y-1">
+                            <span className="font-medium text-foreground text-xs">Efficiency</span>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                              Feature selection and optimized hyperparameters enable real-time inference with 92%+ accuracy.
+                            </p>
+                          </div>
+                          <div className="space-y-1 sm:col-span-2">
+                            <span className="font-medium text-foreground text-xs">Reproducibility</span>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                              Explicit splits + Grid Search CV + version-controlled models ensure experiments can be replicated.
+                            </p>
+                          </div>
                         </div>
                       </div>
 
@@ -828,3 +882,4 @@ export function DataInputSection() {
     </section>
   )
 }
+
