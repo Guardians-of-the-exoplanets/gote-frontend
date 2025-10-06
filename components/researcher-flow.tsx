@@ -517,53 +517,55 @@ export function ResearcherFlow() {
           </TabsContent>
 
           <TabsContent value="results" className="mt-6 space-y-8">
-            {/* Technical Results Header */}
-            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-accent/5">
-              <div className="p-6">
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="p-2 bg-accent/20 rounded-lg">
-                        <BarChart3 className="h-5 w-5 text-accent" />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold">Classification Results</h3>
-                        <p className="text-xs text-muted-foreground">Model predictions • Confidence scores • Comparative analysis</p>
-                      </div>
-                    </div>
+            {/* Technical Results Header - Only show for batch uploads */}
+            {runMeta?.inputKind === 'upload' && (
+              <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-accent/5">
+                <div className="p-6">
+                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 bg-accent/20 rounded-lg">
+                          <BarChart3 className="h-5 w-5 text-accent" />
                         </div>
-                  
-                  {runMeta && (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant="outline" className={`border-primary/40 font-mono ${runMeta.inputKind==='upload' ? 'text-primary' : 'text-secondary'}`}>
-                        <Database className="h-3 w-3 mr-1" />
-                        {runMeta.inputKind === 'upload' ? 'Batch CSV' : 'Single Entry'}
-                      </Badge>
-                      <Badge variant="outline" className={`font-mono ${runMeta.hasHyperparams ? 'text-emerald-400 border-emerald-400/40' : 'text-amber-400 border-amber-400/40'}`}>
-                        <Brain className="h-3 w-3 mr-1" />
-                        {runMeta.hasHyperparams ? 'Custom HP' : 'Baseline'}
-                      </Badge>
-                      {normalizedPredictions.length > 0 && (
-                        <Badge variant="outline" className="border-accent/40 text-accent font-mono">
-                          <Target className="h-3 w-3 mr-1" />
-                          {normalizedPredictions.length} predictions
+                        <div>
+                          <h3 className="text-xl font-bold">Classification Results</h3>
+                          <p className="text-xs text-muted-foreground">Model predictions • Confidence scores • Comparative analysis</p>
+                        </div>
+                      </div>
+                          </div>
+                    
+                    {runMeta && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="outline" className="border-primary/40 text-primary font-mono">
+                          <Database className="h-3 w-3 mr-1" />
+                          Batch CSV
                         </Badge>
-                      )}
-                    </div>
-                  )}
+                        <Badge variant="outline" className={`font-mono ${runMeta.hasHyperparams ? 'text-emerald-400 border-emerald-400/40' : 'text-amber-400 border-amber-400/40'}`}>
+                          <Brain className="h-3 w-3 mr-1" />
+                          {runMeta.hasHyperparams ? 'Custom HP' : 'Baseline'}
+                        </Badge>
+                        {normalizedPredictions.length > 0 && (
+                          <Badge variant="outline" className="border-accent/40 text-accent font-mono">
+                            <Target className="h-3 w-3 mr-1" />
+                            {normalizedPredictions.length} predictions
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Technical Note */}
+                  <Alert className="border-accent/30 bg-accent/5">
+                    <Target className="h-4 w-4 text-accent" />
+                    <AlertDescription className="text-xs leading-relaxed">
+                      <span className="font-semibold">Output Schema:</span> Each prediction includes class label (CONFIRMED, CANDIDATE, FALSE POSITIVE), probability scores (softmax output), and comparison metrics when hyperparameter tuning is enabled. Confidence intervals represent model uncertainty quantification.
+                    </AlertDescription>
+                  </Alert>
                 </div>
+              </Card>
+            )}
 
-                {/* Technical Note */}
-                <Alert className="border-accent/30 bg-accent/5">
-                  <Target className="h-4 w-4 text-accent" />
-                  <AlertDescription className="text-xs leading-relaxed">
-                    <span className="font-semibold">Output Schema:</span> Each prediction includes class label (CONFIRMED, CANDIDATE, FALSE POSITIVE), probability scores (softmax output), and comparison metrics when hyperparameter tuning is enabled. Confidence intervals represent model uncertainty quantification.
-                  </AlertDescription>
-                </Alert>
-              </div>
-            </Card>
-
-                <ResultsSection />
+            <ResultsSection />
           </TabsContent>
 
           <TabsContent value="analytics" className="mt-6 space-y-8">

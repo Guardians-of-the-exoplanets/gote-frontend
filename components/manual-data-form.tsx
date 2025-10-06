@@ -179,6 +179,7 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
       let buffer = ""
+      let jsonBuffer = "" // Buffer for incomplete JSON objects
       const maybeFinishStep = (stepNum: number, nowTs: number) => {
         if (stepStart[stepNum]) {
           const startedAt = stepStart[stepNum]
@@ -194,78 +195,111 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
       while (true) {
         document.querySelector(`#pipeline-${mode}`)?.scrollIntoView({ behavior: 'smooth'})
         const { done, value } = await reader.read()
-        if (done) break
+        
+        // eslint-disable-next-line no-console
+        console.log('[manual-data-form] Stream chunk received, done:', done, 'bytes:', value?.length ?? 0)
+        
+        if (done) {
+          // eslint-disable-next-line no-console
+          console.log('[manual-data-form] Stream completed')
+          break
+        }
+        
         buffer += decoder.decode(value, { stream: true })
         const parts = buffer.split("\n\n")
         buffer = parts.pop() || ""
+        
+        // eslint-disable-next-line no-console
+        console.log('[manual-data-form] Processing', parts.length, 'SSE events')
+        
         for (const raw of parts) {
-          const line = raw.trim()
-          if (!line.startsWith("data:")) continue
-          const payload = line.replace("data:", "").trim()
-          // eslint-disable-next-line no-console
-          console.log("STREAM_MANUAL:", payload)
+          if (!raw.trim()) continue
+          
+          // Extract all data: lines from this SSE event
+          const lines = raw.split("\n").filter(l => l.trim().startsWith("data:"))
+          if (lines.length === 0) continue
+          
+          // Concatenate all data lines to form complete JSON
+          const jsonStr = lines.map(l => l.replace(/^data:\s*/, "").trim()).join("")
+          
+          if (!jsonStr) continue
+          
+          // Try to parse the complete JSON
           try {
-            const parsed = JSON.parse(payload)
-            pushDebugEvent?.({ ts: Date.now(), from: 'manual', raw: payload, json: parsed, step: parsed.step, status: parsed.status })
-          } catch {
-            pushDebugEvent?.({ ts: Date.now(), from: 'manual', raw: payload })
-          }
-          const candidates = payload.split(/\n+/).map((s)=>s.trim()).filter(Boolean)
-          for (const piece of candidates) {
-            try {
-              const json = JSON.parse(piece)
-              if (typeof json.step === "number" && typeof json.status === "string") {
-                const now = Date.now()
-                if (lastStep > 0 && json.step > lastStep) {
-                  maybeFinishStep(lastStep, now)
+            const json = JSON.parse(jsonStr)
+            
+            // eslint-disable-next-line no-console
+            console.log("STREAM_MANUAL [parsed]:", json)
+            pushDebugEvent?.({ ts: Date.now(), from: 'manual', raw: jsonStr, json, step: json.step, status: json.status })
+            
+            // Process step info
+            if (typeof json.step === "number" && typeof json.status === "string") {
+              const now = Date.now()
+              if (lastStep > 0 && json.step > lastStep) {
+                maybeFinishStep(lastStep, now)
+              }
+              if (!stepStart[json.step]) stepStart[json.step] = now
+              lastStep = Math.max(lastStep, json.step)
+              const doneHints = ["done", "completed", "finished"]
+              const lower = String(json.status).toLowerCase()
+              const isExplicitDone = Boolean(json.finished) || doneHints.some((h) => lower.includes(h))
+              setStreamSteps((prev) => [
+                ...prev.filter((s) => s.step !== json.step),
+                { step: json.step, status: json.status, startedAt: stepStart[json.step] },
+              ])
+              if (isExplicitDone) {
+                maybeFinishStep(json.step, now)
+              }
+            }
+            
+            // Process details (training metrics)
+            if (json.details) {
+              try {
+                const d = Array.isArray(json.details) ? json.details[0] : json.details
+                const toNum = (v:any) => {
+                  const n = typeof v === 'number' ? v : Number(v)
+                  return Number.isFinite(n) ? n : undefined
                 }
-                if (!stepStart[json.step]) stepStart[json.step] = now
-                lastStep = Math.max(lastStep, json.step)
-                const doneHints = ["done", "completed", "finished"]
-                const lower = String(json.status).toLowerCase()
-                const isExplicitDone = Boolean(json.finished) || doneHints.some((h) => lower.includes(h))
-                setStreamSteps((prev) => [
-                  ...prev.filter((s) => s.step !== json.step),
-                  { step: json.step, status: json.status, startedAt: stepStart[json.step] },
-                ])
-                if (isExplicitDone) {
-                  maybeFinishStep(json.step, now)
-                }
+                const kfold = Array.isArray(d?.fold_metrics) ? d.fold_metrics.map((m:any)=>({
+                  fold: Number(m.fold) || 0,
+                  accuracy: toNum(m.accuracy),
+                  precision: toNum(m.precision),
+                  recall: toNum(m.recall),
+                  f1: toNum(m.f1_score ?? m.f1)
+                })) : []
+                setResearchMetrics((prev)=>({
+                  ...prev,
+                  numFeatures: toNum(d?.n_features) ?? prev.numFeatures,
+                  totalTrainingTimeMs: toNum(d?.total_time_ms) ?? prev.totalTrainingTimeMs,
+                  kFoldMetrics: kfold.length ? kfold : prev.kFoldMetrics
+                }))
+              } catch (err) {
+                // eslint-disable-next-line no-console
+                console.warn('[manual-data-form] Failed to parse details:', err)
               }
-              if (json.details) {
-                try {
-                  const d = Array.isArray(json.details) ? json.details[0] : json.details
-                  const toNum = (v:any) => {
-                    const n = typeof v === 'number' ? v : Number(v)
-                    return Number.isFinite(n) ? n : undefined
-                  }
-                  const kfold = Array.isArray(d?.fold_metrics) ? d.fold_metrics.map((m:any)=>({
-                    fold: Number(m.fold) || 0,
-                    accuracy: toNum(m.accuracy),
-                    precision: toNum(m.precision),
-                    recall: toNum(m.recall),
-                    f1: toNum(m.f1_score ?? m.f1)
-                  })) : []
-                  setResearchMetrics((prev)=>({
-                    ...prev,
-                    numFeatures: toNum(d?.n_features) ?? prev.numFeatures,
-                    totalTrainingTimeMs: toNum(d?.total_time_ms) ?? prev.totalTrainingTimeMs,
-                    kFoldMetrics: kfold.length ? kfold : prev.kFoldMetrics
-                  }))
-                } catch {}
-              }
-              if (Array.isArray(json.predictions)) {
-                const preds:any[] = Array.isArray(json.predictions[0]) ? (json.predictions as any[]).flat() : (json.predictions as any[])
-                setStreamPredictions(preds)
-              }
-              if (json.prediction) {
-                setPrediction(json.prediction as any)
-              }
-            } catch {}
+            }
+            
+            // Process predictions
+            if (Array.isArray(json.predictions)) {
+              const preds:any[] = Array.isArray(json.predictions[0]) ? (json.predictions as any[]).flat() : (json.predictions as any[])
+              setStreamPredictions(preds)
+            }
+            if (json.prediction) {
+              setPrediction(json.prediction as any)
+            }
+          } catch (parseError) {
+            // Failed to parse - log for debugging
+            // eslint-disable-next-line no-console
+            console.warn('[manual-data-form] Failed to parse SSE JSON:', parseError, 'Raw:', jsonStr.substring(0, 200))
           }
+          
           await new Promise((r) => setTimeout(r, 0))
         }
       }
+      
+      // eslint-disable-next-line no-console
+      console.log('[manual-data-form] Stream loop finished, lastStep:', lastStep)
+      
       if (lastStep > 0) {
         maybeFinishStep(lastStep, Date.now())
       }

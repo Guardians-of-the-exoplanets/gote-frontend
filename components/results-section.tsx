@@ -44,6 +44,28 @@ export function ResultsSection() {
     'new_classification' in (x || {})
   ))
 
+  // Check if this is manual input (no ID fields)
+  const isManualInput = flatPreds.length > 0 && flatPreds.every((x:any) => (
+    !x?.kepoi_name && !x?.toi && !x?.id && !x?.tid
+  ))
+
+  // For manual input comparison, extract old vs new data
+  const manualComparison = useMemo(() => {
+    if (!isManualInput || !isComparison) return null
+    
+    const oldRow = flatPreds.find((r:any)=> 'old_classificacao' in (r||{}) || 'old_classification' in (r||{}))
+    const newRow = flatPreds.find((r:any)=> 'new_classificacao' in (r||{}) || 'new_classification' in (r||{}))
+    
+    if (!oldRow || !newRow) return null
+    
+    return {
+      oldCls: String(oldRow.old_classificacao ?? oldRow.old_classification ?? ''),
+      oldProb: Number(oldRow.old_probabilidade ?? oldRow.old_probability ?? 0),
+      newCls: String(newRow.new_classificacao ?? newRow.new_classification ?? ''),
+      newProb: Number(newRow.new_probabilidade ?? newRow.new_probability ?? 0),
+    }
+  }, [flatPreds, isManualInput, isComparison])
+
   const comparisonGroups = useMemo(() => {
     if (!flatPreds || flatPreds.length === 0) return []
     // Group by kepoi_name (Kepler) or toi (TESS) since each candidate has a unique identifier
@@ -182,174 +204,303 @@ export function ResultsSection() {
 
   return (
     <section id="results" className="scroll-mt-20 space-y-4">
-      <Card className="rounded-xl border overflow-hidden">
-        <CardHeader>
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
+      {/* Special design for manual input comparison */}
+      {isManualInput && manualComparison && (
+        <Card className="border-primary/20">
+          <CardHeader>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-xl">Model Comparison: Baseline vs Hyperparameters</CardTitle>
+                </div>
+                <CardDescription className="mt-1">
+                  Performance analysis • Single prediction • Configuration impact
+                </CardDescription>
+              </div>
+              <Badge variant="outline" className="border-border font-mono text-xs">
+                Manual Input
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Baseline Model */}
+              <div className="p-4 rounded-lg border border-border bg-card">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-muted-foreground/50" />
+                    <h3 className="text-sm font-semibold">Baseline Model</h3>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] font-mono">
+                    Default HP
+                  </Badge>
+                </div>
+                
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1.5">Classification</div>
+                    <Badge 
+                      variant="outline" 
+                      className={`text-sm px-2.5 py-0.5 ${badgeClassFor(manualComparison.oldCls)}`}
+                    >
+                      {manualComparison.oldCls}
+                    </Badge>
+                  </div>
+                  
+                  <div>
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1.5">Confidence</div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-bold font-mono">
+                        {manualComparison.oldProb.toFixed(2)}
+                      </span>
+                      <span className="text-sm text-muted-foreground">%</span>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-2 border-t border-border/50 text-[10px] text-muted-foreground">
+                    Standard XGBoost configuration
+                  </div>
+                </div>
+              </div>
+
+              {/* Hyperparameter-Optimized Model */}
+              <div className="p-4 rounded-lg border border-primary/30 bg-primary/5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-primary" />
+                    <h3 className="text-sm font-semibold">Optimized Model</h3>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] font-mono border-primary/40 text-primary">
+                    Custom HP
+                  </Badge>
+                </div>
+                
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1.5">Classification</div>
+                    <Badge 
+                      variant="outline" 
+                      className={`text-sm px-2.5 py-0.5 ${badgeClassFor(manualComparison.newCls)}`}
+                    >
+                      {manualComparison.newCls}
+                    </Badge>
+                  </div>
+                  
+                  <div>
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1.5">Confidence</div>
+                    <div className="flex items-baseline gap-2">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-bold font-mono">
+                          {manualComparison.newProb.toFixed(2)}
+                        </span>
+                        <span className="text-sm text-muted-foreground">%</span>
+                      </div>
+                      {Math.abs(manualComparison.newProb - manualComparison.oldProb) > 0.01 && (
+                        <Badge variant="outline" className="text-[10px] font-mono border-border">
+                          {manualComparison.newProb > manualComparison.oldProb ? '+' : ''}
+                          {(manualComparison.newProb - manualComparison.oldProb).toFixed(2)}%
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="pt-2 border-t border-border/50 text-[10px] text-muted-foreground">
+                    Tuned configuration
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Technical Summary */}
+            <div className="p-3 rounded-lg border border-border bg-muted/30">
+              <div className="text-[11px] leading-relaxed text-muted-foreground">
+                <span className="font-semibold text-foreground">Analysis:</span> {manualComparison.oldCls === manualComparison.newCls ? (
+                  <>Both models converge on <span className="font-mono">{manualComparison.newCls}</span> classification{Math.abs(manualComparison.newProb - manualComparison.oldProb) > 1 ? ` with ${Math.abs(manualComparison.newProb - manualComparison.oldProb).toFixed(1)}% confidence delta` : ''}</>
+                ) : (
+                  <>Classification disagreement detected • Baseline: <span className="font-mono">{manualComparison.oldCls}</span> • Optimized: <span className="font-mono">{manualComparison.newCls}</span></>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Standard table for batch uploads */}
+      {!isManualInput && comparisonGroups.length > 0 && (
+        <Card className="rounded-xl border overflow-hidden">
+          <CardHeader>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-xl">Classificações (Baseline vs Hiperparâmetros)</CardTitle>
+                </div>
+                <CardDescription className="mt-1">
+                  Comparação detalhada: modelo baseline vs modelo com hiperparâmetros otimizados
+                  {isTessData && <span className="ml-2 text-xs text-accent">(TESS)</span>}
+                  {!isTessData && <span className="ml-2 text-xs text-accent">(Kepler)</span>}
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={()=>setShowDebug((v)=>!v)} className="text-xs">{showDebug ? 'Ocultar' : 'Mostrar'} Debug</Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50">
+                  <tr>
+                    <th className="text-left p-3">ID do Objeto</th>
+                    <th className="text-left p-3">{candidateLabel}</th>
+                    <th className="text-left p-3">Baseline</th>
+                    <th className="text-right p-3">Prob. Baseline</th>
+                    <th className="text-left p-3">Com Hiperparâmetros</th>
+                    <th className="text-right p-3">Nova Prob.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {comparisonGroups.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                        Nenhum dado de comparação disponível. Faça upload de um CSV com hiperparâmetros para ver resultados baseline vs otimizados.
+                      </td>
+                    </tr>
+                  ) : (
+                    comparisonGroups.map((g, idx) => {
+                      const key = `${g.id}-${idx}`
+                      return (
+                        <tr key={key} className="border-t hover:bg-muted/30">
+                          <td className="p-3 font-mono">{g.id}</td>
+                          <td className="p-3 font-mono">{g.koi ?? '—'}</td>
+                          <td className="p-3">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs ${badgeClassFor(g.oldCls)}`}>{g.oldCls ?? '—'}</span>
+                          </td>
+                          <td className="p-3 text-right">
+                            <span className="font-mono">{g.oldProb == null ? '—' : `${g.oldProb.toFixed(2)}%`}</span>
+                          </td>
+                          <td className="p-3">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs ${badgeClassFor(g.newCls)}`}>{g.newCls ?? '—'}</span>
+                          </td>
+                          <td className="p-3 text-right">
+                            <span className="font-mono">{g.newProb == null ? '—' : `${g.newProb.toFixed(2)}%`}</span>
+                          </td>
+                        </tr>
+                      )
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+            {showDebug && (
+              <div className="p-3 border-t bg-muted/30 text-xs font-mono max-h-72 overflow-auto">
+                {(debugEvents || []).slice(-100).map((e:any, i:number)=> (
+                  <div key={i} className="py-1">
+                    <div className="text-muted-foreground">[{new Date(e.ts).toLocaleTimeString()}] step {e.step ?? '—'} • {e.status ?? '—'} • {e.from}</div>
+                    <pre className="whitespace-pre-wrap break-words">{e.raw}</pre>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Explorer-style grouped summary table built from step 7 rows (prefers new_* entries) - only for batch uploads */}
+      {!isManualInput && groupedSummary.length > 0 && (
+        <>
+          <Card className="rounded-xl border overflow-hidden">
+            <CardHeader>
               <div className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-primary" />
-                <CardTitle className="text-xl">Classificações (Baseline vs Hiperparâmetros)</CardTitle>
+                <CardTitle className="text-xl">Resumo por Candidato</CardTitle>
               </div>
-              <CardDescription className="mt-1">
-                Comparação detalhada: modelo baseline vs modelo com hiperparâmetros otimizados
-                {isTessData && <span className="ml-2 text-xs text-accent">(TESS)</span>}
-                {!isTessData && <span className="ml-2 text-xs text-accent">(Kepler)</span>}
-              </CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={()=>setShowDebug((v)=>!v)} className="text-xs">{showDebug ? 'Ocultar' : 'Mostrar'} Debug</Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50">
-                <tr>
-                  <th className="text-left p-3">ID do Objeto</th>
-                  <th className="text-left p-3">{candidateLabel}</th>
-                  <th className="text-left p-3">Baseline</th>
-                  <th className="text-right p-3">Prob. Baseline</th>
-                  <th className="text-left p-3">Com Hiperparâmetros</th>
-                  <th className="text-right p-3">Nova Prob.</th>
-                </tr>
-              </thead>
-               <tbody>
-                 {comparisonGroups.length === 0 ? (
-                   <tr>
-                     <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                       Nenhum dado de comparação disponível. Faça upload de um CSV com hiperparâmetros para ver resultados baseline vs otimizados.
-                     </td>
-                   </tr>
-                 ) : (
-                   comparisonGroups.map((g, idx) => {
-                     const key = `${g.id}-${idx}`
-                     return (
-                       <tr key={key} className="border-t hover:bg-muted/30">
-                         <td className="p-3 font-mono">{g.id}</td>
-                         <td className="p-3 font-mono">{g.koi ?? '—'}</td>
-                         <td className="p-3">
-                           <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs ${badgeClassFor(g.oldCls)}`}>{g.oldCls ?? '—'}</span>
-                         </td>
-                         <td className="p-3 text-right">
-                           <span className="font-mono">{g.oldProb == null ? '—' : `${g.oldProb.toFixed(2)}%`}</span>
-                         </td>
-                         <td className="p-3">
-                           <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs ${badgeClassFor(g.newCls)}`}>{g.newCls ?? '—'}</span>
-                         </td>
-                         <td className="p-3 text-right">
-                           <span className="font-mono">{g.newProb == null ? '—' : `${g.newProb.toFixed(2)}%`}</span>
-                         </td>
-                       </tr>
-                     )
-                   })
-                 )}
-               </tbody>
-            </table>
-          </div>
-          {showDebug && (
-            <div className="p-3 border-t bg-muted/30 text-xs font-mono max-h-72 overflow-auto">
-              {(debugEvents || []).slice(-100).map((e:any, i:number)=> (
-                <div key={i} className="py-1">
-                  <div className="text-muted-foreground">[{new Date(e.ts).toLocaleTimeString()}] step {e.step ?? '—'} • {e.status ?? '—'} • {e.from}</div>
-                  <pre className="whitespace-pre-wrap break-words">{e.raw}</pre>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Explorer-style grouped summary table built from step 7 rows (prefers new_* entries) */}
-      <Card className="rounded-xl border overflow-hidden">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <CardTitle className="text-xl">Resumo por Candidato</CardTitle>
-          </div>
-          <CardDescription>Última classificação por objeto (registros refletem baseline vs hiperparâmetros)</CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50">
-                <tr>
-                  <th className="text-left p-3">ID do Objeto</th>
-                  <th className="text-left p-3">Classificação</th>
-                  <th className="text-right p-3">Registros</th>
-                  <th className="text-right p-3">Prob. Média</th>
-                  <th className="text-right p-3">Histórico</th>
-                </tr>
-              </thead>
-               <tbody>
-                 {groupedSummary.length === 0 ? (
-                   <tr>
-                     <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                       Nenhum dado de resumo disponível. Os resultados aparecerão aqui após a classificação ser concluída.
-                     </td>
-                   </tr>
-                 ) : (
-                   groupedSummary.map((g:any, idx:number) => {
-                     const idVal = g.id
-                     const cls = g.latest.classification as 'Confirmed' | 'Candidate' | 'False Positive'
-                     const avgProb = (() => {
-                       const vals = (g.entries || []).map((e:any)=> Number(e.probability) || 0)
-                       const n = Math.max(1, vals.length)
-                       return vals.reduce((a:number,b:number)=>a+b,0) / n
-                     })()
-                     const badgeClass = cls === 'Confirmed'
-                       ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                       : cls === 'Candidate'
-                       ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                       : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                     const key = `${idVal}-${idx}`
-                     return (
-                       <tr
-                         key={key}
-                         className="border-t hover:bg-muted/30 cursor-pointer"
-                         title="Clique para ver o histórico do candidato"
-                         onClick={() => { setHistorySelection({ id: idVal, entries: g.entries }); setHistoryOpen(true) }}
-                       >
-                         <td className="p-3 font-mono">{idVal}</td>
-                         <td className="p-3">
-                           <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs ${badgeClass}`}>{cls}</span>
-                         </td>
-                         <td className="p-3 text-right">
-                           <span className="inline-flex items-center justify-center min-w-8 px-2 py-0.5 rounded-md border bg-card/70 text-xs">
-                             {g.entries.length}
-                           </span>
-                         </td>
-                         <td className="p-3 text-right">
-                           <span className="font-mono">{Number.isFinite(avgProb) ? avgProb.toFixed(2) : '—'}%</span>
-                         </td>
-                         <td className="p-3 text-right">
-                           <Button variant="ghost" size="sm" className="gap-1" onClick={(e)=>{ e.stopPropagation(); setHistorySelection({ id: idVal, entries: g.entries }); setHistoryOpen(true) }}>
-                             <History className="h-3.5 w-3.5" />
-                             <span className="hidden sm:inline">Histórico</span>
-                             <ChevronRight className="h-3.5 w-3.5" />
-                           </Button>
-                         </td>
-                       </tr>
-                     )
-                   })
-                 )}
-               </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-      <CandidateHistoryDialog
-        open={historyOpen}
-        onOpenChange={setHistoryOpen}
-        candidateId={historySelection?.id || ''}
-        entries={(historySelection?.entries || []).map((r:any)=>({
-          id: r?.id ?? normalizeId(r),
-          classification: r?.classification ?? normalizeClassification(r),
-          probability: r?.probability ?? normalizeProbability(r),
-          // Extract pubdate from entry or raw record (K2: pubdate, Kepler: koi_pdisposition_date, TESS: publication_date)
-          pubdate: r?.pubdate ?? r?.raw?.pubdate ?? r?.raw?.koi_pdisposition_date ?? r?.raw?.publication_date ?? r?.raw?.koi_disposition_date ?? null,
-        }))}
-      />
+              <CardDescription>Última classificação por objeto (registros refletem baseline vs hiperparâmetros)</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="text-left p-3">ID do Objeto</th>
+                      <th className="text-left p-3">Classificação</th>
+                      <th className="text-right p-3">Registros</th>
+                      <th className="text-right p-3">Prob. Média</th>
+                      <th className="text-right p-3">Histórico</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {groupedSummary.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-muted-foreground">
+                          Nenhum dado de resumo disponível. Os resultados aparecerão aqui após a classificação ser concluída.
+                        </td>
+                      </tr>
+                    ) : (
+                      groupedSummary.map((g:any, idx:number) => {
+                        const idVal = g.id
+                        const cls = g.latest.classification as 'Confirmed' | 'Candidate' | 'False Positive'
+                        const avgProb = (() => {
+                          const vals = (g.entries || []).map((e:any)=> Number(e.probability) || 0)
+                          const n = Math.max(1, vals.length)
+                          return vals.reduce((a:number,b:number)=>a+b,0) / n
+                        })()
+                        const badgeClass = cls === 'Confirmed'
+                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                          : cls === 'Candidate'
+                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                          : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                        const key = `${idVal}-${idx}`
+                        return (
+                          <tr
+                            key={key}
+                            className="border-t hover:bg-muted/30 cursor-pointer"
+                            title="Clique para ver o histórico do candidato"
+                            onClick={() => { setHistorySelection({ id: idVal, entries: g.entries }); setHistoryOpen(true) }}
+                          >
+                            <td className="p-3 font-mono">{idVal}</td>
+                            <td className="p-3">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs ${badgeClass}`}>{cls}</span>
+                            </td>
+                            <td className="p-3 text-right">
+                              <span className="inline-flex items-center justify-center min-w-8 px-2 py-0.5 rounded-md border bg-card/70 text-xs">
+                                {g.entries.length}
+                              </span>
+                            </td>
+                            <td className="p-3 text-right">
+                              <span className="font-mono">{Number.isFinite(avgProb) ? avgProb.toFixed(2) : '—'}%</span>
+                            </td>
+                            <td className="p-3 text-right">
+                              <Button variant="ghost" size="sm" className="gap-1" onClick={(e)=>{ e.stopPropagation(); setHistorySelection({ id: idVal, entries: g.entries }); setHistoryOpen(true) }}>
+                                <History className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline">Histórico</span>
+                                <ChevronRight className="h-3.5 w-3.5" />
+                              </Button>
+                            </td>
+                          </tr>
+                        )
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+          <CandidateHistoryDialog
+            open={historyOpen}
+            onOpenChange={setHistoryOpen}
+            candidateId={historySelection?.id || ''}
+            entries={(historySelection?.entries || []).map((r:any)=>({
+              id: r?.id ?? normalizeId(r),
+              classification: r?.classification ?? normalizeClassification(r),
+              probability: r?.probability ?? normalizeProbability(r),
+              // Extract pubdate from entry or raw record (K2: pubdate, Kepler: koi_pdisposition_date, TESS: publication_date)
+              pubdate: r?.pubdate ?? r?.raw?.pubdate ?? r?.raw?.koi_pdisposition_date ?? r?.raw?.publication_date ?? r?.raw?.koi_disposition_date ?? null,
+            }))}
+          />
+        </>
+      )}
     </section>
   )
 
