@@ -7,7 +7,6 @@ import { DataInputSection } from "@/components/data-input-section"
 import { ResultsSection } from "@/components/results-section"
 import { ExplainabilitySection } from "@/components/explainability-section"
 // import { VettingSection } from "@/components/vetting-section"
-import { InteractiveVizSection } from "@/components/interactive-viz-section"
 import { ExportSection } from "@/components/export-section"
 import { VettingSection } from "@/components/vetting-section"
 import { Card } from "@/components/ui/card"
@@ -641,10 +640,6 @@ export function ResearcherFlow() {
             </Card>
 
             <AnalyticsDashboard />
-          </TabsContent>
-
-          <TabsContent value="visualizations" className="mt-6 space-y-8">
-            <InteractiveVizSection />
           </TabsContent>
 
           <TabsContent value="export" className="mt-6">

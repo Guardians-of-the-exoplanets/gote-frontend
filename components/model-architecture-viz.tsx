@@ -48,7 +48,7 @@ export function ModelArchitectureViz() {
       <CardHeader>
         <div className="flex items-center gap-2">
           <Layers className="h-5 w-5 text-primary" />
-          <CardTitle className="text-2xl">Arquitetura do Modelo</CardTitle>
+          <CardTitle className="text-2xl">Architecture do Modelo</CardTitle>
         </div>
         <CardDescription>Visualização interativa da rede neural multi-branch</CardDescription>
       </CardHeader>
