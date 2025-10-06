@@ -1,7 +1,7 @@
 "use client"
 
 import { useMode } from "@/lib/mode-context"
-import { Microscope, Compass, Laptop } from "lucide-react"
+import { Microscope, Compass } from "lucide-react"
 import { motion } from "framer-motion"
 
 export function ModeSwitcher({ compact = false }: { compact?: boolean }) {
@@ -43,24 +43,6 @@ export function ModeSwitcher({ compact = false }: { compact?: boolean }) {
           <Microscope className="h-3 w-3 relative z-10" />
           <span className="relative z-10 hidden sm:inline">Researcher</span>
         </button>
-        <button
-          onClick={() => setMode("example")}
-          className={`relative px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-md font-medium transition-all flex items-center gap-1.5 ${
-            mode === "example" ? "text-white" : "text-muted-foreground hover:text-foreground"
-          }`}
-          aria-label="Example"
-          title="Example"
-        >
-          {mode === "example" && (
-            <motion.div
-              layoutId="mode-background-compact"
-              className="absolute inset-0 bg-gradient-to-r from-primary to-accent rounded-md"
-              transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-            />
-          )}
-          <Laptop className="h-3 w-3 relative z-10" />
-          <span className="relative z-10 hidden sm:inline">Example</span>
-        </button>
       </div>
     )
   }
@@ -99,24 +81,6 @@ export function ModeSwitcher({ compact = false }: { compact?: boolean }) {
         )}
         <Microscope className="h-4 w-4 relative z-10" />
         <span className="relative z-10 hidden sm:inline">Researcher</span>
-      </button>
-      <button
-        onClick={() => setMode("example")}
-        className={`relative px-3 py-2 md:px-6 md:py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
-          mode === "example" ? "text-white" : "text-muted-foreground hover:text-foreground"
-        }`}
-        aria-label="example"
-        title="example"
-      >
-        {mode === "example" && (
-          <motion.div
-            layoutId="mode-background"
-            className="absolute inset-0 bg-gradient-to-r from-primary to-accent rounded-lg glow-effect"
-            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-          />
-        )}
-        <Laptop className="h-4 w-4 relative z-10" />
-        <span className="relative z-10 hidden sm:inline">Example</span>
       </button>
     </div>
   )
