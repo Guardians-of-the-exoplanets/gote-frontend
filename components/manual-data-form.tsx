@@ -192,17 +192,34 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
         }
       }
 
+      // Track last activity timestamp to detect timeouts
+      let lastActivityTime = Date.now()
+      const timeoutWarningMs = 30000 // Warn if no activity for 30s
+      
       while (true) {
         document.querySelector(`#pipeline-${mode}`)?.scrollIntoView({ behavior: 'smooth'})
         const { done, value } = await reader.read()
         
+        const now = Date.now()
+        const timeSinceLastActivity = now - lastActivityTime
+        
         // eslint-disable-next-line no-console
-        console.log('[manual-data-form] Stream chunk received, done:', done, 'bytes:', value?.length ?? 0)
+        console.log('[manual-data-form] Stream chunk received, done:', done, 'bytes:', value?.length ?? 0, 'idle:', (timeSinceLastActivity / 1000).toFixed(1) + 's')
+        
+        if (value && value.length > 0) {
+          lastActivityTime = now
+        }
         
         if (done) {
           // eslint-disable-next-line no-console
-          console.log('[manual-data-form] Stream completed')
+          console.log('[manual-data-form] ✅ Stream completed normally')
           break
+        }
+        
+        // Warn if stream seems stuck
+        if (timeSinceLastActivity > timeoutWarningMs) {
+          // eslint-disable-next-line no-console
+          console.warn('[manual-data-form] ⚠️ Stream idle for', (timeSinceLastActivity / 1000).toFixed(0) + 's', '- server may be processing or timed out')
         }
         
         buffer += decoder.decode(value, { stream: true })
@@ -215,22 +232,36 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
         for (const raw of parts) {
           if (!raw.trim()) continue
           
+          // Skip "end of stream" marker
+          if (raw.trim() === 'end of stream') {
+            // eslint-disable-next-line no-console
+            console.log('[manual-data-form] Received end of stream marker')
+            continue
+          }
+          
           // Extract all data: lines from this SSE event
           const lines = raw.split("\n").filter(l => l.trim().startsWith("data:"))
           if (lines.length === 0) continue
           
-          // Concatenate all data lines to form complete JSON
-          const jsonStr = lines.map(l => l.replace(/^data:\s*/, "").trim()).join("")
+          // Concatenate all data lines to form payload (may be incomplete JSON)
+          const payload = lines.map(l => l.replace(/^data:\s*/, "").trim()).join("")
           
-          if (!jsonStr) continue
+          if (!payload) continue
           
-          // Try to parse the complete JSON
+          // Accumulate in jsonBuffer
+          jsonBuffer += payload
+          
+          // Try to parse the accumulated JSON
           try {
-            const json = JSON.parse(jsonStr)
-            
+            const json = JSON.parse(jsonBuffer)
+            // Successfully parsed! Clear buffer and process
             // eslint-disable-next-line no-console
             console.log("STREAM_MANUAL [parsed]:", json)
-            pushDebugEvent?.({ ts: Date.now(), from: 'manual', raw: jsonStr, json, step: json.step, status: json.status })
+            
+            // Clear buffer after successful parse
+            jsonBuffer = ""
+            
+            pushDebugEvent?.({ ts: Date.now(), from: 'manual', raw: payload, json, step: json.step, status: json.status })
             
             // Process step info
             if (typeof json.step === "number" && typeof json.status === "string") {
@@ -260,6 +291,8 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
                   const n = typeof v === 'number' ? v : Number(v)
                   return Number.isFinite(n) ? n : undefined
                 }
+                
+                // Parse k-fold metrics
                 const kfold = Array.isArray(d?.fold_metrics) ? d.fold_metrics.map((m:any)=>({
                   fold: Number(m.fold) || 0,
                   accuracy: toNum(m.accuracy),
@@ -267,12 +300,70 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
                   recall: toNum(m.recall),
                   f1: toNum(m.f1_score ?? m.f1)
                 })) : []
-                setResearchMetrics((prev)=>({
+                
+                // Parse confusion matrix from object to array format
+                const parseConfusionMatrix = (cm: any) => {
+                  if (!cm) return undefined
+                  const labels = ['CANDIDATE', 'CONFIRMED', 'FALSE POSITIVE']
+                  return labels.map(label => 
+                    labels.map(predictedLabel => cm[label]?.[predictedLabel] ?? 0)
+                  )
+                }
+                
+                // Extract test metrics
+                const testMetrics = d?.test_metrics
+                const blindMetrics = d?.blind_metrics
+                
+                // Log raw values for debugging
+                // eslint-disable-next-line no-console
+                console.log('[manual-data-form] 🔍 Raw values:', {
+                  Training_Test_Total_Time: d?.Training_Test_Total_Time,
+                  blindMetrics_accuracy: blindMetrics?.accuracy,
+                  blindMetrics_f1: blindMetrics?.f1_score,
+                  blindMetrics_precision: blindMetrics?.precision,
+                  blindMetrics_recall: blindMetrics?.recall
+                })
+                
+                // Process training time (comes in seconds, convert to ms)
+                const trainingTimeS = toNum(d?.Training_Test_Total_Time)
+                const trainingTimeMs = trainingTimeS ? trainingTimeS * 1000 : undefined
+                
+                const newMetrics = {
                   ...prev,
                   numFeatures: toNum(d?.n_features) ?? prev.numFeatures,
-                  totalTrainingTimeMs: toNum(d?.total_time_ms) ?? prev.totalTrainingTimeMs,
-                  kFoldMetrics: kfold.length ? kfold : prev.kFoldMetrics
-                }))
+                  totalTrainingTimeMs: trainingTimeMs ?? prev.totalTrainingTimeMs,
+                  kFoldMetrics: kfold.length ? kfold : prev.kFoldMetrics,
+                  
+                  // Test metrics
+                  testAccuracy: toNum(testMetrics?.accuracy) ?? prev.testAccuracy,
+                  testF1: toNum(testMetrics?.f1_score) ?? prev.testF1,
+                  testPrecision: toNum(testMetrics?.precision) ?? prev.testPrecision,
+                  testRecall: toNum(testMetrics?.recall) ?? prev.testRecall,
+                  testConfusionMatrix: parseConfusionMatrix(testMetrics?.confusion_matrix) ?? prev.testConfusionMatrix,
+                  
+                  // Blind test metrics - must match dashboard field names exactly
+                  blindTestAccuracy: toNum(blindMetrics?.accuracy) ?? prev.blindTestAccuracy,
+                  blindTestF1: toNum(blindMetrics?.f1_score) ?? prev.blindTestF1,
+                  blindPrecision: toNum(blindMetrics?.precision) ?? prev.blindPrecision,
+                  blindRecall: toNum(blindMetrics?.recall) ?? prev.blindRecall,
+                  blindTestConfusionMatrix: parseConfusionMatrix(blindMetrics?.confusion_matrix) ?? prev.blindTestConfusionMatrix,
+                  
+                  // Labels
+                  labels: ['Candidate', 'Confirmed', 'False Positive']
+                }
+                
+                // eslint-disable-next-line no-console
+                console.log('[manual-data-form] 📊 Parsed research metrics:', newMetrics)
+                // eslint-disable-next-line no-console
+                console.log('[manual-data-form] ✅ Key metrics extracted:', {
+                  totalTrainingTimeMs: newMetrics.totalTrainingTimeMs,
+                  blindTestAccuracy: newMetrics.blindTestAccuracy,
+                  blindTestF1: newMetrics.blindTestF1,
+                  blindPrecision: newMetrics.blindPrecision,
+                  blindRecall: newMetrics.blindRecall
+                })
+                
+                setResearchMetrics(newMetrics)
               } catch (err) {
                 // eslint-disable-next-line no-console
                 console.warn('[manual-data-form] Failed to parse details:', err)
@@ -288,9 +379,12 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
               setPrediction(json.prediction as any)
             }
           } catch (parseError) {
-            // Failed to parse - log for debugging
-            // eslint-disable-next-line no-console
-            console.warn('[manual-data-form] Failed to parse SSE JSON:', parseError, 'Raw:', jsonStr.substring(0, 200))
+            // JSON is incomplete, keep accumulating in jsonBuffer
+            // Only log if buffer is getting suspiciously large
+            if (jsonBuffer.length > 10000) {
+              // eslint-disable-next-line no-console
+              console.warn('[manual-data-form] JSON buffer very large:', jsonBuffer.length, 'bytes - may indicate parsing issue')
+            }
           }
           
           await new Promise((r) => setTimeout(r, 0))
@@ -298,14 +392,18 @@ export function ManualDataForm({ showSubmit = true, formId = "data-input-form", 
       }
       
       // eslint-disable-next-line no-console
-      console.log('[manual-data-form] Stream loop finished, lastStep:', lastStep)
+      console.log('[manual-data-form] 🏁 Stream loop finished, lastStep:', lastStep)
       
       if (lastStep > 0) {
         maybeFinishStep(lastStep, Date.now())
       }
     } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[manual-data-form] ❌ Error during stream processing:', err)
       setError(err instanceof Error ? err.message : "An error occurred")
     } finally {
+      // eslint-disable-next-line no-console
+      console.log('[manual-data-form] 🔚 Cleanup: isLoading=false, isProcessing=false')
       setIsLoading(false)
       setIsProcessing(false)
     }

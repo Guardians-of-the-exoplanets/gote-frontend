@@ -24,7 +24,16 @@ export function AnalyticsDashboard() {
   })
   // eslint-disable-next-line no-console
   if (researchMetrics && Object.keys(researchMetrics).length > 0) {
-    console.log('[AnalyticsDashboard] 📈 researchMetrics:', researchMetrics)
+    console.log('[AnalyticsDashboard] 📈 researchMetrics FULL:', researchMetrics)
+    console.log('[AnalyticsDashboard] 📊 Metrics breakdown:', {
+      blindTestAccuracy: researchMetrics.blindTestAccuracy,
+      blindTestF1: researchMetrics.blindTestF1,
+      blindPrecision: researchMetrics.blindPrecision,
+      blindRecall: researchMetrics.blindRecall,
+      totalTrainingTimeMs: researchMetrics.totalTrainingTimeMs,
+      numFeatures: researchMetrics.numFeatures,
+      testSize: researchMetrics.blindTestConfusionMatrix?.flat().reduce((a, b) => a + b, 0)
+    })
   }
 
   const getLabel = (row: any) => {
@@ -37,13 +46,33 @@ export function AnalyticsDashboard() {
 
   // Total objects should consider unique IDs after flattening and grouping
   // Support both Kepler (id, kepoi_name, koi) and TESS (tid, toi) fields
+  // For manual input (no IDs), use number of prediction rows
   const totalObjects = (() => {
     const rows = Array.isArray(streamPredictions)
       ? (Array.isArray((streamPredictions as any)[0]) ? (streamPredictions as any[]).flat() as any[] : (streamPredictions as any[]))
       : []
+    
+    // Check if this is manual input (no ID fields)
+    const hasIds = rows.some((r: any) => 
+      r?.tid || r?.toi || r?.id || r?.object_id || r?.kepoi_name || r?.koi || r?.ID || r?.name
+    )
+    
+    if (!hasIds && rows.length > 0) {
+      // Manual input: count unique predictions (old vs new)
+      const uniqueEntries = new Set(rows.map((r: any) => 
+        JSON.stringify({ 
+          old_cls: r?.old_classification || r?.old_classificacao,
+          new_cls: r?.new_classification || r?.new_classificacao 
+        })
+      ))
+      // eslint-disable-next-line no-console
+      console.log('[AnalyticsDashboard] 📊 Manual input - unique predictions:', uniqueEntries.size)
+      return uniqueEntries.size > 0 ? 1 : 0 // Manual input = 1 object
+    }
+    
+    // Batch upload: count unique IDs
     const ids = new Set<string>()
     for (const r of rows) {
-      // Try all possible ID fields (Kepler + TESS)
       const id = String(
         r?.tid ?? r?.toi ?? r?.id ?? r?.object_id ?? r?.kepoi_name ?? r?.koi ?? r?.ID ?? r?.name ?? ''
       ).trim()
@@ -61,10 +90,25 @@ export function AnalyticsDashboard() {
     const rows = Array.isArray(streamPredictions)
       ? (Array.isArray((streamPredictions as any)[0]) ? (streamPredictions as any[]).flat() as any[] : (streamPredictions as any[]))
       : []
-    return rows.filter((r: any) => {
+    
+    // For manual input, check if new_classification is CONFIRMED (prefer new over old)
+    const confirmed = rows.filter((r: any) => {
       const cls = String(r?.new_classification ?? r?.old_classification ?? r?.classificacao ?? r?.classification ?? '').toUpperCase()
       return cls.includes('CONFIRM')
-    }).length
+    })
+    
+    // For manual input with comparison (old + new), return 1 if any is confirmed, else 0
+    const hasIds = rows.some((r: any) => 
+      r?.tid || r?.toi || r?.id || r?.object_id || r?.kepoi_name || r?.koi || r?.ID || r?.name
+    )
+    
+    if (!hasIds && rows.length > 0) {
+      // eslint-disable-next-line no-console
+      console.log('[AnalyticsDashboard] 📊 Manual input confirmed check:', confirmed.length > 0 ? 1 : 0)
+      return confirmed.length > 0 ? 1 : 0
+    }
+    
+    return confirmed.length
   })()
   const totalElapsedMs = (streamSteps || []).reduce((acc, s) => acc + (s.durationMs || 0), 0)
   const modelStep = (streamSteps || []).find((s) => /class|predict|inferen/i.test(String(s.status)))
@@ -206,14 +250,14 @@ export function AnalyticsDashboard() {
 
         <Card className="border-accent/20 bg-gradient-to-br from-accent/5 to-transparent">
           <CardHeader className="pb-2 md:pb-3">
-            <CardDescription className="text-[10px] md:text-xs">Accuracy</CardDescription>
+            <CardDescription className="text-[10px] md:text-xs">Precision (Blind)</CardDescription>
             <CardTitle className="text-2xl md:text-3xl font-bold font-mono">{fmtPct(researchMetrics.blindPrecision)}</CardTitle>
           </CardHeader>
         </Card>
 
         <Card className="border-accent/20 bg-gradient-to-br from-accent/5 to-transparent">
           <CardHeader className="pb-2 md:pb-3">
-            <CardDescription className="text-[10px] md:text-xs">Recall</CardDescription>
+            <CardDescription className="text-[10px] md:text-xs">Recall (Blind)</CardDescription>
             <CardTitle className="text-2xl md:text-3xl font-bold font-mono">{fmtPct(researchMetrics.blindRecall)}</CardTitle>
           </CardHeader>
         </Card>
