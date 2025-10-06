@@ -11,14 +11,14 @@ interface ConfusionMatrixProps {
 }
 
 export function ConfusionMatrix({
-  title = "Matriz de Confusão",
-  description = "Comparação entre predições e valores reais",
+  title = "Confusion Matrix",
+  description = "Comparison between predictions and actual values",
   matrix = [
     [85, 10, 5],
     [8, 78, 14],
     [3, 7, 90],
   ],
-  labels = ["Confirmado", "Candidato", "Falso Positivo"],
+  labels = ["Confirmed", "Candidate", "False Positive"],
   accuracy,
 }: ConfusionMatrixProps) {
 
@@ -40,7 +40,7 @@ export function ConfusionMatrix({
         </CardHeader>
         <CardContent>
           <div className="p-8 text-center text-muted-foreground text-sm">
-            Sem dados de matriz de confusão disponíveis
+            No confusion matrix data available
           </div>
         </CardContent>
       </Card>
@@ -95,7 +95,7 @@ export function ConfusionMatrix({
 
         <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-border">
           <div className="flex items-center justify-between text-[10px] md:text-xs">
-            <span className="text-muted-foreground">Acurácia Geral</span>
+            <span className="text-muted-foreground">Overall Accuracy</span>
             <span className="font-mono font-semibold text-primary">{typeof accuracy === 'number' ? `${(accuracy * 100).toFixed(1)}%` : '—'}</span>
           </div>
         </div>

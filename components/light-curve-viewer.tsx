@@ -55,8 +55,8 @@ export function LightCurveViewer() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-2xl">Light Curve Interativa</CardTitle>
-            <CardDescription>Visualização da curva de luz com detecção de trânsito</CardDescription>
+            <CardTitle className="text-2xl">Interactive Light Curve</CardTitle>
+            <CardDescription>Light curve visualization with traffic detection</CardDescription>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="icon" onClick={handleZoomOut} disabled={zoomLevel <= 1}>
@@ -121,7 +121,7 @@ export function LightCurveViewer() {
               onClick={() => setShowTransitMarker(!showTransitMarker)}
               className={showTransitMarker ? "bg-accent/10" : ""}
             >
-              {showTransitMarker ? "Ocultar" : "Mostrar"} Marcador
+              {showTransitMarker ? "Ocultar" : "Mostrar"} Marker
             </Button>
           </div>
           <Slider
@@ -136,15 +136,15 @@ export function LightCurveViewer() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-4 border-t border-border">
           <div className="p-3 bg-muted/50 rounded-lg text-center">
-            <div className="text-xs text-muted-foreground mb-1">Período</div>
+            <div className="text-xs text-muted-foreground mb-1">Period</div>
             <div className="text-lg font-bold">3.45d</div>
           </div>
           <div className="p-3 bg-muted/50 rounded-lg text-center">
-            <div className="text-xs text-muted-foreground mb-1">Profundidade</div>
+            <div className="text-xs text-muted-foreground mb-1">Depth</div>
             <div className="text-lg font-bold">2.0%</div>
           </div>
           <div className="p-3 bg-muted/50 rounded-lg text-center">
-            <div className="text-xs text-muted-foreground mb-1">Duração</div>
+            <div className="text-xs text-muted-foreground mb-1">Duration</div>
             <div className="text-lg font-bold">4.2h</div>
           </div>
         </div>

@@ -63,14 +63,14 @@ export function CandidateHistoryDialog({
     }
     const narrative = (() => {
       if (stats.total >= 2 && stats.num100 >= stats.total - 1) {
-        return "Múltiplas detecções consistentes (quase todas 100%). Forte indicação de exoplaneta."
+        return "Multiple consistent detections (almost all 100%). Strong indication of exoplanet"
       }
       if (stats.total >= 2 && stats.num95 === 1) {
-        return "Apenas uma detecção acima de 95%. Evidência fraca/moderada — requer mais validação."
+        return "Only one detection above 95%. Weak/moderate evidence—requires further validation."
       }
-      if (stats.avgProb >= 95) return "Probabilidade média alta em várias detecções. Forte candidato."
-      if (stats.maxProb >= 95) return "Pelo menos uma detecção forte (>=95%), mas há variação entre as medições."
-      return "Histórico sem evidências fortes consistentes."
+      if (stats.avgProb >= 95) return "High average probability across multiple detections. Strong candidate."
+      if (stats.maxProb >= 95) return "At least one strong detection (>=95%), but there is variation between measurements."
+      return "History without strong consistent evidence."
     })()
     return { list, stats, narrative }
   }, [entries])
@@ -88,7 +88,7 @@ export function CandidateHistoryDialog({
         <DialogHeader>
           <DialogTitle className="text-xl">{candidateId}</DialogTitle>
           <DialogDescription>
-            Linha do tempo de publicações e classificações ({normalized.stats.total})
+            Publication and ranking timeline ({normalized.stats.total})
           </DialogDescription>
         </DialogHeader>
 
@@ -100,11 +100,11 @@ export function CandidateHistoryDialog({
             </div>
             <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
               <div>
-                <div className="text-muted-foreground">Média</div>
+                <div className="text-muted-foreground">Average</div>
                 <div className="font-mono">{normalized.stats.avgProb.toFixed(2)}%</div>
               </div>
               <div>
-                <div className="text-muted-foreground">Máx</div>
+                <div className="text-muted-foreground">Max</div>
                 <div className="font-mono">{normalized.stats.maxProb.toFixed(2)}%</div>
               </div>
               <div>

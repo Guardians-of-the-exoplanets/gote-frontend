@@ -26,10 +26,10 @@ export function ExplorerResultsSection() {
             <CardHeader>
               <CardTitle className="text-3xl flex items-center gap-2">
                 <Sparkles className="h-8 w-8 text-primary" />
-                Resultado da Análise
+                Analysis Result
               </CardTitle>
               <CardDescription className="text-base">
-                Veja o que descobrimos sobre seu candidato a exoplaneta
+                See what we discovered about your exoplanet candidate
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -52,14 +52,13 @@ export function ExplorerResultsSection() {
                       <h3 className="text-2xl md:text-3xl font-bold mb-1">{prediction.classification}!</h3>
                       <p className="text-muted-foreground">
                         {isExoplanet
-                          ? "Os dados indicam fortemente a presença de um planeta"
-                          : "Os dados sugerem que não é um planeta real"}
+                          ? "The data strongly indicates the presence of a planet" : "The data suggests it is not a real planet"}
                       </p>
                     </div>
                   </div>
                   <div className="text-center">
                     <div className="text-5xl font-bold gradient-text">{confidence.toFixed(1)}%</div>
-                    <div className="text-sm text-muted-foreground mt-1">Confiança</div>
+                    <div className="text-sm text-muted-foreground mt-1">Trust</div>
                   </div>
                 </div>
               </div>
@@ -67,15 +66,15 @@ export function ExplorerResultsSection() {
               {/* Confidence Meter */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Nível de Confiança</span>
+                  <span className="text-sm font-medium">Trust Level</span>
                   <span className="text-sm text-muted-foreground">{confidence.toFixed(1)}%</span>
                 </div>
                 <Progress value={confidence} className="h-3" />
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Improvável</span>
-                  <span>Possível</span>
-                  <span>Provável</span>
-                  <span>Muito Provável</span>
+                  <span>Unlikely</span>
+                  <span>Possible</span>
+                  <span>Probable</span>
+                  <span>Very Likely</span>
                 </div>
               </div>
 
@@ -83,10 +82,10 @@ export function ExplorerResultsSection() {
               <Alert className="border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10">
                 <Info className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>Como interpretamos isso:</strong> O modelo analisou os padrões nos dados que você forneceu
-                  (como o período orbital, tamanho do planeta e características da estrela) e comparou com milhares de
-                  exoplanetas conhecidos e falsos positivos. Uma confiança acima de 50% indica que é mais provável ser
-                  um planeta real do que um falso alarme!
+                  <strong>How we interpret this:</strong> The model analyzed the patterns in the data you provided
+                  (such as orbital period, planet size, and star characteristics) and compared it to thousands of
+                  known exoplanets and false positives. A confidence level above 50% indicates that it's more likely
+                  to be a real planet than a false alarm!
                 </AlertDescription>
               </Alert>
 
@@ -95,33 +94,33 @@ export function ExplorerResultsSection() {
                 <div className="p-4 bg-card border border-border rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
                     <TrendingUp className="h-4 w-4 text-primary" />
-                    <h4 className="font-semibold text-sm">Sinal de Trânsito</h4>
+                    <h4 className="font-semibold text-sm">Traffic Sign</h4>
                   </div>
-                  <div className="text-2xl font-bold text-green-500">Forte</div>
+                  <div className="text-2xl font-bold text-green-500">Strong</div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    O padrão de diminuição de luz é consistente com um planeta
+                    The pattern of dimming light is consistent with a planet
                   </p>
                 </div>
 
                 <div className="p-4 bg-card border border-border rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
                     <Sparkles className="h-4 w-4 text-accent" />
-                    <h4 className="font-semibold text-sm">Características</h4>
+                    <h4 className="font-semibold text-sm">Features</h4>
                   </div>
-                  <div className="text-2xl font-bold text-blue-500">Típicas</div>
+                  <div className="text-2xl font-bold text-blue-500">Typical</div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Tamanho e órbita compatíveis com exoplanetas conhecidos
+                    Size and orbit consistent with known exoplanets
                   </p>
                 </div>
 
                 <div className="p-4 bg-card border border-border rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
                     <HelpCircle className="h-4 w-4 text-secondary" />
-                    <h4 className="font-semibold text-sm">Falsos Positivos</h4>
+                    <h4 className="font-semibold text-sm">False Positives</h4>
                   </div>
-                  <div className="text-2xl font-bold text-yellow-500">Baixo</div>
+                  <div className="text-2xl font-bold text-yellow-500">Low</div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Poucas características de sistemas binários ou ruído
+                   Few features of binary systems or noise
                   </p>
                 </div>
               </div>
@@ -130,26 +129,25 @@ export function ExplorerResultsSection() {
               <div className="p-6 bg-muted/50 rounded-xl border border-border">
                 <h4 className="font-semibold mb-3 flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-primary" />
-                  Próximos Passos
+                  First Steps
                 </h4>
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                     <span>
-                      <strong>Veja a visualização 3D</strong> na aba "Visualização" para entender como o planeta pode
-                      parecer
+                      <strong>See the 3D view</strong> in the "View" tab to understand what the planet might look like.
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                     <span>
-                      <strong>Exporte seus resultados</strong> na aba "Exportação" para salvar ou compartilhar
+                      <strong>Export your results</strong> in the "Export" tab to save or share
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                     <span>
-                      <strong>Teste com outros dados</strong> para ver como diferentes parâmetros afetam a classificação
+                      <strong>Test with other data</strong> to see how different parameters affect ranking
                     </span>
                   </li>
                 </ul>

@@ -44,28 +44,6 @@ export function ResultsSection() {
     'new_classification' in (x || {})
   ))
 
-  // Check if this is manual input (no ID fields)
-  const isManualInput = flatPreds.length > 0 && flatPreds.every((x:any) => (
-    !x?.kepoi_name && !x?.toi && !x?.id && !x?.tid
-  ))
-
-  // For manual input comparison, extract old vs new data
-  const manualComparison = useMemo(() => {
-    if (!isManualInput || !isComparison) return null
-    
-    const oldRow = flatPreds.find((r:any)=> 'old_classificacao' in (r||{}) || 'old_classification' in (r||{}))
-    const newRow = flatPreds.find((r:any)=> 'new_classificacao' in (r||{}) || 'new_classification' in (r||{}))
-    
-    if (!oldRow || !newRow) return null
-    
-    return {
-      oldCls: String(oldRow.old_classificacao ?? oldRow.old_classification ?? ''),
-      oldProb: Number(oldRow.old_probabilidade ?? oldRow.old_probability ?? 0),
-      newCls: String(newRow.new_classificacao ?? newRow.new_classification ?? ''),
-      newProb: Number(newRow.new_probabilidade ?? newRow.new_probability ?? 0),
-    }
-  }, [flatPreds, isManualInput, isComparison])
-
   const comparisonGroups = useMemo(() => {
     if (!flatPreds || flatPreds.length === 0) return []
     // Group by kepoi_name (Kepler) or toi (TESS) since each candidate has a unique identifier
@@ -204,303 +182,174 @@ export function ResultsSection() {
 
   return (
     <section id="results" className="scroll-mt-20 space-y-4">
-      {/* Special design for manual input comparison */}
-      {isManualInput && manualComparison && (
-        <Card className="border-primary/20">
-          <CardHeader>
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-xl">Model Comparison: Baseline vs Hyperparameters</CardTitle>
-                </div>
-                <CardDescription className="mt-1">
-                  Performance analysis • Single prediction • Configuration impact
-                </CardDescription>
-              </div>
-              <Badge variant="outline" className="border-border font-mono text-xs">
-                Manual Input
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Baseline Model */}
-              <div className="p-4 rounded-lg border border-border bg-card">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 rounded-full bg-muted-foreground/50" />
-                    <h3 className="text-sm font-semibold">Baseline Model</h3>
-                  </div>
-                  <Badge variant="outline" className="text-[10px] font-mono">
-                    Default HP
-                  </Badge>
-                </div>
-                
-                <div className="space-y-3">
-                  <div>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1.5">Classification</div>
-                    <Badge 
-                      variant="outline" 
-                      className={`text-sm px-2.5 py-0.5 ${badgeClassFor(manualComparison.oldCls)}`}
-                    >
-                      {manualComparison.oldCls}
-                    </Badge>
-                  </div>
-                  
-                  <div>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1.5">Confidence</div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-bold font-mono">
-                        {manualComparison.oldProb.toFixed(2)}
-                      </span>
-                      <span className="text-sm text-muted-foreground">%</span>
-                    </div>
-                  </div>
-                  
-                  <div className="pt-2 border-t border-border/50 text-[10px] text-muted-foreground">
-                    Standard XGBoost configuration
-                  </div>
-                </div>
-              </div>
-
-              {/* Hyperparameter-Optimized Model */}
-              <div className="p-4 rounded-lg border border-primary/30 bg-primary/5">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 rounded-full bg-primary" />
-                    <h3 className="text-sm font-semibold">Optimized Model</h3>
-                  </div>
-                  <Badge variant="outline" className="text-[10px] font-mono border-primary/40 text-primary">
-                    Custom HP
-                  </Badge>
-                </div>
-                
-                <div className="space-y-3">
-                  <div>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1.5">Classification</div>
-                    <Badge 
-                      variant="outline" 
-                      className={`text-sm px-2.5 py-0.5 ${badgeClassFor(manualComparison.newCls)}`}
-                    >
-                      {manualComparison.newCls}
-                    </Badge>
-                  </div>
-                  
-                  <div>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1.5">Confidence</div>
-                    <div className="flex items-baseline gap-2">
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-bold font-mono">
-                          {manualComparison.newProb.toFixed(2)}
-                        </span>
-                        <span className="text-sm text-muted-foreground">%</span>
-                      </div>
-                      {Math.abs(manualComparison.newProb - manualComparison.oldProb) > 0.01 && (
-                        <Badge variant="outline" className="text-[10px] font-mono border-border">
-                          {manualComparison.newProb > manualComparison.oldProb ? '+' : ''}
-                          {(manualComparison.newProb - manualComparison.oldProb).toFixed(2)}%
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="pt-2 border-t border-border/50 text-[10px] text-muted-foreground">
-                    Tuned configuration
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Technical Summary */}
-            <div className="p-3 rounded-lg border border-border bg-muted/30">
-              <div className="text-[11px] leading-relaxed text-muted-foreground">
-                <span className="font-semibold text-foreground">Analysis:</span> {manualComparison.oldCls === manualComparison.newCls ? (
-                  <>Both models converge on <span className="font-mono">{manualComparison.newCls}</span> classification{Math.abs(manualComparison.newProb - manualComparison.oldProb) > 1 ? ` with ${Math.abs(manualComparison.newProb - manualComparison.oldProb).toFixed(1)}% confidence delta` : ''}</>
-                ) : (
-                  <>Classification disagreement detected • Baseline: <span className="font-mono">{manualComparison.oldCls}</span> • Optimized: <span className="font-mono">{manualComparison.newCls}</span></>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Standard table for batch uploads */}
-      {!isManualInput && comparisonGroups.length > 0 && (
-        <Card className="rounded-xl border overflow-hidden">
-          <CardHeader>
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-xl">Classificações (Baseline vs Hiperparâmetros)</CardTitle>
-                </div>
-                <CardDescription className="mt-1">
-                  Comparação detalhada: modelo baseline vs modelo com hiperparâmetros otimizados
-                  {isTessData && <span className="ml-2 text-xs text-accent">(TESS)</span>}
-                  {!isTessData && <span className="ml-2 text-xs text-accent">(Kepler)</span>}
-                </CardDescription>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={()=>setShowDebug((v)=>!v)} className="text-xs">{showDebug ? 'Ocultar' : 'Mostrar'} Debug</Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/50">
-                  <tr>
-                    <th className="text-left p-3">ID do Objeto</th>
-                    <th className="text-left p-3">{candidateLabel}</th>
-                    <th className="text-left p-3">Baseline</th>
-                    <th className="text-right p-3">Prob. Baseline</th>
-                    <th className="text-left p-3">Com Hiperparâmetros</th>
-                    <th className="text-right p-3">Nova Prob.</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {comparisonGroups.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                        Nenhum dado de comparação disponível. Faça upload de um CSV com hiperparâmetros para ver resultados baseline vs otimizados.
-                      </td>
-                    </tr>
-                  ) : (
-                    comparisonGroups.map((g, idx) => {
-                      const key = `${g.id}-${idx}`
-                      return (
-                        <tr key={key} className="border-t hover:bg-muted/30">
-                          <td className="p-3 font-mono">{g.id}</td>
-                          <td className="p-3 font-mono">{g.koi ?? '—'}</td>
-                          <td className="p-3">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs ${badgeClassFor(g.oldCls)}`}>{g.oldCls ?? '—'}</span>
-                          </td>
-                          <td className="p-3 text-right">
-                            <span className="font-mono">{g.oldProb == null ? '—' : `${g.oldProb.toFixed(2)}%`}</span>
-                          </td>
-                          <td className="p-3">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs ${badgeClassFor(g.newCls)}`}>{g.newCls ?? '—'}</span>
-                          </td>
-                          <td className="p-3 text-right">
-                            <span className="font-mono">{g.newProb == null ? '—' : `${g.newProb.toFixed(2)}%`}</span>
-                          </td>
-                        </tr>
-                      )
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-            {showDebug && (
-              <div className="p-3 border-t bg-muted/30 text-xs font-mono max-h-72 overflow-auto">
-                {(debugEvents || []).slice(-100).map((e:any, i:number)=> (
-                  <div key={i} className="py-1">
-                    <div className="text-muted-foreground">[{new Date(e.ts).toLocaleTimeString()}] step {e.step ?? '—'} • {e.status ?? '—'} • {e.from}</div>
-                    <pre className="whitespace-pre-wrap break-words">{e.raw}</pre>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Explorer-style grouped summary table built from step 7 rows (prefers new_* entries) - only for batch uploads */}
-      {!isManualInput && groupedSummary.length > 0 && (
-        <>
-          <Card className="rounded-xl border overflow-hidden">
-            <CardHeader>
+      <Card className="rounded-xl border overflow-hidden">
+        <CardHeader>
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div>
               <div className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-primary" />
-                <CardTitle className="text-xl">Resumo por Candidato</CardTitle>
+                <CardTitle className="text-xl">Classifications (Baseline vs Hyperparameters)</CardTitle>
               </div>
-              <CardDescription>Última classificação por objeto (registros refletem baseline vs hiperparâmetros)</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50">
-                    <tr>
-                      <th className="text-left p-3">ID do Objeto</th>
-                      <th className="text-left p-3">Classificação</th>
-                      <th className="text-right p-3">Registros</th>
-                      <th className="text-right p-3">Prob. Média</th>
-                      <th className="text-right p-3">Histórico</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {groupedSummary.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                          Nenhum dado de resumo disponível. Os resultados aparecerão aqui após a classificação ser concluída.
-                        </td>
-                      </tr>
-                    ) : (
-                      groupedSummary.map((g:any, idx:number) => {
-                        const idVal = g.id
-                        const cls = g.latest.classification as 'Confirmed' | 'Candidate' | 'False Positive'
-                        const avgProb = (() => {
-                          const vals = (g.entries || []).map((e:any)=> Number(e.probability) || 0)
-                          const n = Math.max(1, vals.length)
-                          return vals.reduce((a:number,b:number)=>a+b,0) / n
-                        })()
-                        const badgeClass = cls === 'Confirmed'
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                          : cls === 'Candidate'
-                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                          : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                        const key = `${idVal}-${idx}`
-                        return (
-                          <tr
-                            key={key}
-                            className="border-t hover:bg-muted/30 cursor-pointer"
-                            title="Clique para ver o histórico do candidato"
-                            onClick={() => { setHistorySelection({ id: idVal, entries: g.entries }); setHistoryOpen(true) }}
-                          >
-                            <td className="p-3 font-mono">{idVal}</td>
-                            <td className="p-3">
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs ${badgeClass}`}>{cls}</span>
-                            </td>
-                            <td className="p-3 text-right">
-                              <span className="inline-flex items-center justify-center min-w-8 px-2 py-0.5 rounded-md border bg-card/70 text-xs">
-                                {g.entries.length}
-                              </span>
-                            </td>
-                            <td className="p-3 text-right">
-                              <span className="font-mono">{Number.isFinite(avgProb) ? avgProb.toFixed(2) : '—'}%</span>
-                            </td>
-                            <td className="p-3 text-right">
-                              <Button variant="ghost" size="sm" className="gap-1" onClick={(e)=>{ e.stopPropagation(); setHistorySelection({ id: idVal, entries: g.entries }); setHistoryOpen(true) }}>
-                                <History className="h-3.5 w-3.5" />
-                                <span className="hidden sm:inline">Histórico</span>
-                                <ChevronRight className="h-3.5 w-3.5" />
-                              </Button>
-                            </td>
-                          </tr>
-                        )
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-          <CandidateHistoryDialog
-            open={historyOpen}
-            onOpenChange={setHistoryOpen}
-            candidateId={historySelection?.id || ''}
-            entries={(historySelection?.entries || []).map((r:any)=>({
-              id: r?.id ?? normalizeId(r),
-              classification: r?.classification ?? normalizeClassification(r),
-              probability: r?.probability ?? normalizeProbability(r),
-              // Extract pubdate from entry or raw record (K2: pubdate, Kepler: koi_pdisposition_date, TESS: publication_date)
-              pubdate: r?.pubdate ?? r?.raw?.pubdate ?? r?.raw?.koi_pdisposition_date ?? r?.raw?.publication_date ?? r?.raw?.koi_disposition_date ?? null,
-            }))}
-          />
-        </>
-      )}
+              <CardDescription className="mt-1">
+                Detailed comparison: baseline model vs. model with optimized hyperparameters
+                {isTessData && <span className="ml-2 text-xs text-accent">(TESS)</span>}
+                {!isTessData && <span className="ml-2 text-xs text-accent">(Kepler)</span>}
+              </CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={()=>setShowDebug((v)=>!v)} className="text-xs">{showDebug ? 'Ocultar' : 'Mostrar'} Debug</Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50">
+                <tr>
+                  <th className="text-left p-3">Object ID</th>
+                  <th className="text-left p-3">{candidateLabel}</th>
+                  <th className="text-left p-3">Baseline</th>
+                  <th className="text-right p-3">Prob. Baseline</th>
+                  <th className="text-left p-3">With Hyperparameters</th>
+                  <th className="text-right p-3">New Prob.</th>
+                </tr>
+              </thead>
+               <tbody>
+                 {comparisonGroups.length === 0 ? (
+                   <tr>
+                     <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                       No comparison data available. Upload a CSV file with hyperparameters to see baseline vs. optimized results.
+                     </td>
+                   </tr>
+                 ) : (
+                   comparisonGroups.map((g, idx) => {
+                     const key = `${g.id}-${idx}`
+                     return (
+                       <tr key={key} className="border-t hover:bg-muted/30">
+                         <td className="p-3 font-mono">{g.id}</td>
+                         <td className="p-3 font-mono">{g.koi ?? '—'}</td>
+                         <td className="p-3">
+                           <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs ${badgeClassFor(g.oldCls)}`}>{g.oldCls ?? '—'}</span>
+                         </td>
+                         <td className="p-3 text-right">
+                           <span className="font-mono">{g.oldProb == null ? '—' : `${g.oldProb.toFixed(2)}%`}</span>
+                         </td>
+                         <td className="p-3">
+                           <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs ${badgeClassFor(g.newCls)}`}>{g.newCls ?? '—'}</span>
+                         </td>
+                         <td className="p-3 text-right">
+                           <span className="font-mono">{g.newProb == null ? '—' : `${g.newProb.toFixed(2)}%`}</span>
+                         </td>
+                       </tr>
+                     )
+                   })
+                 )}
+               </tbody>
+            </table>
+          </div>
+          {showDebug && (
+            <div className="p-3 border-t bg-muted/30 text-xs font-mono max-h-72 overflow-auto">
+              {(debugEvents || []).slice(-100).map((e:any, i:number)=> (
+                <div key={i} className="py-1">
+                  <div className="text-muted-foreground">[{new Date(e.ts).toLocaleTimeString()}] step {e.step ?? '—'} • {e.status ?? '—'} • {e.from}</div>
+                  <pre className="whitespace-pre-wrap break-words">{e.raw}</pre>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Explorer-style grouped summary table built from step 7 rows (prefers new_* entries) */}
+      <Card className="rounded-xl border overflow-hidden">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+            <CardTitle className="text-xl">Summary by Candidate</CardTitle>
+          </div>
+          <CardDescription>Last rank per object (logs reflect baseline vs hyperparameters)</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50">
+                <tr>
+                  <th className="text-left p-3">Object ID</th>
+                  <th className="text-left p-3">Classification</th>
+                  <th className="text-right p-3">Records</th>
+                  <th className="text-right p-3">Prob. Average</th>
+                  <th className="text-right p-3">History</th>
+                </tr>
+              </thead>
+               <tbody>
+                 {groupedSummary.length === 0 ? (
+                   <tr>
+                     <td colSpan={5} className="p-8 text-center text-muted-foreground">
+                       No summary data available. Results will appear here after sorting is complete.
+                     </td>
+                   </tr>
+                 ) : (
+                   groupedSummary.map((g:any, idx:number) => {
+                     const idVal = g.id
+                     const cls = g.latest.classification as 'Confirmed' | 'Candidate' | 'False Positive'
+                     const avgProb = (() => {
+                       const vals = (g.entries || []).map((e:any)=> Number(e.probability) || 0)
+                       const n = Math.max(1, vals.length)
+                       return vals.reduce((a:number,b:number)=>a+b,0) / n
+                     })()
+                     const badgeClass = cls === 'Confirmed'
+                       ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                       : cls === 'Candidate'
+                       ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                       : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                     const key = `${idVal}-${idx}`
+                     return (
+                       <tr
+                         key={key}
+                         className="border-t hover:bg-muted/30 cursor-pointer"
+                         title="Click to view candidate history"
+                         onClick={() => { setHistorySelection({ id: idVal, entries: g.entries }); setHistoryOpen(true) }}
+                       >
+                         <td className="p-3 font-mono">{idVal}</td>
+                         <td className="p-3">
+                           <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs ${badgeClass}`}>{cls}</span>
+                         </td>
+                         <td className="p-3 text-right">
+                           <span className="inline-flex items-center justify-center min-w-8 px-2 py-0.5 rounded-md border bg-card/70 text-xs">
+                             {g.entries.length}
+                           </span>
+                         </td>
+                         <td className="p-3 text-right">
+                           <span className="font-mono">{Number.isFinite(avgProb) ? avgProb.toFixed(2) : '—'}%</span>
+                         </td>
+                         <td className="p-3 text-right">
+                           <Button variant="ghost" size="sm" className="gap-1" onClick={(e)=>{ e.stopPropagation(); setHistorySelection({ id: idVal, entries: g.entries }); setHistoryOpen(true) }}>
+                             <History className="h-3.5 w-3.5" />
+                             <span className="hidden sm:inline">History</span>
+                             <ChevronRight className="h-3.5 w-3.5" />
+                           </Button>
+                         </td>
+                       </tr>
+                     )
+                   })
+                 )}
+               </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+      <CandidateHistoryDialog
+        open={historyOpen}
+        onOpenChange={setHistoryOpen}
+        candidateId={historySelection?.id || ''}
+        entries={(historySelection?.entries || []).map((r:any)=>({
+          id: r?.id ?? normalizeId(r),
+          classification: r?.classification ?? normalizeClassification(r),
+          probability: r?.probability ?? normalizeProbability(r),
+          // Extract pubdate from entry or raw record (K2: pubdate, Kepler: koi_pdisposition_date, TESS: publication_date)
+          pubdate: r?.pubdate ?? r?.raw?.pubdate ?? r?.raw?.koi_pdisposition_date ?? r?.raw?.publication_date ?? r?.raw?.koi_disposition_date ?? null,
+        }))}
+      />
     </section>
   )
 
@@ -518,10 +367,10 @@ export function ResultsSection() {
             <CardHeader>
               <CardTitle className="text-3xl flex items-center gap-2">
                 <Sparkles className="h-8 w-8 text-primary" />
-                Resultado da Análise
+                Analysis Result
               </CardTitle>
               <CardDescription className="text-base">
-                Veja o que descobrimos sobre seu candidato a exoplaneta
+                See what we discovered about your exoplanet candidate
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -544,14 +393,14 @@ export function ResultsSection() {
                       <h3 className="text-2xl md:text-3xl font-bold mb-1">{prediction.classification}!</h3>
                       <p className="text-muted-foreground">
                         {isExoplanet
-                          ? "Os dados indicam fortemente a presença de um planeta"
-                          : "Os dados sugerem que não é um planeta real"}
+                          ? "The data strongly indicates the presence of a planet"
+                          : "Data suggests it's not a real planet"}
                       </p>
                     </div>
                   </div>
                   <div className="text-center">
                     <div className="text-5xl font-bold gradient-text">{confidence.toFixed(1)}%</div>
-                    <div className="text-sm text-muted-foreground mt-1">Confiança</div>
+                    <div className="text-sm text-muted-foreground mt-1">Trust</div>
                   </div>
                 </div>
               </div>
@@ -559,15 +408,15 @@ export function ResultsSection() {
               {/* Confidence Meter */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Nível de Confiança</span>
+                  <span className="text-sm font-medium">Confidence Level</span>
                   <span className="text-sm text-muted-foreground">{confidence.toFixed(1)}%</span>
                 </div>
                 <Progress value={confidence} className="h-3" />
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Improvável</span>
-                  <span>Possível</span>
-                  <span>Provável</span>
-                  <span>Muito Provável</span>
+                  <span>Unlikely</span>
+                  <span>Possible</span>
+                  <span>Probable</span>
+                  <span>Very Likely</span>
                 </div>
               </div>
 
@@ -575,10 +424,10 @@ export function ResultsSection() {
               <Alert className="border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10">
                 <Info className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>Como interpretamos isso:</strong> O modelo analisou os padrões nos dados que você forneceu
-                  (como o período orbital, tamanho do planeta e características da estrela) e comparou com milhares de
-                  exoplanetas conhecidos e falsos positivos. Uma confiança acima de 50% indica que é mais provável ser
-                  um planeta real do que um falso alarme!
+                  <strong>How we interpret this:</strong> The model analyzed the patterns in the data you provided
+              (such as orbital period, planet size, and star characteristics) and compared it to thousands of
+              known exoplanets and false positives. A confidence level above 50% indicates that it's more likely to be
+              a real planet than a false alarm!
                 </AlertDescription>
               </Alert>
 
@@ -587,33 +436,33 @@ export function ResultsSection() {
                 <div className="p-4 bg-card border border-border rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
                     <TrendingUp className="h-4 w-4 text-primary" />
-                    <h4 className="font-semibold text-sm">Sinal de Trânsito</h4>
+                    <h4 className="font-semibold text-sm">Traffic Sign</h4>
                   </div>
                   <div className="text-2xl font-bold text-green-500">Forte</div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    O padrão de diminuição de luz é consistente com um planeta
+                    The pattern of dimming light is consistent with a planet
                   </p>
                 </div>
 
                 <div className="p-4 bg-card border border-border rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
                     <Sparkles className="h-4 w-4 text-accent" />
-                    <h4 className="font-semibold text-sm">Características</h4>
+                    <h4 className="font-semibold text-sm">Features</h4>
                   </div>
-                  <div className="text-2xl font-bold text-blue-500">Típicas</div>
+                  <div className="text-2xl font-bold text-blue-500">Typical</div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Tamanho e órbita compatíveis com exoplanetas conhecidos
+                    Size and orbit consistent with known exoplanets
                   </p>
                 </div>
 
                 <div className="p-4 bg-card border border-border rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
                     <HelpCircle className="h-4 w-4 text-secondary" />
-                    <h4 className="font-semibold text-sm">Falsos Positivos</h4>
+                    <h4 className="font-semibold text-sm">False Positives</h4>
                   </div>
-                  <div className="text-2xl font-bold text-yellow-500">Baixo</div>
+                  <div className="text-2xl font-bold text-yellow-500">Low</div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Poucas características de sistemas binários ou ruído
+                    Few features of binary systems or noise
                   </p>
                 </div>
               </div>
@@ -629,14 +478,14 @@ export function ResultsSection() {
                 <div>
                   <CardTitle className="text-base md:text-lg flex items-center gap-2">
                     <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-primary" />
-                    Análise de Distribuição das Classificações
+                    Classification Distribution Analysis
                   </CardTitle>
                   <CardDescription className="text-[10px] md:text-xs mt-1">
-                    Interpretação detalhada dos resultados • Distribuição estatística por categoria
-                  </CardDescription>
+                    Detailed interpretation of results • Statistical distribution by category
+                    </CardDescription>
                 </div>
                 <Badge variant="outline" className="text-[10px] font-mono w-fit">
-                  {flatPreds.length} predições
+                  {flatPreds.length} predictions
                 </Badge>
               </div>
             </CardHeader>
@@ -659,27 +508,27 @@ export function ResultsSection() {
                 
                 const distributionData = [
                   { 
-                    name: "Confirmado", 
+                    name: "Confirmed", 
                     value: confirmed, 
                     percentage: total > 0 ? (confirmed / total * 100) : 0,
                     color: "#10b981",
-                    interpretation: "Objetos com alta probabilidade de serem exoplanetas confirmados",
+                    interpretation: "Objects with a high probability of being confirmed exoplanets",
                     icon: "✓"
                   },
                   { 
-                    name: "Candidato", 
+                    name: "Candidate", 
                     value: candidate, 
                     percentage: total > 0 ? (candidate / total * 100) : 0,
                     color: "#f59e0b",
-                    interpretation: "Objetos que requerem observações adicionais para confirmação",
+                    interpretation: "Objects requiring additional observations for confirmation",
                     icon: "?"
                   },
                   { 
-                    name: "Falso Positivo", 
+                    name: "False Positive", 
                     value: falsePositive, 
                     percentage: total > 0 ? (falsePositive / total * 100) : 0,
                     color: "#ef4444",
-                    interpretation: "Sinais que não correspondem a exoplanetas reais",
+                    interpretation: "Signals that do not correspond to real exoplanets",
                     icon: "✕"
                   },
                 ]
@@ -733,9 +582,9 @@ export function ResultsSection() {
                     <div className="rounded-lg bg-card/30 p-3 md:p-4 border border-border/50">
                       <ChartContainer
                         config={{
-                          confirmed: { label: "Confirmado", color: "#10b981" },
-                          candidate: { label: "Candidato", color: "#f59e0b" },
-                          falsePositive: { label: "Falso Positivo", color: "#ef4444" },
+                          confirmed: { label: "Confirmed", color: "#10b981" },
+                          candidate: { label: "Candidate", color: "#f59e0b" },
+                          falsePositive: { label: "False Positive", color: "#ef4444" },
                         }}
                         className="h-[300px] md:h-[350px] w-full"
                       >
@@ -768,16 +617,16 @@ export function ResultsSection() {
                                         </div>
                                         <div className="grid gap-1.5">
                                           <div className="flex justify-between gap-4">
-                                            <span className="text-xs text-muted-foreground">Quantidade:</span>
+                                            <span className="text-xs text-muted-foreground">Amount:</span>
                                             <span className="text-sm font-mono font-bold">{data.value}</span>
                                           </div>
                                           <div className="flex justify-between gap-4">
-                                            <span className="text-xs text-muted-foreground">Percentual:</span>
+                                            <span className="text-xs text-muted-foreground">Percentage:</span>
                                             <span className="text-sm font-mono font-bold">{data.percentage.toFixed(1)}%</span>
                                           </div>
                                           <div className="flex justify-between gap-4">
-                                            <span className="text-xs text-muted-foreground">Do total:</span>
-                                            <span className="text-sm font-mono">{total} objetos</span>
+                                            <span className="text-xs text-muted-foreground">Of the total:</span>
+                                            <span className="text-sm font-mono">{total} objects</span>
                                           </div>
                                         </div>
                                       </div>
@@ -801,11 +650,11 @@ export function ResultsSection() {
                     <Alert className="border-primary/30 bg-primary/5">
                       <Info className="h-4 w-4" />
                       <AlertDescription className="text-[10px] md:text-xs">
-                        <strong>Interpretação dos Resultados:</strong> A distribuição acima reflete a confiança do modelo em cada classificação.
+                        <strong>Interpretation of Results:</strong> The distribution above reflects the model's confidence in each classification.
                         <ul className="mt-2 ml-4 space-y-1 list-disc">
-                          <li><strong>Confirmados</strong>: Alta certeza baseada em padrões de trânsito consistentes e características orbitais</li>
-                          <li><strong>Candidatos</strong>: Sinais promissores que necessitam de validação adicional ou dados complementares</li>
-                          <li><strong>Falsos Positivos</strong>: Sinais descartados por características inconsistentes com exoplanetas</li>
+                          <li><strong>Confirmed</strong>: High certainty based on consistent transit patterns and orbital characteristics</li>
+                          <li><strong>Candidates</strong>: Promising signals that require further validation or complementary data</li>
+                          <li><strong>False Positives</strong>: Signals ruled out due to characteristics inconsistent with exoplanets</li>
                         </ul>
                       </AlertDescription>
                     </Alert>

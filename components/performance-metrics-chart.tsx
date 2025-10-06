@@ -22,8 +22,8 @@ export function PerformanceMetricsChart() {
   return (
     <Card className="border-primary/20">
       <CardHeader>
-        <CardTitle className="text-lg">Métricas de Performance</CardTitle>
-        <CardDescription className="text-xs">Evolução das métricas durante o treinamento</CardDescription>
+        <CardTitle className="text-lg">Performance Metrics</CardTitle>
+        <CardDescription className="text-xs">Evolution of metrics during training</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer
@@ -114,17 +114,17 @@ export function PerformanceMetricsChart() {
         <div className="mt-6 grid grid-cols-3 gap-4">
           <div className="p-3 bg-card border border-border rounded-lg text-center">
             <div className="text-2xl font-bold font-mono text-primary">90.0%</div>
-            <div className="text-xs text-muted-foreground mt-1">Acurácia Final</div>
+            <div className="text-xs text-muted-foreground mt-1">Final Accuracy</div>
           </div>
           <div className="p-3 bg-card border border-border rounded-lg text-center">
             <div className="text-2xl font-bold font-mono text-accent">89.0%</div>
-            <div className="text-xs text-muted-foreground mt-1">Precisão Final</div>
+            <div className="text-xs text-muted-foreground mt-1">Ultimate Accuracyl</div>
           </div>
           <div className="p-3 bg-card border border-border rounded-lg text-center">
             <div className="text-2xl font-bold font-mono" style={{ color: "hsl(var(--chart-3))" }}>
               91.0%
             </div>
-            <div className="text-xs text-muted-foreground mt-1">Recall Final</div>
+            <div className="text-xs text-muted-foreground mt-1">Final Recall</div>
           </div>
         </div>
       </CardContent>

@@ -122,10 +122,10 @@ export function VettingInterface() {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-2xl">Vetting Manual</CardTitle>
-            <CardDescription>Revisão humana de candidatos com baixa confiança</CardDescription>
+            <CardDescription>Human review of low-confidence candidates</CardDescription>
           </div>
           <div className="text-right">
-            <div className="text-sm text-muted-foreground">Progresso</div>
+            <div className="text-sm text-muted-foreground">Progress</div>
             <div className="text-2xl font-bold">
               {currentIndex + 1}/{candidates.length}
             </div>
@@ -247,7 +247,7 @@ export function VettingInterface() {
                 disabled={currentIndex === 0}
               >
                 <ChevronLeft className="h-4 w-4 mr-2" />
-                Anterior
+                Previous
               </Button>
 
               <div className="flex gap-3">
@@ -258,7 +258,7 @@ export function VettingInterface() {
                   className="border-destructive/30 hover:bg-destructive/10"
                 >
                   <XCircle className="h-4 w-4 mr-2" />
-                  Rejeitar
+                  Reject
                 </Button>
                 <Button
                   variant="outline"
@@ -267,7 +267,7 @@ export function VettingInterface() {
                   className="border-accent/30 hover:bg-accent/10"
                 >
                   <AlertCircle className="h-4 w-4 mr-2" />
-                  Sinalizar
+                  Signal
                 </Button>
                 <Button
                   size="lg"
@@ -275,7 +275,7 @@ export function VettingInterface() {
                   className="bg-gradient-to-r from-primary to-accent"
                 >
                   <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Aprovar
+                  Approve
                 </Button>
               </div>
 
@@ -285,7 +285,7 @@ export function VettingInterface() {
                 onClick={() => setCurrentIndex(Math.min(candidates.length - 1, currentIndex + 1))}
                 disabled={currentIndex === candidates.length - 1}
               >
-                Próximo
+                Next
                 <ChevronRight className="h-4 w-4 ml-2" />
               </Button>
             </div>
@@ -299,19 +299,19 @@ export function VettingInterface() {
               <div className="text-2xl font-bold text-primary">
                 {Object.values(vettedCandidates).filter((c) => c.status === "approved").length}
               </div>
-              <div className="text-xs text-muted-foreground mt-1">Aprovados</div>
+              <div className="text-xs text-muted-foreground mt-1">Approved</div>
             </div>
             <div className="p-4 bg-accent/5 border border-accent/20 rounded-lg">
               <div className="text-2xl font-bold text-accent">
                 {Object.values(vettedCandidates).filter((c) => c.status === "flagged").length}
               </div>
-              <div className="text-xs text-muted-foreground mt-1">Sinalizados</div>
+              <div className="text-xs text-muted-foreground mt-1">Signposted</div>
             </div>
             <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-lg">
               <div className="text-2xl font-bold text-destructive">
                 {Object.values(vettedCandidates).filter((c) => c.status === "rejected").length}
               </div>
-              <div className="text-xs text-muted-foreground mt-1">Rejeitados</div>
+              <div className="text-xs text-muted-foreground mt-1">Rejected</div>
             </div>
           </div>
         </div>

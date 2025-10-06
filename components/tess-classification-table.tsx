@@ -7,24 +7,24 @@ import { Card } from "@/components/ui/card"
 interface TessRow {
   id: string
   sector: string
-  classification: "Confirmado" | "Candidato" | "Falso Positivo"
+  classification: "Confirmed" | "Candidate" | "False Positive"
   probability: number
 }
 
 const tessRows: TessRow[] = [
-  { id: "TIC 261136679", sector: "S13", classification: "Confirmado", probability: 88.7 },
-  { id: "TIC 183985250", sector: "S27", classification: "Candidato", probability: 71.2 },
-  { id: "TIC 402980664", sector: "S21", classification: "Falso Positivo", probability: 18.4 },
+  { id: "TIC 261136679", sector: "S13", classification: "Confirmed", probability: 88.7 },
+  { id: "TIC 183985250", sector: "S27", classification: "Candidate", probability: 71.2 },
+  { id: "TIC 402980664", sector: "S21", classification: "False Positive", probability: 18.4 },
 ]
 
 export function TessClassificationTable() {
   const getClassificationColor = (classification: string) => {
     switch (classification) {
-      case "Confirmado":
+      case "Confirmed":
         return "bg-green-500/10 text-green-500 border-green-500/20"
-      case "Candidato":
+      case "Candidate":
         return "bg-blue-500/10 text-blue-500 border-blue-500/20"
-      case "Falso Positivo":
+      case "False Positive":
         return "bg-red-500/10 text-red-500 border-red-500/20"
       default:
         return "bg-muted text-muted-foreground"

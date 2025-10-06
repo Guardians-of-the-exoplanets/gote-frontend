@@ -70,7 +70,7 @@ export function TelescopeFlow({ focus }: { focus?: 'kepler' | 'tess' }) {
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold">Kepler: the telescope that revealed a galaxy full of worlds</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Operando de 2009 a 2018, o Kepler transformou a busca por exoplanetas...
+                  Operating from 2009 to 2018, Kepler transformed the search for exoplanets.
                 </p>
               </div>
 
@@ -82,13 +82,13 @@ export function TelescopeFlow({ focus }: { focus?: 'kepler' | 'tess' }) {
                 <div className="p-4 border rounded-lg bg-gradient-to-br from-primary/5 to-accent/5">
                   <div className="text-xs text-muted-foreground mb-1">Technique</div>
                   <div className="flex items-center gap-2">
-                    <span className="text-lg font-semibold">Trânsitos</span>
+                    <span className="text-lg font-semibold">Traffic</span>
                     <Badge variant="outline">High-precision photometry</Badge>
                   </div>
                 </div>
                 <div className="p-4 border rounded-lg bg-gradient-to-br from-primary/5 to-accent/5">
                   <div className="text-xs text-muted-foreground mb-1">Discoveries</div>
-                  <div className="text-lg font-semibold">2.662 planetas</div>
+                  <div className="text-lg font-semibold">2.662 planets</div>
                 </div>
               </div>
             </Card>

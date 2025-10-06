@@ -498,24 +498,24 @@ export function PlanetVisualization({
   const temp = data.temperature || 288
 
   const typeDescriptions: Record<string, string> = {
-    rocky: "Planeta Rochoso - Similar à Terra, com superfície sólida",
-    "super-earth": "Super-Terra - Planeta rochoso maior que a Terra",
-    neptune: "Tipo Netuno - Gigante de gelo com atmosfera espessa",
-    jupiter: "Gigante Gasoso - Similar a Júpiter, composto principalmente de gases",
+    rocky: "Rocky Planet - Similar to Earth, with a solid surface",
+"super-earth": "Super-Earth - Rocky planet larger than Earth",
+    neptune: "Neptune-like ice giant with thick atmosphere",
+    jupiter: "Gas Giant - Similar to Jupiter, composed primarily of gases",
   }
 
   const tempDescription =
     temp > 1500
-      ? "Extremamente quente - Superfície provavelmente derretida"
+      ? "Extremely hot - Surface likely molten"
       : temp > 800
-        ? "Muito quente - Temperatura de lava"
+        ? "Very hot - Lava temperature"
         : temp > 400
-          ? "Quente - Sem água líquida possível"
+          ? "Hot - No liquid water possible"
           : temp > 200 && temp < 350
-            ? "Temperado - Potencialmente habitável"
+            ? "Temperate - Potentially habitable"
             : temp > 100
-              ? "Frio - Água congelada"
-              : "Muito frio - Superfície gelada"
+              ? "Cold - Freeze water"
+              : "Very cold - Icy surface"
 
   const isHabitable = temp > 250 && temp < 350 && type === "rocky" && (data.radius || 1) < 2
   const habitabilityScore =
@@ -537,8 +537,8 @@ export function PlanetVisualization({
           {/* Earth visualization */}
           <Card className="gradient-border bg-card/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-xl">Terra (Referência)</CardTitle>
-              <CardDescription>Nosso planeta natal para comparação</CardDescription>
+              <CardTitle className="text-xl">Earth (Reference)</CardTitle>
+              <CardDescription>Our home planet for comparison</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="w-full h-[320px] sm:h-[400px] rounded-xl overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border border-border shadow-2xl">
@@ -550,19 +550,19 @@ export function PlanetVisualization({
               </div>
               <div className="grid grid-cols-2 gap-2 mt-4 text-sm">
                 <div className="p-2 bg-muted/50 rounded border border-border/50">
-                  <div className="text-muted-foreground text-xs">Raio</div>
+                  <div className="text-muted-foreground text-xs">Ray</div>
                   <div className="font-semibold">1.00 R⊕</div>
                 </div>
                 <div className="p-2 bg-muted/50 rounded border border-border/50">
-                  <div className="text-muted-foreground text-xs">Massa</div>
+                  <div className="text-muted-foreground text-xs">Mass</div>
                   <div className="font-semibold">1.00 M⊕</div>
                 </div>
                 <div className="p-2 bg-muted/50 rounded border border-border/50">
-                  <div className="text-muted-foreground text-xs">Temperatura</div>
+                  <div className="text-muted-foreground text-xs">Temperature</div>
                   <div className="font-semibold">288 K</div>
                 </div>
                 <div className="p-2 bg-muted/50 rounded border border-border/50">
-                  <div className="text-muted-foreground text-xs">Densidade</div>
+                  <div className="text-muted-foreground text-xs">Density</div>
                   <div className="font-semibold">5.51 g/cm³</div>
                 </div>
               </div>
@@ -574,12 +574,12 @@ export function PlanetVisualization({
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div>
-                  <CardTitle className="text-xl">Exoplaneta Descoberto</CardTitle>
-                  <CardDescription>Características baseadas nos dados observados</CardDescription>
+                  <CardTitle className="text-xl">Exoplanet Discovered</CardTitle>
+                  <CardDescription>Characteristics based on observed data</CardDescription>
                 </div>
                 {isHabitable && (
                   <Badge variant="default" className="bg-green-500/20 text-green-400 border-green-500/30">
-                    Zona Habitável
+                   Habitable Zone
                   </Badge>
                 )}
               </div>
@@ -594,19 +594,19 @@ export function PlanetVisualization({
               </div>
               <div className="grid grid-cols-2 gap-2 mt-4 text-sm">
                 <div className="p-2 bg-muted/50 rounded border border-border/50">
-                  <div className="text-muted-foreground text-xs">Raio</div>
+                  <div className="text-muted-foreground text-xs">Ray</div>
                   <div className="font-semibold">{(data.radius || 1).toFixed(2)} R⊕</div>
                 </div>
                 <div className="p-2 bg-muted/50 rounded border border-border/50">
-                  <div className="text-muted-foreground text-xs">Massa</div>
+                  <div className="text-muted-foreground text-xs">Mass</div>
                   <div className="font-semibold">{(data.mass || 1).toFixed(2)} M⊕</div>
                 </div>
                 <div className="p-2 bg-muted/50 rounded border border-border/50">
-                  <div className="text-muted-foreground text-xs">Temperatura</div>
+                  <div className="text-muted-foreground text-xs">Temperature</div>
                   <div className="font-semibold">{Math.round(temp)} K</div>
                 </div>
                 <div className="p-2 bg-muted/50 rounded border border-border/50">
-                  <div className="text-muted-foreground text-xs">Densidade</div>
+                  <div className="text-muted-foreground text-xs">Density</div>
                   <div className="font-semibold">{(data.density || 5.5).toFixed(2)} g/cm³</div>
                 </div>
               </div>
@@ -619,10 +619,10 @@ export function PlanetVisualization({
           <Info className="h-4 w-4" />
           <AlertDescription className="space-y-2">
             <div>
-              <strong>Tipo:</strong> {typeDescriptions[type]}
+              <strong>Type:</strong> {typeDescriptions[type]}
             </div>
             <div>
-              <strong>Comparação de Tamanho:</strong>{" "}
+              <strong>Size Comparison:</strong>{" "}
               {(data.radius || 1) > 1.5
                 ? `${((data.radius || 1) / 1).toFixed(1)}x maior que a Terra`
                 : (data.radius || 1) < 0.8
@@ -630,16 +630,15 @@ export function PlanetVisualization({
                   : "Tamanho similar à Terra"}
             </div>
             <div>
-              <strong>Temperatura:</strong> {tempDescription} (~{Math.round(temp)}K vs 288K da Terra)
+              <strong>Temperature:</strong> {tempDescription} (~{Math.round(temp)}K vs 288K da Terra)
             </div>
             {isHabitable && (
               <div>
-                <strong>Habitabilidade:</strong> {habitabilityScore} - Condições favoráveis para água líquida
+                <strong>Skills:</strong> {habitabilityScore} - Favorable conditions for liquid water
               </div>
             )}
             <div className="text-xs text-muted-foreground mt-2">
-              💡 Arraste para rotacionar, scroll para zoom. O zoom é proporcional para facilitar a comparação de
-              tamanhos.
+              💡 Drag to rotate, scroll to zoom. Zoom is proportional to facilitate size comparison.
             </div>
           </AlertDescription>
         </Alert>
@@ -652,12 +651,12 @@ export function PlanetVisualization({
       <CardHeader>
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle className="text-2xl">Visualização 3D do Exoplaneta</CardTitle>
-            <CardDescription>Representação baseada em características físicas e composição estimada</CardDescription>
+            <CardTitle className="text-2xl">3D Visualization of the Exoplanet</CardTitle>
+            <CardDescription>Representation based on physical characteristics and estimated composition</CardDescription>
           </div>
           {isHabitable && (
             <Badge variant="default" className="bg-green-500/20 text-green-400 border-green-500/30">
-              Zona Habitável
+             Habitable Zone
             </Badge>
           )}
         </div>
@@ -675,38 +674,37 @@ export function PlanetVisualization({
           <Info className="h-4 w-4" />
           <AlertDescription className="space-y-2">
             <div>
-              <strong>Tipo:</strong> {typeDescriptions[type]}
+              <strong>Type:</strong> {typeDescriptions[type]}
             </div>
             <div>
-              <strong>Temperatura:</strong> {tempDescription} (~{Math.round(temp)}K / {Math.round(temp - 273.15)}°C)
+              <strong>Temperature:</strong> {tempDescription} (~{Math.round(temp)}K / {Math.round(temp - 273.15)}°C)
             </div>
             {isHabitable && (
               <div>
-                <strong>Habitabilidade:</strong> {habitabilityScore} - Condições favoráveis para água líquida
+                <strong>Habitability:</strong> {habitabilityScore} - Favorable conditions for liquid water
               </div>
             )}
             <div className="text-xs text-muted-foreground mt-2">
-              💡 Arraste para rotacionar, scroll para zoom. Texturas e cores são geradas proceduralmente com base nos
-              dados físicos.
+              💡 Drag to rotate, scroll to zoom. Textures and colors are procedurally generated based on the physical data.
             </div>
           </AlertDescription>
         </Alert>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
           <div className="p-3 bg-muted/50 rounded-lg border border-border/50">
-            <div className="text-muted-foreground text-xs mb-1">Raio</div>
+            <div className="text-muted-foreground text-xs mb-1">Ray</div>
             <div className="font-semibold">{(data.radius || 1).toFixed(2)} R⊕</div>
           </div>
           <div className="p-3 bg-muted/50 rounded-lg border border-border/50">
-            <div className="text-muted-foreground text-xs mb-1">Massa</div>
+            <div className="text-muted-foreground text-xs mb-1">Mass</div>
             <div className="font-semibold">{(data.mass || 1).toFixed(2)} M⊕</div>
           </div>
           <div className="p-3 bg-muted/50 rounded-lg border border-border/50">
-            <div className="text-muted-foreground text-xs mb-1">Densidade</div>
+            <div className="text-muted-foreground text-xs mb-1">Density</div>
             <div className="font-semibold">{(data.density || 5.5).toFixed(2)} g/cm³</div>
           </div>
           <div className="p-3 bg-muted/50 rounded-lg border border-border/50">
-            <div className="text-muted-foreground text-xs mb-1">Fluxo Estelar</div>
+            <div className="text-muted-foreground text-xs mb-1">Stellar Flow</div>
             <div className="font-semibold">{(data.stellarFlux || 1).toFixed(2)} S⊕</div>
           </div>
         </div>
@@ -720,7 +718,7 @@ function LoadingFallback() {
     <Html center>
       <div className="flex items-center gap-2 text-primary">
         <Loader2 className="h-6 w-6 animate-spin" />
-        <span className="text-sm">Gerando planeta...</span>
+        <span className="text-sm">Generating planet...</span>
       </div>
     </Html>
   )

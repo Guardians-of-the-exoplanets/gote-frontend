@@ -17,34 +17,34 @@ export function PipelineVisualization() {
   const [steps] = useState<PipelineStep[]>([
     {
       id: "ingestion",
-      name: "Ingestão de Dados",
+      name: "Data Ingestion",
       description: "Leitura de CSV/TFRecords/FITS",
       status: "completed",
       duration: "0.8s",
     },
     {
       id: "detection",
-      name: "Detecção de Eventos",
+      name: "Event Detection",
       description: "Box Least Squares (BLS)",
       status: "completed",
       duration: "2.3s",
     },
     {
       id: "normalization",
-      name: "Normalização",
+      name: "Normalization",
       description: "Detrending + Sigma clipping",
       status: "processing",
       duration: "1.2s",
     },
     {
       id: "noise",
-      name: "Remoção de Ruído",
+      name: "Noise Removal",
       description: "Wavelet filtering",
       status: "pending",
     },
     {
       id: "classification",
-      name: "Classificação ML",
+      name: "ML Classification",
       description: "Multi-branch inference",
       status: "pending",
     },
@@ -53,9 +53,9 @@ export function PipelineVisualization() {
   return (
     <Card className="border-primary/20 h-full">
       <CardHeader>
-        <CardTitle className="text-2xl">Pipeline de Processamento</CardTitle>
+        <CardTitle className="text-2xl">Processing Pipeline</CardTitle>
         <CardDescription className="line-clamp-2">
-          Visualização em tempo real do fluxo de dados através do sistema
+          Real-time visualization of data flow through the system
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -100,15 +100,15 @@ export function PipelineVisualization() {
           <div className="grid grid-cols-3 gap-2 text-center">
             <div>
               <div className="text-lg font-bold text-primary">2/5</div>
-              <div className="text-[10px] text-muted-foreground mt-0.5 truncate">Completas</div>
+              <div className="text-[10px] text-muted-foreground mt-0.5 truncate">Compline</div>
             </div>
             <div>
               <div className="text-lg font-bold text-accent">4.3s</div>
-              <div className="text-[10px] text-muted-foreground mt-0.5 truncate">Decorrido</div>
+              <div className="text-[10px] text-muted-foreground mt-0.5 truncate">Elapsed</div>
             </div>
             <div>
               <div className="text-lg font-bold text-secondary">~2.5s</div>
-              <div className="text-[10px] text-muted-foreground mt-0.5 truncate">Restante</div>
+              <div className="text-[10px] text-muted-foreground mt-0.5 truncate">Remainder</div>
             </div>
           </div>
         </div>
