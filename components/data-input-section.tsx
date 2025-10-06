@@ -432,6 +432,9 @@ export function DataInputSection() {
     const targetFormId = mode === "explorer" ? "explorer-data-form" : "researcher-data-form"
     const form = document.getElementById(targetFormId) as HTMLFormElement | null
     form?.reset()
+    
+    // Scroll to top smoothly
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (

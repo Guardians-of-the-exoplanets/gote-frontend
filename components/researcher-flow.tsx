@@ -109,6 +109,24 @@ export function ResearcherFlow() {
     }
   }, [isProcessing])
 
+  // Reset to pipeline tab when user clicks "New Classification"
+  useEffect(() => {
+    // Detect if all data was cleared (New Classification was clicked)
+    const allCleared = 
+      !isProcessing &&
+      streamSteps.length === 0 &&
+      streamPredictions.length === 0 &&
+      prediction === null &&
+      runMeta === null
+    
+    if (allCleared && activeTab !== "pipeline") {
+      // eslint-disable-next-line no-console
+      console.log('[ResearcherFlow] 🔄 Resetting to Pipeline tab after New Classification')
+      setActiveTab("pipeline")
+      hasAutoSwitchedRef.current = false
+    }
+  }, [isProcessing, streamSteps, streamPredictions, prediction, runMeta, activeTab])
+
   // Do not early-return before hooks; render null at the bottom if needed
 
   // Flatten potential nested arrays from backend
